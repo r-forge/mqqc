@@ -6,4 +6,4 @@ function(x,folder,file = "_mqqc_Manager"){
   }
 }
 
-MQmanager("test",)
+#MQmanager("test",)
