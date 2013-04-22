@@ -1,5 +1,5 @@
 mq.fun <-
-function(filePath){
+function(filePath,folder){
 	# preparing XML
 	mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"mqpar",full.name = T)
 	mqpar 		<- 	readLines(mqpar.name)
@@ -35,7 +35,19 @@ function(filePath){
 	
 	MQcmd <- paste(checkMQ.bin,"/bin/",MQ," ", xml.path," ",threads,sep = "")
 	MQcmd <- path.convert(MQcmd)
-	systemReport<- system(MQcmd,wait=F)
+  # Detecting number of cores
+  try(cores <- system("wmic cpu get NumberOfCores",intern = T))
+  if(exists("cores")){
+	  cores <- as.numeric(unlist(strsplit(cores,"")))
+    cores <- cores[!is.na(cores)]
+    if(length(cores) == 0){
+      cores <- 1
+    }
+  }else{
+    cores <- 1
+  }  
+  
+	MQmanager(MQcmd,folder)
   if(systemReport==0){
     catFun(paste("started MQ",basename(filePath)))
   }else{
