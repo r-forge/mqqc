@@ -1,7 +1,9 @@
 folder.observe <-
 function(folder = NULL,fun= mqStarter,temp.name = "test"){
 
-	
+	tt <<- tktoplevel()
+  tkString <<- tklabel(tt,text = "Started mqqc")
+  tkgrid(tkString)
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
@@ -9,8 +11,9 @@ function(folder = NULL,fun= mqStarter,temp.name = "test"){
 	if(length(folder) == 0){
 		require(tcltk)
 		folder <- tk_choose.dir(caption = "Please Select your")
-		
+    
 	}
+	folder <<- folder
 	# initiation
 	setwd(folder)
 
@@ -74,7 +77,7 @@ function(folder = NULL,fun= mqStarter,temp.name = "test"){
 			  temp.batch.n 	<- names(temp.batch)[temp.batch == 0][1]
 			  if(!is.na(temp.batch.n)){
 			    # starting Maxquant stuff
-			    tryError <- class(try(fun(temp.batch.n,mq.fun)))
+			    tryError <- class(try(fun(temp.batch.n,mq.fun,folder = folder)))
 			    if(tryError == "try-error"){
 			      #	return(temp.batch.n)
 			      catFun(paste("error in file", temp.batch.n))

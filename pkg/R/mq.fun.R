@@ -38,21 +38,17 @@ function(filePath,folder){
   # Detecting number of cores
   try(cores <- system("wmic cpu get NumberOfCores",intern = T))
   if(exists("cores")){
-	  cores <- as.numeric(unlist(strsplit(cores,"")))
+    cores <- as.numeric(unlist(strsplit(cores,"")))
     cores <- cores[!is.na(cores)]
     if(length(cores) == 0){
       cores <- 1
+      
     }
   }else{
     cores <- 1
   }  
   
 	MQmanager(MQcmd,folder)
-  if(systemReport==0){
-    catFun(paste("started MQ",basename(filePath)))
-  }else{
-    
-    cat(paste("\nunsuccessfull MQ start:",MQcmd,"\n"))
-  }
+  
 	#convert slashes to backslashes
 }

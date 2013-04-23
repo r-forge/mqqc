@@ -14,6 +14,8 @@ function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
   TL <- system("tasklist",intern = T)
   TL <- grep("MAXQUA",TL)
   TL <- cores - length(TL)
+
+  try(tkconfigure(.GlobalEnv$tkString,text = paste("Cores used",length(TL),"/",cores)))  
   TL <- TL[TL>0]
   if(length(TL) > 0){
   print(TL)
@@ -23,6 +25,7 @@ function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
       #print(tempi)
       if(length(tempi)> 0){
         cat("hui")
+        system("start")
         system(tempi[1], wait = F)
         tempi <- tempi[-1]
         
