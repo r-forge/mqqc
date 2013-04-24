@@ -37,7 +37,7 @@ function(folder = NULL,fun= mqStarter,temp.name = "test"){
 	
 	while(loop){
 		
-		####
+	####
 	# Check if there is any evidence to process...
 	####
 	setwd(folder)
@@ -91,9 +91,15 @@ function(folder = NULL,fun= mqStarter,temp.name = "test"){
 			  }
 			  
 			}
-			catFun("Closed Loop")
+		#	catFun("Closed Loop")
 
 		}
+		 
+        
+		  
+		  MQmanager(NULL,folder,cores =NULL)
+		
+		
 
 		if(length(obs.files.minus) > 0){
 			catFun("Cleanup deleted files")
