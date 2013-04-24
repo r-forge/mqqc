@@ -1,15 +1,11 @@
 folder.observe <-
 function(folder = NULL,fun= mqStarter,temp.name = "test"){
-
-	tt <<- tktoplevel()
-  tkString <<- tklabel(tt,text = "Started mqqc")
-  tkgrid(tkString)
+  tkControl()
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
 	
 	if(length(folder) == 0){
-		require(tcltk)
 		folder <- tk_choose.dir(caption = "Please Select your")
     
 	}

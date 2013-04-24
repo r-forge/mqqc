@@ -18,7 +18,7 @@ function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
   setwd(folder)
   TL <- system("tasklist",intern = T)
   TL <- grep("MAXQUA",TL)
-  try(tkconfigure(.GlobalEnv$tkString,text = paste("Cores used",length(TL),"/",cores)))  
+  try(tkControl(paste(Sys.time(),"Status: Observing", folder),paste("\nCores used",length(TL),"/",cores)))  
   TL <- cores - length(TL)
   
   if(length(x) > 0){
@@ -29,7 +29,6 @@ function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
     }else{
       
       write(x,File,append = T)
-    
     }
   }
   

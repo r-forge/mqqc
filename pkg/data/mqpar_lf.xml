@@ -64,7 +64,7 @@
    <reporterBasePeakRatio>0</reporterBasePeakRatio>
    <scoreThreshold>0</scoreThreshold>
    <filterAacounts>true</filterAacounts>
-   <secondPeptide>true</secondPeptide>
+   <secondPeptide>false</secondPeptide>
    <matchBetweenRuns>true</matchBetweenRuns>
    <matchBetweenRunsFdr>false</matchBetweenRunsFdr>
    <reQuantify>true</reQuantify>
