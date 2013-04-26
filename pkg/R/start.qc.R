@@ -1,5 +1,5 @@
 start.qc <-
-function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F)
+function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T)
 {
 require(tcltk)	
 #tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))
@@ -48,7 +48,7 @@ temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.ch
 cat("\rstarting qc.prepare",rep(" ",100))
 qc.prepare.data <- qc.prepare(temp.DataEvidence)
 
-plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F)
+plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)
 
 list.collect[a] <- qc.prepare.data
 a <- a+1

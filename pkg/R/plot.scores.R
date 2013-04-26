@@ -1,5 +1,5 @@
 plot.scores <-
-function (data.i,data.list,pdf.name = "qc.control", open.doc = F)
+function (data.i,data.list,pdf.name = "qc.control", open.doc = F,pdfOut = T)
 {
 	cat("\rplotting scores",rep(" ",100))
 #initiation of important vectors 
@@ -19,7 +19,7 @@ na.inf.fun <- function(x){
 }
 
 
-score <- na.inf.fun(score)
+score     <- na.inf.fun(score)
 
 color.blind <- list(	
 
@@ -31,8 +31,10 @@ color.blind <- list(
 		blue = rgb(0,133,178,max = 255)
 
 )
+  if(pdfOut){
 pdf(.pdf<- paste(pdf.name,".pdf",sep = ""),width = 15,height = 7.5,pointsize = 20)
 # plot scores
+}
 library(gplots)
 real.data 	<- summary.data
 ref.data 	<- thresholds
@@ -190,8 +192,10 @@ try(plot.quans(summary.data$ret.width,F,"","peak width in min",c(0,0.1,0.3,1,4),
 
 
 
-
+	if(pdfOut){
+	  
 graphics.off()
+}
 cat("\r",getwd())
 if(open.doc){
 	try(        try(system(paste("open ", .pdf), intern = TRUE, ignore.stderr = TRUE)))

@@ -1,6 +1,7 @@
 folder.observe <-
 function(folder = NULL,fun= mqStarter,temp.name = "test"){
   tkControl()
+  initFastaMQ()  
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
