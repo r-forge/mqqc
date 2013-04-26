@@ -57,6 +57,7 @@ function(folder = NULL,fun= mqStarter,temp.name = "test"){
 		catFun(paste(Sys.time(),"Status: Observing", folder))
 		Sys.sleep(1)
 		obs.files			  <- list.files()
+    obs.files <- obs.files[!file.info(obs.files)[,2]]
 		temp.obs 			  <- grep("^_RmqqcFile_",obs.files)
 		obs.files 			<- grepSubsetControl(temp.obs, obs.files)
 		

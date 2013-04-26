@@ -72,8 +72,8 @@ function(newFasta = T)
         tkmessageBox(message= "No db loaded, please rerun mqqc and set a proper database for MQ search.")
         stop("no db loaded")
       }
-      
-      xmlNew<- xml.replace("fastaFiles",db,xmlTemplate)  
+      db <- path.convert(db)
+      xmlNew<- xml.replace("fastaFiles", ,xmlTemplate)  
       # writing XML
       write(xmlNew,paste(path.package("mqqc"),"data/mqpar.xml",sep ="/"))  
       }

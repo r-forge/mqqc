@@ -1,5 +1,5 @@
 MQmanager <- 
-function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
+function(MQcmd,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   # Checking cores, if cores is NULL
   if(length(cores) == 0){
   try(cores <- system("wmic cpu get NumberOfCores",intern = T))
@@ -21,14 +21,14 @@ function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
   try(tkControl(paste(Sys.time(),"Status: Observing", folder),paste("\nCores used",length(TL),"/",cores)))  
   TL <- cores - length(TL)
   
-  if(length(x) > 0){
+  if(length(MQcmd) > 0){
 
     if(length(MQman) == 0){
       
-      write(x,File)
+      write(MQcmd,File)
     }else{
       
-      write(x,File,append = T)
+      write(MQcmd,File,append = T)
     }
   }
   
@@ -37,9 +37,8 @@ function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
   
   TL <- TL[TL>0]
   if(length(TL) > 0){
-    print(TL)
+#    print(TL)
     for(i in 1:TL){
-      print(i)
       try(tempi <- readLines(File))
       #print(tempi)
       if(length(tempi)> 0){
@@ -63,4 +62,4 @@ function(x,folder,File = "_RmqqcFile_Manager.txt",cores = 1){
 
 }
 
-#MQmanager(x <- "test",folder <- "D:/mqqctest/")
+#MQmanager(MQcmd <- "test",folder <- "D:/mqqctest/")
