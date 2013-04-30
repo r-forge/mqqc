@@ -28,21 +28,21 @@ function(filePath,folder){
 	
   	mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
   if(length(mqpar.name)!=0){
-  	mqpar 		<- 	readLines(mqpar.name)
-  	xmlNEW 		<- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
-  	xmlNEW 		<- 	xml.replace(c("fileNames"),basename(filePath), xmlNEW)
-  	xmlNEW 		<- 	xml.replace(c("paramGroups"),rep(1,length(filePath)), xmlNEW,start.string = "<int>",end.string = "</int>")
-  	# change processFolder
-  	procFold <- grep("processFolder",xmlNEW)
+    mqpar   	<- 	readLines(mqpar.name)
+    xmlNEW 		<- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
+    xmlNEW 		<- 	xml.replace(c("fileNames"),basename(filePath), xmlNEW)
+    xmlNEW 		<- 	xml.replace(c("paramGroups"),rep(1,length(filePath)), xmlNEW,start.string = "<int>",end.string = "</int>")
+    # change processFolder
+    procFold <- grep("processFolder",xmlNEW)
     #  	print(xmlNew[procFold])
-  	input.path <- (dirname((filePath)))
-  	dir.create(paste(input.path,"combined/",sep = "/"))
-  	dir.create(input.path<- paste(input.path,"combined/proc",sep = "/"))
+    input.path <- (dirname((filePath)))
+    
+    dir.create(paste(input.path,"combined/",sep = "/"))
+    dir.create(input.path <-  paste(input.path,"combined/proc",sep = "/"))
     input.path <- path.convert(input.path)
     
-  	xmlNEW[procFold] <- gsub(paste("processFolder.*",sep =""),paste("processFolder=\"",input.path,"\\combined\\proc\\\">",sep = ""),xmlNEW[procFold])
-    
-  	
+    xmlNEW[procFold] <- gsub(paste("processFolder.*",sep =""),"",xmlNEW[procFold])
+    xmlNEW[procFold] <- paste(xmlNEW[procFold],paste("processFolder=\"",input.path,"\">",sep = ""))  	
     # writing XML
     
     
