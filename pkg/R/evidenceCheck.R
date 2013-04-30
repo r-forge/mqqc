@@ -5,13 +5,16 @@ function(hotFolder)
   mqqcInfo <- NULL
   if(length(tempI)> 0){
     # Check if evidence was already processed if yes, no output of evidence path
-    mqqcInfo	<- list.files(dirname(tempI),pattern = "mqqc")
-    mqqcInfo 	<- mqqcInfo[file.info(mqqcInfo)$isdir]
+    mqqcInfo <- c()
+    for(i in 1:length(tempI)){
+        tempmqqcInfo  <- list.files(dirname(tempI[i]),pattern = "mqqc")
+        if(length(tempmqqcInfo)==0){
+          mqqcInfo    <- c(mqqcInfo,tempI[i])
+        }
+      
+    }
+   # mqqcInfo 	<- mqqcInfo[file.info(mqqcInfo)$isdir]
 
   }
-  if(length(mqqcInfo)  == 0 & length(tempI) > 0){
-    return(tempI)
-  }else{
-    return(NULL)
-  }
+  return(mqqcInfo)
 }

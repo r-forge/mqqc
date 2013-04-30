@@ -44,9 +44,10 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   evidenceToProcess <- evidenceCheck(folder)  
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
-			tempI 		<- evidenceToProcess[i]
-			qcResults 	<- start.qc(tempI)
-			
+      if(checkSize(evidenceToProcess)==0){
+			  tempI 		<- evidenceToProcess[i]
+			  qcResults 	<- start.qc(tempI)
+      }
 		}
 		
 	}
@@ -109,6 +110,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 			}
 			write(files,file = temp.name)
 		}
+  # deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
+	successDelete(folder,destDelete = T)
 			
 		
 	}
