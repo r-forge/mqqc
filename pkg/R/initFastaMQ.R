@@ -1,5 +1,5 @@
 initFastaMQ <-
-function(newFasta = T)
+function(newFasta = T,db =NULL,MQ=NULL)
 {
   newFasta <- T
   # check MQ path
@@ -7,6 +7,16 @@ function(newFasta = T)
   if(length(checkMQ)==0){
     cat("\rChoose MQ Directory!",rep(" ",100))
     MQloop <- T
+    
+    if(length(MQ)> 0){
+      checkMQ.bin <- list.files(paste(MQ,"bin",sep = "/"),pattern = "MaxQuantCmd.exe",full.name = T)
+      if(length(checkMQ.bin) == 0){
+        MQloop = T
+      }else{
+        MQloop = F
+      }
+    }
+    
     require(tcltk)
     while(MQloop){
       
@@ -16,7 +26,7 @@ function(newFasta = T)
       if(length(checkMQ.bin) != 0){
         write(checkMQ,file = paste(path.package("mqqc"),"data","MQpath",sep ="/"))
         MQloop = F
-        
+        checkMQ.bin <- checkMQ  
       }
     }	
   }else{
@@ -34,8 +44,10 @@ function(newFasta = T)
     loopDB <- T
     while(loopDB){
       loopDB <- F
-     db        <- tk_choose.files(filters = Filters,caption = "Select a fasta file for MQ search!")
-     #db <- db2 
+      if(length(db)==0){
+         db        <- tk_choose.files(filters = Filters,caption = "Select a fasta file for MQ search!")
+      }
+         #db <- db2 
       warning.col <- c()
       warnings1 <- "no"
       warnings2 <- "no"
@@ -73,13 +85,14 @@ function(newFasta = T)
         stop("no db loaded")
       }
       db <- path.convert(db)
-      xmlNew<- xml.replace("fastaFiles", ,xmlTemplate)  
+      xmlNew<- xml.replace("fastaFiles",db ,xmlTemplate)  
       # writing XML
       write(xmlNew,paste(path.package("mqqc"),"data/mqpar.xml",sep ="/"))  
       }
       
+    return(xmlNew)
       
     }
     
 }
-
+#hui <- initFastaMQ()

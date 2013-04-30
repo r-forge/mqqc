@@ -1,5 +1,5 @@
 MQmanager <- 
-function(MQcmd,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
+function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   # Checking cores, if cores is NULL
   if(length(cores) == 0){
   try(cores <- system("wmic cpu get NumberOfCores",intern = T))
@@ -14,15 +14,18 @@ function(MQcmd,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   }
   
   # checking for task txt
-  MQman <- list.files(folder , pattern = File)
   setwd(folder)
   TL <- system("tasklist",intern = T)
-  TL <- grep("MAXQUA",TL)
+  TL <- grep("MaxQuantCmd.exe",TL)
+  if(length(TL)==0){
+    TL <- grep("MaxQua",TL, ignore.case = T)
+  }
   try(tkControl(paste(Sys.time(),"Status: Observing", folder),paste("\nCores used",length(TL),"/",cores)))  
   TL <- cores - length(TL)
+  MQman <- list.files(folder , pattern = File)
   
   if(length(MQcmd) > 0){
-
+    
     if(length(MQman) == 0){
       
       write(MQcmd,File)
@@ -31,6 +34,7 @@ function(MQcmd,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
       write(MQcmd,File,append = T)
     }
   }
+  MQman <- list.files(folder , pattern = File)
   
   if(length(MQman) > 0){
   
@@ -42,9 +46,10 @@ function(MQcmd,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
       try(tempi <- readLines(File))
       #print(tempi)
       if(length(tempi)> 0){
-        alarm()
-        system("start")
-        system(tempi[1], wait = F)
+        Sys.sleep(1)
+        tempSys <- paste(tempi[1])
+        catFun(tempSys)
+        system(tempSys, wait = F)
         tempi <- tempi[-1]
         
         

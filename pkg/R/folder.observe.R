@@ -1,7 +1,7 @@
 folder.observe <-
-function(folder = NULL,fun= mqStarter,temp.name = "test"){
+function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test"){
   tkControl()
-  initFastaMQ()  
+  hui <- initFastaMQ(MQ=MQ,db=fastaFile)  
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
@@ -91,11 +91,14 @@ function(folder = NULL,fun= mqStarter,temp.name = "test"){
 			}
 		#	catFun("Closed Loop")
 
+		}else{
+      
+		  MQmanager(NULL,folder,cores =NULL)
+		  
 		}
 		 
         
 		  
-		  MQmanager(NULL,folder,cores =NULL)
 		
 		
 
