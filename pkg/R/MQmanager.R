@@ -15,10 +15,10 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   
   # checking for task txt
   setwd(folder)
-  TL <- system("tasklist",intern = T)
-  TL <- grep("MaxQuantCmd.exe",TL)
+  TL1 <- system("tasklist",intern = T)
+  TL <- grep("MaxQuantCmd.exe",TL1,ignore.case = T)
   if(length(TL)==0){
-    TL <- grep("MaxQua",TL, ignore.case = T)
+    TL <- grep("MaxQua",TL1, ignore.case = T)
   }
   try(tkControl(paste(Sys.time(),"Status: Observing", folder),paste("\nCores used",length(TL),"/",cores)))  
   TL <- cores - length(TL)
