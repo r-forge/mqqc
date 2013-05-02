@@ -5,8 +5,11 @@ successDelete <-
     mqqcInfo <- NULL
     
     if(length(tempI) > 0){
+        repl <- paste(hotFolder,"/",sep = "")
+        repl <- gsub("//","/",repl)
+        folderName  <- gsub(repl,"",tempI,fixed = T)
+        #folderName  <- gsub("//","",folderName,fixed = T)
         
-        folderName  <- gsub(paste(hotFolder,"/",sep = ""),"",tempI)
         folderName  <- strsplit(folderName,"/")
         folderNameVec <- c()
         for(i in 1:length(folderName)){
@@ -20,9 +23,12 @@ successDelete <-
             tempmqqcInfo  <- list.files(dirname(tempI[i]),pattern = "mqqc",full.name = "T")
             if(length(tempmqqcInfo)!=0){
                 dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"))
-                file.rename(tempmqqcInfo,paste(sucFolderPath,paste(folderNameVec[i],Sys.Date(),sep = "_"),sep = "/"))
-                if(destDelete){
-                  unlink(paste(hotFolder,folderNameVec[i],sep = "/"),recursive  = T) 
+                file.rename(tempmqqcInfo,paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
+                fileDelete <- paste(hotFolder,folderNameVec[i],sep = "/")
+                listFiles <- list.files(fileDelete,recursive = T,full.name = T)
+                listFiles <- unlist(lapply(listFiles,checkSize))
+                if(destDelete & all(listFiles == 0)){
+                  unlink(fileDelete,recursive  = T) 
                 }
             }
             

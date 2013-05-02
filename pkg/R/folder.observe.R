@@ -46,7 +46,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		for(i in 1:length(evidenceToProcess)){
       if(checkSize(evidenceToProcess)==0){
 			  tempI 		<- evidenceToProcess[i]
-			  qcResults 	<- start.qc(tempI)
+			  try(qcResults 	<- start.qc(tempI))
       }
 		}
 		
@@ -111,8 +111,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 			write(files,file = temp.name)
 		}
   # deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
-	successDelete(folder,destDelete = T)
-			
+try(  successDelete(folder,destDelete = T))			
 		
 	}
 	
