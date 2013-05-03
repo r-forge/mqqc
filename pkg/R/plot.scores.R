@@ -201,4 +201,4 @@ if(open.doc){
 	try(        try(system(paste("open ", .pdf), intern = TRUE, ignore.stderr = TRUE)))
 }
 }
-temp <- start.qc(data)
+#temp <- start.qc(data)
