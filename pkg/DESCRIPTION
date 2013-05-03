@@ -7,3 +7,4 @@ Author: Henrik Zauber
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: quality control of evidence data derived from maxquant analysis
 License: GNU something
+Depends: tcltk,gplots,tools

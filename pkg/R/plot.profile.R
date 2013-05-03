@@ -4,7 +4,8 @@ function(data.i,layout = T){
 			layout(matrix(c(1,2,3,4),ncol = 2,nrow = 2),height = c(5,1.5),width = 	c(5,1))
 
 	}
-	
+
+
 
 name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	######
@@ -13,7 +14,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 
 	# modify intensity
 
-	Ramp.col <- colorRampPalette(c("blue","green","yellow","red"))(101)
+	Ramp.col <- colorRampPalette(c("dodgerblue2","blue","darkblue","navyblue"))(101)
 	intensity <- data.i$intensity
 	intensity <- intensity/max(intensity,na.rm = T)*100
 	Ramp.col <- Ramp.col[(round(intensity)+1)]
@@ -27,20 +28,48 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	par(mai=c(0,1,0.1,0))
 
 	col.intensity <- grep("intensity",tolower(colnames(data.i)))
-	
+		print("hui")
+
 	plot(data.i$retention.time,data.i$m.z,pch = 20,cex = intensity,col = 	Ramp.col,type = "n" ,ylab = "m/z",xlim = range(data.i$retention.time,na.rm = T),axes = F,ylim = range(data.i$m.z,na.rm = T),frame = T)
 	axis(2)
 	axis(1,labels = F)
 	axis(4,xpd = NA,labels = F,padj = 0.5)
-	legend("topright",legend = name.file)
+	uniqueSeq 	<- length(unique(data.i$sequence))
+	intens 		<- quantile(data.i$intensity[!is.na(data.i$intensity)])
+	intens 		<- paste("Top 50%:",intens[3],intens[5])
+	name.file <- c(name.file, paste("unique peptides:",uniqueSeq),intens)
 	grid(col = "darkgrey",lwd = 1.5)
-	for(i in 1:length(unique(Ramp.col))){
-		temp.i.sel <- Ramp.col == unique(Ramp.col)[i]
-		points(data.i$retention.time[temp.i.sel],data.i$m.z[temp.i.sel],pch = 20,cex = intensity[temp.i.sel],col = Ramp.col[temp.i.sel] )
+	legend("topleft",legend = name.file,bg = "white",border = "transparent")
+linePlot <- T
+		for(i in 1:length(unique(Ramp.col))){
+			mFac	<- diff(yrange<- range(data.i$m.z,na.rm = T))/250
 
+			temp.i.sel 	<- Ramp.col == unique(Ramp.col)[i]
+			x 			<- data.i$retention.time[temp.i.sel]
+			y			<- data.i$m.z[temp.i.sel]
+			Start	 	<- data.i$calibrated.retention.time.start[temp.i.sel]
+			Finish		<- data.i$calibrated.retention.time.finish[temp.i.sel]
+			
+			.cols <- unique(Ramp.col)[i]
+			print(.cols)
+			if(linePlot){
+				tempM <- cbind(Start ,Finish,x,y)
+			apply(tempM,1,function(x){
+				xPoly <- c(x[1],x[3],x[2],x[3],x[1] )
+yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
+				polygon(xPoly,yPoly,col = .cols,border = "white",lwd = 0.5)
+				
+			})
+				
+				
+			}else{
+				
+				points(x,y,pch = 20,cex = intensity[temp.i.sel],col = Ramp.col[temp.i.sel] )
+
+			}
 		
-	}
-	
+		}
+		
 	par(mai=c(0.6,1,0,0))
 	
 	dens.crt <- class(try(temp <- density(data.i$retention.time)))
@@ -70,3 +99,4 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 
 	plot(1,type = "n",frame = F,axes = F)
 }
+#plot.profile(data.i)
