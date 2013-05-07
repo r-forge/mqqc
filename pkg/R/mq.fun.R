@@ -56,10 +56,10 @@ function(filePath,folder){
   	MQcmd <- path.convert(MQcmd)
   
   #  return(xmlNEW[2])
-    catFun(MQcmd)
+    print(MQcmd)
   	MQmanager(MQcmd,folder,cores =NULL)
   }else{
-    #print("Error in MQ start. No XML provided.")
+    print("Error in MQ start. No XML provided.")
   }
   
 	#convert slashes to backslashes
