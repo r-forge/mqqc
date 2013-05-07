@@ -1,5 +1,5 @@
 plot.profile <-
-function(data.i,layout = T){	
+function(data.i,layout = T,linePlot =F){	
 	if(layout){
 			layout(matrix(c(1,2,3,4),ncol = 2,nrow = 2),height = c(5,1.5),width = 	c(5,1))
 
@@ -36,11 +36,10 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	axis(4,xpd = NA,labels = F,padj = 0.5)
 	uniqueSeq 	<- length(unique(data.i$sequence))
 	intens 		<- quantile(data.i$intensity[!is.na(data.i$intensity)])
-	intens 		<- paste("Top 50%:",intens[3],intens[5])
-	name.file <- c(name.file, paste("unique peptides:",uniqueSeq),intens)
+	intens 		<- paste("Top 50%:",format(intens[3],digits = 3),format(intens[5],digits =3))
+	name.file <- c(as.character(name.file), paste("unique peptides:",uniqueSeq),intens)
 	grid(col = "darkgrey",lwd = 1.5)
-	legend("topleft",legend = name.file,bg = "white",border = "transparent")
-linePlot <- T
+	legend("topleft",legend = name.file,bg = "white",border = "transparent",bty = "transparent")
 		for(i in 1:length(unique(Ramp.col))){
 			mFac	<- diff(yrange<- range(data.i$m.z,na.rm = T))/250
 

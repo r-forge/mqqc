@@ -1,5 +1,7 @@
 qc.prepare <- 
 function(data){
+score <- list()
+
 get.env2 <- environment() 
 ls.null <- function(get.env = get.env2){
 	ls.temp <- ls(envir = get.env)
@@ -11,6 +13,27 @@ ls.null <- function(get.env = get.env2){
 	}
 	}
 }
+
+#### Define thresholds
+# needs to be modular
+####
+thresholds <- list()
+thresholds$mass.error 		<- c(0.5,5)
+thresholds$peak.shape 		<- c(0.5,3)
+thresholds$peak.durance		<- c(0.3,1)  
+thresholds$msms.count 		<- 4000
+thresholds$ret.peak.shape 	<- c(0.5,3)
+thresholds$ret.width 		<- c(0.3,1)
+thresholds$total.msms.min	<- 150
+thresholds$quan.msms.min	<- 250
+thresholds$mass.error.cal 	<- c(0.5,5)
+thresholds$quan.duplicates.msms <- 0.05
+thresholds$score 			<- 100
+thresholds$msmsEff 			<- 60
+thresholds$quanRetRSD 		<- 0.05
+thresholds$quanRetSlope 	<- 0.02
+thresholds$quanRet50ratio	<- 1.2
+
 #.cols <- colnames(data)
 #data <- apply(data,2,function(x){as.numeric(as.character(x))})
 #colnames(data) <- .cols
@@ -80,22 +103,36 @@ double 					<- length(pep.identifier)-length(unique(pep.identifier))
 summary.data$quan.duplicates 		<- double
 summary.data$quan.duplicates.msms 	<- double/length(grep("MSMS",data.i.quant$type))
 summary.data$score<- quantile(data.i$score,na.rm = T)
+# sd interquantile
 
-thresholds <- list()
+temp 		<- density(data$calibrated.retention.time)
+tempQuan 	<- quantile(data$calibrated.retention.time) 
 
-thresholds$mass.error 		<- c(0.5,5)
-thresholds$peak.shape 		<- c(0.5,3)
-thresholds$peak.durance		<- c(0.3,1)  
-thresholds$msms.count 		<- 4000
-thresholds$ret.peak.shape 	<- c(0.5,3)
-thresholds$ret.width 		<- c(0.3,1)
-thresholds$total.msms.min	<- 150
-thresholds$quan.msms.min	<- 250
-thresholds$mass.error.cal 	<- c(0.5,5)
-thresholds$quan.duplicates.msms <- 0.05
-thresholds$score 			<- 100
+
+x <- temp$x
+y <- temp$y
+
+ySel <- y[x > tempQuan[2]&x< tempQuan[4]]
+xSel <- x[x > tempQuan[2]&x< tempQuan[4]]
+slope <- NA
+try(slope <- coefficients(lm(y~x))[2])
+rSDquanRet				<- sd(ySel)/median(ySel)
+summary.data$quanRetRSD <- rSDquanRet
+summary.data$quanRetSlope <- slope
+summary.data$quanRet50ratio <- diff(tempQuan[c(1,3)])/diff(tempQuan[c(3,5)])
+print("HUI")
+print(score)
+score$quanRetRSD 		<- 	thresholds$quanRetRSD/summary.data$quanRetRSD
+score$quanRetSlope 		<-	thresholds$quanRetSlope /abs(summary.data$quanRetSlope)
+score$quanRet50ratio 	<- 	thresholds$quanRet50ratio/abs(summary.data$quanRet50ratio)
+
+# efficiency 
+msmsEff <- NA
+try(msmsEff <- length(data.i.quant$ms.ms.scan.number[!is.na(data.i.quant$ms.ms.scan.number)])/(max(data.i.quant$ms.ms.scan.number,na.rm = T)-min(data.i.quant$ms.ms.scan.number,na.rm = T)*0.9)*100)
+summary.data$msmsEff 	<- msmsEff
+score$msmsEff 			<- msmsEff/thresholds$msmsEff
+
 # scores 
-score <- list()
 score$msms 			<-  summary.data$quan.msms.min/thresholds$quan.msms.min 
 score$mass.error 	<-  max(thresholds$mass.error.cal[1]/abs(summary.data$mass.error.cal[c(2,4)]))*0.7+max(abs(summary.data$mass.error.cal[c(1,5)])/thresholds$mass.error.cal[2])*0.3
 score$score <- summary.data$score[3]/thresholds$score
@@ -105,6 +142,8 @@ score$peak.shape 	<- thresholds$peak.shape[1]/max(abs(log2((summary.data$ret.pea
 score$ret.width 	<- thresholds$ret.width[1]/(summary.data$ret.width[c(3)])
 
 score$quan.duplicates.msms 	<- thresholds$quan.duplicates.msms[1]/((((summary.data$quan.duplicates.msms))))
-
+print(score)
 return(list(th = thresholds,sc = score,sd = summary.data,diq = data.i.quant))
 }
+data.list <- qc.prepare(data)
+print(test$sc)
