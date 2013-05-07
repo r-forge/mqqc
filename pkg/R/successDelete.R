@@ -28,10 +28,16 @@ successDelete <-
                 listFiles <- list.files(fileDelete,recursive = T,full.name = T)
                 listFiles <- unlist(lapply(listFiles,checkSize))
                 if(destDelete & all(listFiles == 0)){
+                Sys.sleep(5)
+                  listFiles <- list.files(fileDelete,recursive = T,full.name = T)
+                  listFiles <- unlist(lapply(listFiles,checkSize))
+	
+                  if(destDelete & all(listFiles == 0)){
+
                   unlink(fileDelete,recursive  = T) 
                   Sys.sleep(0.5)
                   unlink(fileDelete,recursive  = T) 
-                  
+                  }
                 }
             }
             
