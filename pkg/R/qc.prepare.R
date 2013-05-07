@@ -18,7 +18,7 @@ ls.null <- function(get.env = get.env2){
 # needs to be modular
 ####
 thresholds <- list()
-thresholds$mass.error 		<- c(0.5,5)
+mass.error 		<- c(0.5,5)
 thresholds$peak.shape 		<- c(0.5,3)
 thresholds$peak.durance		<- c(0.3,1)  
 thresholds$msms.count 		<- 4000
@@ -145,5 +145,5 @@ score$quan.duplicates.msms 	<- thresholds$quan.duplicates.msms[1]/((((summary.da
 print(score)
 return(list(th = thresholds,sc = score,sd = summary.data,diq = data.i.quant))
 }
-data.list <- qc.prepare(data)
-print(test$sc)
+#data.list <- qc.prepare(data)
+#print(test$sc)

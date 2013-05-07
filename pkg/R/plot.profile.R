@@ -36,7 +36,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	axis(4,xpd = NA,labels = F,padj = 0.5)
 	uniqueSeq 	<- length(unique(data.i$sequence))
 	intens 		<- quantile(data.i$intensity[!is.na(data.i$intensity)])
-	intens 		<- paste("Top 50%:",format(intens[3],digits = 3),format(intens[5],digits =3))
+	intens 		<- paste("Top 50%:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
 	name.file <- c(as.character(name.file), paste("unique peptides:",uniqueSeq),intens)
 	grid(col = "darkgrey",lwd = 1.5)
 	legend("topleft",legend = name.file,bg = "white",border = "transparent",bty = "transparent")

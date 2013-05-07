@@ -1,6 +1,6 @@
-#plot.scores <-
-#function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = T)
-#{
+plot.scores <-
+function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = T)
+{
 	cat("\rplotting scores",rep(" ",100))
 #initiation of important vectors 
 grad.cols.vec <- c("black","blue","lightblue","green")
@@ -282,5 +282,5 @@ cat("\r",getwd())
 if(open.doc){
 	try(        try(system(paste("open ", .pdf), intern = TRUE, 				ignore.stderr = TRUE)))
 	}
-#}
+}
 #temp <- start.qc(data)
