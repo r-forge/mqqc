@@ -120,8 +120,8 @@ rSDquanRet				<- sd(ySel)/median(ySel)
 summary.data$quanRetRSD <- rSDquanRet
 summary.data$quanRetSlope <- slope
 summary.data$quanRet50ratio <- diff(tempQuan[c(1,3)])/diff(tempQuan[c(3,5)])
-print("HUI")
-print(score)
+#print("HUI")
+#print(score)
 score$quanRetRSD 		<- 	thresholds$quanRetRSD/summary.data$quanRetRSD
 score$quanRetSlope 		<-	thresholds$quanRetSlope /abs(summary.data$quanRetSlope)
 score$quanRet50ratio 	<- 	thresholds$quanRet50ratio/abs(summary.data$quanRet50ratio)
@@ -142,7 +142,7 @@ score$peak.shape 	<- thresholds$peak.shape[1]/max(abs(log2((summary.data$ret.pea
 score$ret.width 	<- thresholds$ret.width[1]/(summary.data$ret.width[c(3)])
 
 score$quan.duplicates.msms 	<- thresholds$quan.duplicates.msms[1]/((((summary.data$quan.duplicates.msms))))
-print(score)
+#print(score)
 return(list(th = thresholds,sc = score,sd = summary.data,diq = data.i.quant))
 }
 #data.list <- qc.prepare(data)
