@@ -1,5 +1,5 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test"){
+function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F){
   tkControl()
   if(.Platform$OS.type == "windows"){
   	hui <- initFastaMQ(MQ=MQ,db=fastaFile)  
@@ -99,7 +99,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
       		
       		if(.Platform$OS.type == "windows"){
 		  		MQmanager(NULL,folder,cores =NULL)
-		  	}else{tkControl(paste(Sys.time(),"Status: Observing", folder),"")
+		  	}else{
+		  		tkControl(paste(Sys.time(),"Status: Observing", folder),"")
 		  	}
 		  
 		}
@@ -117,7 +118,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 			write(files,file = temp.name)
 		}
   # deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
-try(  successDelete(folder,destDelete = T))			
+try(  successDelete(folder,destDelete = DeleteFiles))			
 		
 	}
 	
