@@ -1,5 +1,5 @@
 mq.fun <-
-function(filePath,folder){
+function(filePath,folder,cores){
 
 	# creating string for system call of MQ
 	#check MQ path
@@ -57,7 +57,7 @@ function(filePath,folder){
   
   #  return(xmlNEW[2])
     print(MQcmd)
-  	MQmanager(MQcmd,folder,cores =NULL)
+  	MQmanager(MQcmd,folder,cores =cores)
   }else{
     print("Error in MQ start. No XML provided.")
   }

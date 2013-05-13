@@ -1,5 +1,6 @@
 MQmanager <- 
 function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
+  
   # Checking cores, if cores is NULL
   if(length(cores) == 0 & .Platform$OS.type == "windows"){
   	try(cores <- system("wmic cpu get NumberOfCores",intern = T))

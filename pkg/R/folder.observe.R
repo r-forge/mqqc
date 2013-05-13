@@ -1,5 +1,5 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F){
+function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL){
   tkControl()
   if(.Platform$OS.type == "windows"){
   	hui <- initFastaMQ(MQ=MQ,db=fastaFile)  
@@ -79,7 +79,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 			  temp.batch.n 	<- names(temp.batch)[temp.batch == 0][1]
 			  if(!is.na(temp.batch.n)){
 			    # starting Maxquant stuff
-			    tryError <- class(try(fun(temp.batch.n,mq.fun,folder = folder)))
+			    tryError <- class(try(fun(temp.batch.n,folder = folder,cores = cores)))
 			    if(tryError == "try-error"){
 			      #	return(temp.batch.n)
 			      catFun(paste("error in file", temp.batch.n))
@@ -98,7 +98,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		}else{
       		
       		if(.Platform$OS.type == "windows"){
-		  		MQmanager(NULL,folder,cores =NULL)
+		  		MQmanager(NULL,folder,cores =cores)
 		  	}else{
 		  		tkControl(paste(Sys.time(),"Status: Observing", folder),"")
 		  	}
