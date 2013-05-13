@@ -8,7 +8,10 @@ function(temp.batch.n, mq.fun,InfoString = "_RmqqcFile_",folder){
     
   }
 	folder.name <- gsub(".","",folder.name,fixed = T)
-	
+	if(length(list.files(pattern = folder.name)) > 0){
+		folder.name <- paste(folder.name,make.names(Sys.time()),sep = "")	
+		
+	}
 	
 	dir.create(folder.name)
 	try(file.rename(temp.batch.n,path.file <-   paste(getwd(),folder.name,temp.batch.n,sep = "/")))

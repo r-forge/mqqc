@@ -4,7 +4,7 @@ function(filePath,folder){
 	# creating string for system call of MQ
 	#check MQ path
 	checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
-	if(length(checkMQ)==0){
+	if(length(checkMQ)==0 & .Platform$OS.type == "windows"){
 		cat("\rChoose MQ Directory!",rep(" ",100))
 		MQloop <- T
 		require(tcltk)

@@ -1,7 +1,9 @@
 folder.observe <-
 function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test"){
   tkControl()
-  hui <- initFastaMQ(MQ=MQ,db=fastaFile)  
+  if(.Platform$OS.type == "windows"){
+  	hui <- initFastaMQ(MQ=MQ,db=fastaFile)  
+	}
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
@@ -45,6 +47,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
       if(checkSize(evidenceToProcess)==0){
+      			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...")
 			  tempI 		<- evidenceToProcess[i]
 			  try(qcResults 	<- start.qc(tempI))
       }
@@ -93,8 +96,11 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		#	catFun("Closed Loop")
 
 		}else{
-      
-		  MQmanager(NULL,folder,cores =NULL)
+      		
+      		if(.Platform$OS.type == "windows"){
+		  		MQmanager(NULL,folder,cores =NULL)
+		  	}else{tkControl(paste(Sys.time(),"Status: Observing", folder),"")
+		  	}
 		  
 		}
 		 
