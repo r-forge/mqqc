@@ -1,7 +1,10 @@
 initFastaMQ <-
-function(newFasta = T,db =NULL,MQ=NULL)
+function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
 {
-  newFasta <- T
+	
+	if(SpeciesTable){
+		newFasta <- F
+	}
   # check MQ path
   checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
   if(length(checkMQ)==0){
@@ -33,16 +36,19 @@ function(newFasta = T,db =NULL,MQ=NULL)
     checkMQ.bin <- readLines(checkMQ)
   }
   
+  if(SpeciesTable){
+  	checkSpeciesTable()
+  }
   # check fasta:
   
   mqpar.name   <- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
-  if(length(mqpar.name)== 0|newFasta){
+  if(length(mqpar.name)== 0&newFasta){
     mqpar.name  <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar",full.name = T)
     xmlTemplate <- readLines(mqpar.name) 
     Filters <- matrix(c("fasta", ".fasta", "All files", "*"),
                       2, 2, byrow = TRUE)
     loopDB <- T
-    while(loopDB){
+    while(loopDB ){
       loopDB <- F
       if(length(db)==0){
          db        <- tk_choose.files(filters = Filters,caption = "Select a fasta file for MQ search!")
@@ -96,3 +102,4 @@ function(newFasta = T,db =NULL,MQ=NULL)
     
 }
 #hui <- initFastaMQ()
+#initFastaMQ( SpeciesTable = T)

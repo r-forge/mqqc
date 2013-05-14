@@ -1,5 +1,5 @@
 start.qc <-
-function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T)
+function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T)
 {
 require(tcltk)	
 #tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))
@@ -46,7 +46,7 @@ for(i in rep.v){
 
 temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.character(i),]	
 cat("\rstarting qc.prepare",rep(" ",100))
-qc.prepare.data <- qc.prepare(temp.DataEvidence)
+qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable)
 
 plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)
 

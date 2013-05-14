@@ -1,5 +1,5 @@
 qc.prepare <- 
-function(data){
+function(data, SpeciesTable){
 score <- list()
 
 get.env2 <- environment() 
@@ -19,8 +19,6 @@ ls.null <- function(get.env = get.env2){
 ####
 thresholds <- list()
 mass.error 		<- c(0.5,5)
-thresholds$peak.shape 		<- c(0.5,3)
-thresholds$peak.durance		<- c(0.3,1)  
 thresholds$msms.count 		<- 4000
 thresholds$ret.peak.shape 	<- c(0.5,3)
 thresholds$ret.width 		<- c(0.3,1)
@@ -33,7 +31,19 @@ thresholds$msmsEff 			<- 60
 thresholds$quanRetRSD 		<- 0.05
 thresholds$quanRetSlope 	<- 0.02
 thresholds$quanRet50ratio	<- 1.2
+if(SpeciesTable){
+	
+	      species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+	      RawFile <- unique(data$Raw.file)[1]
+	      regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})	
+	      temp   	<-as.logical(sapply(regEx,grep, x = RawFile))
+		temp[is.na(temp)] <- FALSE
 
+		if(any(temp)){
+		speciesUsed <- species[temp,]
+		thresholds	<- as.list(speciesUsed[1,])
+		}
+}
 #.cols <- colnames(data)
 #data <- apply(data,2,function(x){as.numeric(as.character(x))})
 #colnames(data) <- .cols
@@ -137,7 +147,7 @@ score$msms 			<-  summary.data$quan.msms.min/thresholds$quan.msms.min
 score$mass.error 	<-  max(thresholds$mass.error.cal[1]/abs(summary.data$mass.error.cal[c(2,4)]))*0.7+max(abs(summary.data$mass.error.cal[c(1,5)])/thresholds$mass.error.cal[2])*0.3
 score$score <- summary.data$score[3]/thresholds$score
 # score nlc
-score$peak.shape 	<- thresholds$peak.shape[1]/max(abs(log2((summary.data$ret.peak.shape[c(2,4)]))))
+score$peak.shape 	<- thresholds$ret.peak.shape[1]/max(abs(log2((summary.data$ret.peak.shape[c(2,4)]))))
 
 score$ret.width 	<- thresholds$ret.width[1]/(summary.data$ret.width[c(3)])
 

@@ -1,5 +1,5 @@
 mq.fun <-
-function(filePath,folder,cores){
+function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER"){
 
 	# creating string for system call of MQ
 	#check MQ path
@@ -44,9 +44,38 @@ function(filePath,folder,cores){
     xmlNEW[procFold] <- gsub(paste("processFolder.*",sep =""),"",xmlNEW[procFold])
     xmlNEW[procFold] <- paste(xmlNEW[procFold],paste("processFolder=\"",input.path,"\">",sep = ""))  	
     # writing XML
+     
+  if(SpeciesTable){
+  		species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+	regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})
+        
+	temp   	<-as.logical(sapply(regEx,grep, x = basename(filePath)))
+	temp[is.na(temp)] <- FALSE
+
+	if(!all(!temp)){
+	
+		speciesUsed <- species[temp,]
+		if(dim(speciesUsed)[1] > 1){
+			speciesUsed <- speciesUsed[1,]
+		}
+		print(speciesUsed)
+
+		db <- speciesUsed$Fasta
+		dbControl <- list.files(as.character(speciesUsed$Fasta))
+		if(length(dbControl) == 0){
+					db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
+		}
+
+	}else{
+		db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
+	}
+	
+
+    xmlNew<- xml.replace("fastaFiles",db , xmlNEW)  
+  }
     
     
-  	write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
+	write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
   	
     
   	threads <- 1
