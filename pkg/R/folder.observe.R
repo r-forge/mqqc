@@ -53,6 +53,13 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
       }
 		}
 		
+	  
+		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
+		try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+		# update export folder   
+		if(is.function(FUNLAST)){
+		  FUNLAST(htmloutPath,folder,sucFolder)
+		}
 	}
 	setwd(folder)
 		
@@ -117,11 +124,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 			}
 			write(files,file = temp.name)
 		}
-  # deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
-try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))			
-	if(is.function(FUNLAST)){
-	  FUNLAST(htmloutPath,folder,sucFolder)
-	}
+
   
 	}
   
