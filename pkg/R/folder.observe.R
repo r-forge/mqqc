@@ -1,8 +1,8 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER"){
+function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml"){
   tkControl()
   if(.Platform$OS.type == "windows"){
-  	hui <- initFastaMQ(MQ=MQ,db=fastaFile)  
+  	hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
 	}
 	
 	temp.name <- "test"
@@ -46,10 +46,10 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   evidenceToProcess <- evidenceCheck(folder)  
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
-      if(checkSize(evidenceToProcess)==0){
+      if(checkSize(evidenceToProcess[i])==0){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...")
 			  tempI 		<- evidenceToProcess[i]
-			  try(qcResults 	<- start.qc(tempI))
+			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,templateFasta=templateFasta))
       }
 		}
 		
@@ -118,9 +118,14 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 			write(files,file = temp.name)
 		}
   # deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
-try(  successDelete(folder,destDelete = DeleteFiles))			
-		
+try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))			
+	if(is.function(FUNLAST)){
+	  FUNLAST(htmloutPath,folder,sucFolder)
 	}
+  
+	}
+  
+  
 	
 return(folder = folder)	
 }

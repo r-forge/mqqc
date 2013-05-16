@@ -2,9 +2,7 @@ initFastaMQ <-
 function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
 {
 	
-	if(SpeciesTable){
-		newFasta <- F
-	}
+
   # check MQ path
   checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
   if(length(checkMQ)==0){
@@ -41,7 +39,16 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
   }
   # check fasta:
   
-  mqpar.name   <- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
+  mqpar.name  <- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
+  if(SpeciesTable){
+    if(length(mqpar.name)== 0){
+      newFasta  <- T
+    }else{
+      newFasta  <- F
+      
+    }
+  }
+  
   if(length(mqpar.name)== 0&newFasta){
     mqpar.name  <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar",full.name = T)
     xmlTemplate <- readLines(mqpar.name) 
@@ -95,7 +102,12 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
       # writing XML
       write(xmlNew,paste(path.package("mqqc"),"data/mqpar.xml",sep ="/"))  
       }
-      
+    mqpar.name   <-   list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
+    
+    if(length(mqpar.name) == 0 & SpeciesTable){
+      mqpar.name <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar",full.name = T)
+      file.copy(mqpar.name,paste(dirname(mqpar.name),"mqpar.xml",sep = "/"))
+    }
     return(xmlNew)
       
     }

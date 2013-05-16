@@ -1,5 +1,5 @@
 qc.prepare <- 
-function(data, SpeciesTable){
+function(data, SpeciesTable,placeholder,templateFasta){
 score <- list()
 
 get.env2 <- environment() 
@@ -20,14 +20,14 @@ ls.null <- function(get.env = get.env2){
 thresholds <- list()
 mass.error 		<- c(0.5,5)
 thresholds$msms.count 		<- 4000
-thresholds$ret.peak.shape 	<- c(0.5,3)
-thresholds$ret.width 		<- c(0.3,1)
+thresholds$ret.peak.shape <- c(0.5,3)
+thresholds$ret.width 		  <- c(0.3,1)
 thresholds$total.msms.min	<- 150
 thresholds$quan.msms.min	<- 250
-thresholds$mass.error.cal 	<- c(0.5,5)
+thresholds$mass.error.cal <- c(0.5,5)
 thresholds$quan.duplicates.msms <- 0.05
-thresholds$score 			<- 100
-thresholds$msmsEff 			<- 60
+thresholds$score 			    <- 100
+thresholds$msmsEff 			  <- 60
 thresholds$quanRetRSD 		<- 0.05
 thresholds$quanRetSlope 	<- 0.02
 thresholds$quanRet50ratio	<- 1.2
