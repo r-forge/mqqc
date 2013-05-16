@@ -1,5 +1,5 @@
 writeToHtml <- 
-function(inputVec="test", inputVec2 = "test",path = "file.html",width = 1000,height = 750){
+function(inputVec="test", inputVec2 = "test",path = "index.html",width = 1000,height = 750){
 initHtml <- "<!-- $Id: example.html,v 1.4 2006/03/27 02:44:36 pat Exp $ -->
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
 <html lang=\"en\">

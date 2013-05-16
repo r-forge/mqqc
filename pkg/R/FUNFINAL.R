@@ -1,6 +1,6 @@
 FUNFINAL <-
-function(finalMQQC = "D:/resultsmqqc/",folder,subfolder){
-
+function(finalMQQC = "D:/resultsmqqc/",folder,sucFolder){
+returnVec <- c()
 dir.create(finalMQQC)
 dir.create(allPath <- paste(finalMQQC,"all",sep = "/"))
 dir.create(ECstdPath <- paste(finalMQQC,"ECstd",sep = "/"))
@@ -64,12 +64,17 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
         
         unlink(old[2])
         paths <- list.files(new[2],pattern = ".pdf",full.name = T)
-        file.copy(paths,paste(finalPath,paste(name,".pdf",sep = ""),sep = "/"))
+        finalFile <- paste(finalPath,paste(name,".pdf",sep = ""),sep = "/")
+        file.copy(paths,finalFile)
       }
+      if(exists("finalFile")){return(finalFile)}
       
       
     })
-#     else{
+    returnVec <- c(returnVec,test)
+
+    
+  #     else{
 #       
 #     if(is.vector(newD)){
 #       newD <- newD[order(newD[,3],decreasing = T),]
@@ -86,4 +91,12 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
 #     
 #     }
 }
+
+pdfFiles <- list.files(finalMQQC,pattern = ".pdf",recursive = T)
+ECstd <- pdfFiles %in% grep("^ECstd", pdfFiles, value = TRUE)
+
+writeToHtml(pdfFiles[ECstd],pdfFiles[!ECstd],path = paste(finalMQQC,"index.html",sep = "/"))
+
+return(returnVec)
 }
+#test <- FUNFINAL(folder = folder,sucFolder = sucFolder)
