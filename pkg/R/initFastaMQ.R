@@ -102,7 +102,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
       # writing XML
       write(xmlNew,paste(path.package("mqqc"),"data/mqpar.xml",sep ="/"))  
       }
-    mqpar.name   <-   list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
+    mqpar.name   <-   list.files(path.package("mqqc"),pattern = "^mqpar",recursive = T,full.name = T)
     
     if(length(mqpar.name) == 0 & SpeciesTable){
       mqpar.name <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar",full.name = T)
