@@ -20,13 +20,21 @@ checkSpeciesTable <-
       }
       
       if(length(colBad) > 0){
-        tkFix <- tkmessageBox(type = "yesno",message = paste("Fasta Names are not found in MaxQuant databases.xml:\n",paste(species$Abbreviation[colBad],collapse = "; "),"\nDo you like to fix the table?"))
-        if(tclvalue(tkFix) == "yes"){
+        tkFix <- tkmessageBox(type = "yesnocancel",message = paste("Fasta Names are not found in MaxQuant databases.xml:\n",paste(species$Abbreviation[colBad],collapse = "; "),"\nDo you like to browse your fasta files?"))
+        if(tclvalue(tkFix) == "no"){
           fix(species)
           write.csv(species,file =paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F, row.names = F)
           
         }
-        
+        if(tclvalue(tkFix) == "yes"){
+        	try(speciesTK(species))	
+        	 if(exists("mqqcSpeciesSet",envir = .GlobalEnv)){
+        		species$Fasta <- .GlobalEnv$mqqcSpeciesSet
+              write.csv(species,file =paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F, row.names = F)
+        	}
+        }
+       
+      
       }
       
     }
