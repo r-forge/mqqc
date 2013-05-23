@@ -110,7 +110,7 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 	# set fasta files
 	####
 speciesFun <- 	function(){
-		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
+		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv$",full.name = T,recursive = T)
 			 species <- read.csv(species.path)
 			 try(speciesTK(species))	
 				species$Fasta <- .GlobalEnv$mqqcSpeciesSet
@@ -163,7 +163,7 @@ output <- list(
 		cores = cores ,
 		SpeciesTable = T
 		)
-save(output,file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))
+save(output,file=paste(path.package("mqqc"),"data/Param.Rdata$",sep = "/"))
 # check settings
 print(output)
 for(i in 1:4){
