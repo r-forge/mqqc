@@ -7,6 +7,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   	for(i in 1:length(Param)){
 		assign(names(Param)[i],Param[[i]])
 	}
+	cores <- as.numeric(cores)
   }
   
   if(.Platform$OS.type == "windows"){

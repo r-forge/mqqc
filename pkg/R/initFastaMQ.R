@@ -11,6 +11,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
     
     if(length(MQ)> 0){
     	checkMQ <- MQ
+        write(checkMQ,file = paste(path.package("mqqc"),"data","MQpath",sep ="/"))
       checkMQ.bin <- list.files(paste(MQ,"bin",sep = "/"),pattern = "MaxQuantCmd.exe",full.name = T)
       if(length(checkMQ.bin) == 0){
         MQloop = T
