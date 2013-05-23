@@ -12,9 +12,12 @@ temp <- as.matrix(x)[, dataCol]
 hui <- function(x){
 	testI <- x
 	tkbutton(ttbox,text = "Browse",width = 6,command= function(){
-	temp <- tclvalue(tkgetOpenFile()	)	
-	tkconfigure(listtboxK[[testI]],text = temp)
-	.GlobalEnv$mqqcSpeciesSet[testI] <- temp
+	temp <- tclvalue(tkgetOpenFile()	)
+  if(temp !=""){
+    tkconfigure(listtboxK[[testI]],text = temp)
+    .GlobalEnv$mqqcSpeciesSet[testI] <- temp
+  }
+
 	}
 
 	)
