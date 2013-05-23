@@ -31,13 +31,14 @@ color.blind <- list(
 		blue = rgb(0,133,178,max = 255)
 
 )
+
   if(pdfOut){
 pdf(.pdf<- paste(pdf.name,".pdf",sep = ""),width = 15,height = 7.5,pointsize = 20)
 # plot scores
 }
 library(gplots)
-real.data 	<- summary.data
-ref.data 	<- thresholds
+real.data 		<- summary.data
+ref.data 		<- thresholds
 score.data 	<- score
 ms.col <- unlist(color.blind[c(5,6,1)])
 nc.col <- unlist(color.blind[c(3,4,2)])
@@ -281,6 +282,6 @@ cat("\r",getwd())
 
 if(open.doc){
 	try(        try(system(paste("open ", .pdf), intern = TRUE, 				ignore.stderr = TRUE)))
-	}
+}
 }
 #temp <- start.qc(data)

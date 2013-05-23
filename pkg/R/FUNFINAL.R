@@ -108,10 +108,35 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
 #     }
 }
 
-pdfFiles <- list.files(finalMQQC,pattern = ".pdf",recursive = T)
-ECstd <- pdfFiles %in% grep("^ECstd", pdfFiles, value = TRUE)
+pdfFiles 	<- list.files(finalMQQC,pattern = ".pdf",recursive = T)
+ECstd 		<- pdfFiles %in% grep("^ECstd", pdfFiles, value = TRUE)
 
-writeToHtml(pdfFiles[ECstd],pdfFiles[!ECstd],path = paste(finalMQQC,"index.html",sep = "/"))
+allData <- list.files(paste(folder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
+allData <- read.csv(allData)
+EC			 	<- grep(as.character(allData$Name),"._.*_.*_ECstd_") 
+ECdata 		<- allData[EC,]
+
+allDataOrder <- allData[order(allData[,1]),]
+allDataOrder <- allDataOrder[order(allDataOrder[,2]),]
+machines 	<- unlist(strsplit(as.character(allDataOrder$Name),"_.*"))
+finalDat<- c()
+for(i in unique(machines)){
+	x <- allDataOrder[machines ==i,]
+	if(dim(x)[1] > 10){x <- x[1:10,]}
+	finalDat <- rbind(finalDat,x)
+}	
+
+finalDat <- cbind(as.character(finalDat$Name), as.character(finalDat$System.Time), finalDat$msms.count,round(as.numeric(finalDat$quan.msms.min),2) ,round(as.numeric(finalDat$mass.error.cal.50),2),finalDat$score.50.)
+colnames(finalDat) <- c("Sample","Time","Peptide Count","MSMS/min","mass error in ppm","Score M")
+
+ try(tableHtml <-HtmlTable(finalDat))
+if(!exists("tableHtml")){tableHtml <- NULL}
+
+
+
+
+
+writeToHtml(pdfFiles[ECstd],pdfFiles[!ECstd],path = paste(finalMQQC,"index.html",sep = "/"),table = tableHtml)
 
 return(returnVec)
 }

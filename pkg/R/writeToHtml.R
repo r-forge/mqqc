@@ -1,5 +1,5 @@
 writeToHtml <- 
-function(inputVec="test", inputVec2 = "test",path = "index.html",width = 1000,height = 750){
+function(inputVec="test", inputVec2 = "test",path = "index.html",width = 1080,height = 540,table = NULL){
 initHtml <- "<!-- $Id: example.html,v 1.4 2006/03/27 02:44:36 pat Exp $ -->
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
 <html lang=\"en\">
@@ -33,8 +33,9 @@ endHtml <- "</div>
 
 collVec <- c()
 for(i in inputVec){
+	
 	tempI <- i
-	header 		<- paste("<h2>",basename(i),"</h2>")
+	header 		<- paste("<h1>",basename(i),"</h1>")
 	pdfPath 	<- paste("<embed src=\"",i,"\" width = \"",width,"\" height = \"",height , "\">")
 	hui 			<- paste(header,pdfPath,sep = "\n")
 	collVec <- paste(collVec,hui,sep = "\n")
@@ -54,7 +55,7 @@ tab1 <- paste(tabTop1,collVec,"</div>",sep = "\n")
 collVec2 <- c()
 for(i in inputVec2){
 	tempI <- i
-	header 		<- paste("<h2>",basename(i),"</h2>")
+	header 		<- paste("<h1>",basename(i),"</h1>")
 	pdfPath 	<- paste("<embed src=\"",i,"\" width = \"",width,"\" height = \"",height , "\">")
 	hui 			<- paste(header,pdfPath,sep = "\n")
 	collVec2 <- paste(collVec2,hui,sep = "\n")
@@ -68,9 +69,27 @@ tabTop2 <- "
 	  
 tab2 <- paste(tabTop2,collVec2,"</div>",sep = "\n")
 
+####
+# table
+####
 
 
-finalHtml <- paste(initHtml, tab1,tab2,endHtml)
+
+
+
+if(length(table)> 0){
+	tabTop3 <- "
+
+     <div class=\"tabbertab\">
+	  <h2>Tables</h2>"
+	  
+tab3 <- paste(tabTop3,table,"</div>",sep = "\n")
+
+	
+}else{tab3 = ""}
+
+
+finalHtml <- paste(initHtml, tab1,tab2,tab3,endHtml)
 write(finalHtml,file = path)
 #system("open test.html")
 }

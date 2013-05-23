@@ -1,7 +1,7 @@
 successDelete <- 
   function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
   {
-    tempI <- list.files(listFolders(hotFolder),pattern = "evidence.txt",full.name = T,recursive = T)
+    tempI 		<- list.files(listFolders(hotFolder),pattern = "evidence.txt",full.name = T,recursive = T)
     mqqcInfo <- NULL
     
     if(length(tempI) > 0){
@@ -23,6 +23,22 @@ successDelete <-
             tempmqqcInfo  <- list.files(dirname(tempI[i]),pattern = "mqqc",full.name = "T")
             if(length(tempmqqcInfo)!=0){
                 dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"))
+                
+               qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T)
+                if(length(qcData)> 0){
+                	writeName <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
+                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv")
+                	for(ba in qcData){    
+                		temp <- readLines(ba)  	
+                		if(length(checkList) ==  0){
+                			write(temp,file = writeName)
+                		}else{
+                			write(temp[2],file = writeName,append = T)
+                		}
+                	
+                	}
+                }
+                
                 file.rename(tempmqqcInfo,paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
                 fileDelete <- paste(hotFolder,folderNameVec[i],sep = "/")
                 listFiles <- list.files(fileDelete,recursive = T,full.name = T)
