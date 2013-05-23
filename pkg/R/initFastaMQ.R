@@ -10,6 +10,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
     MQloop <- T
     
     if(length(MQ)> 0){
+    	checkMQ <- MQ
       checkMQ.bin <- list.files(paste(MQ,"bin",sep = "/"),pattern = "MaxQuantCmd.exe",full.name = T)
       if(length(checkMQ.bin) == 0){
         MQloop = T
@@ -75,9 +76,16 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
   
           
         }
-        
-          dbLib <- list.files(checkMQ.bin,recursive = T,pattern = "databases.xml",full.name = T)[1]
+       	####
+          # Xml
+          ####
+          
+          
+          dbLib <- list.files(checkMQ,recursive = T,pattern = "databases.xml",full.name = T)[1]
+          
           dbLib <- readLines(dbLib)
+          
+          
           test.grep <- grep(paste("filename=\"",basename(i),"\"",sep  =""),dbLib,fixed = T)
           if(length(test.grep)== 0){
                    warnings2 <- "yes" #<- tkmessageBox(message = paste(i,"is not existent.\nDo you like to choose a new fasta file?"),type = "yesno")
@@ -114,4 +122,4 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
     
 }
 #hui <- initFastaMQ()
-#initFastaMQ( SpeciesTable = T)
+  	#hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
