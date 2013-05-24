@@ -33,7 +33,11 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
       }
     }	
   }else{
-    checkMQ.bin <- readLines(checkMQ)
+    if(length(MQ) > 0){
+      checkMQ.bin <- MQ
+    }else{
+      checkMQ.bin <- readLines(checkMQ)
+    }
   }
   
   if(SpeciesTable){
