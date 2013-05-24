@@ -22,9 +22,9 @@ if(length(checkMQ)> 0){
 }else{MQpath <- tclVar("MQ-path")}
 
 tt <- tktoplevel()
-
 ttf1 <- tkframe(tt)
 ttf2 <- tkframe(tt)
+tkLFtable <- ttklabelframe(ttf2,text = "Species Table")
 
 MQpath <- tclVar(output$MQ)
 
@@ -110,18 +110,49 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 	# set fasta files
 	####
 speciesFun <- 	function(){
-		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv$",full.name = T,recursive = T)
+		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
 			 species <- read.csv(species.path)
 			 try(speciesTK(species))	
 				species$Fasta <- .GlobalEnv$mqqcSpeciesSet
               write.csv(species,file =paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F, row.names = F)
+			
+	}
+speciesFunFix <- 	function(){
+		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
+			 species <- read.csv(species.path)
+			 try(fix(species))	
+				species$Fasta <- .GlobalEnv$mqqcSpeciesSet
+              write.csv(species,file =paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F, row.names = F)
 		
 	}
-	
-	
-	fastaSet <- tkbutton(ttf2,text = "Check",command = speciesFun)
-	tkgrid(tklabel(ttf2,text = "Set all Fasta"),fastaSet,pady = 2)
-	
+
+loadSpecies <- function(){
+		inFile <- tclvalue(tkgetOpenFile(initialfile = "MQQCspecies.csv"))
+		species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
+
+		if(readLines(inFile,n = 1)== readLines(species.path ,n = 1)){
+			file.copy(inFile, species.path, overwrite = T)
+		}else{
+			tkmessageBox(icon = "warning",message = paste("Wrong  table format!\n\nHeader doesn't match. Should be:\n",readLines(species.path ,n = 1),sep = "\n"))
+		}
+
+}
+exportSpecies <- function(){
+		species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
+		out <- tclvalue(tkgetSaveFile(initialfile = "MQQCspecies.csv"))
+		if(out!=""){
+			file.copy(species.path,out)
+		}
+}
+	fastaSetFix <- tkbutton(tkLFtable,text = "Fix Table",command = speciesFunFix)	
+	fastaSet <- tkbutton(tkLFtable,text = "Check Fasta",command = speciesFun)
+	exportSet <- tkbutton(tkLFtable,text = "Export",command = exportSpecies)
+	loadSet <- tkbutton(tkLFtable,text = "Import",command = loadSpecies)
+
+	tkgrid(fastaSet, fastaSetFix,pady = 2)
+	tkgrid(exportSet,loadSet,pady = 2)
+	tkgrid(tkLFtable,columnspan = 2)
+
 	####
 	# HTML
 	####
@@ -147,6 +178,8 @@ dirFrame <- ttklabelframe(ttf1,text = "HTML Path")
 tkgrid(ttf1,ttf2,pady = 1,padx = 1,sticky = "NSWE")
 .GlobalEnv$abort <- F
 tkgrid(tkbutton(tt,text = "go",command = function(){tkdestroy(tt)}),tkbutton(tt,text = "stop",command = function(){ .GlobalEnv$abort  <- T; tkdestroy(tt)}),columnspan = 1,padx = 3,pady = 3)
+tkwm.resizable(tt, "FALSE","FALSE")
+
 tkwait.window(tt)
 
 if(.GlobalEnv$abort ){stop("abort by user")}
@@ -163,16 +196,13 @@ output <- list(
 		cores = cores ,
 		SpeciesTable = T
 		)
-save(output,file=paste(path.package("mqqc"),"data/Param.Rdata$",sep = "/"))
+save(output,file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))
 # check settings
-print(output)
 for(i in 1:4){
 	tempI <- as.character(output[[i]])
 	tempI <- list.files(dirname(tempI),pattern= basename(tempI))
-	print(tempI)
 	if(length(tempI) == 0){
-		output[[i]] <- ""
-		
+		output[[i]] <- ""		
 	}
 }
 		

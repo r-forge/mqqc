@@ -1,20 +1,37 @@
 tkControl <-
-function(info = "MQQC INFO BOX",info2 = "Status..."){
-  info <- paste(info,info2,sep = "\n")
-  
+function(info = "MQQC INFO BOX",info2 = "Status..." ,info3 = ""){
+
+if(!all(is.na(c(info,info2)))){
+	print("New")
+  	  info <- paste(info,info2,sep = "\n")
+
 require(tcltk)
 if(!exists("tt")){
   tt <<- tktoplevel() 
   tkwm.title(tt,"mqqc")
-  tkString <<- tklabel(tt,text = info)
+  tkString 	<<- tklabel(tt,text = info)
+  tkString2 <<- tklabel(tt,text = info3)
+ 
   tkgrid(.GlobalEnv$tkString)
+  tkgrid(.GlobalEnv$tkString3)
 }
 if(tclvalue(tkwinfo("exists",tt)) == "0"){
   tt <<- tktoplevel()
   tkwm.title(tt,"mqqc")
   tkString <<- tklabel(tt,text = info)
-  tkgrid(tkString)
-}else{  tkconfigure(.GlobalEnv$tkString,text = info)
+  tkString2 <<- tklabel(tt,text = info3)
+ 
+  tkgrid(.GlobalEnv$tkString)
+  tkgrid(.GlobalEnv$tkString2)
+}else{  
+
+tkconfigure(.GlobalEnv$tkString,text = info)
+tkconfigure(.GlobalEnv$tkString2,text = info3)
+
+}
+}else{
+	print("hui")
+	try(tkconfigure(.GlobalEnv$tkString2,text = info3))
 }
 
 
