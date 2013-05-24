@@ -178,7 +178,7 @@ dirFrame <- ttklabelframe(ttf1,text = "HTML Path")
 tkgrid(ttf1,ttf2,pady = 1,padx = 1,sticky = "NSWE")
 .GlobalEnv$abort <- F
 tkgrid(tkbutton(tt,text = "go",command = function(){tkdestroy(tt)}),tkbutton(tt,text = "stop",command = function(){ .GlobalEnv$abort  <- T; tkdestroy(tt)}),columnspan = 1,padx = 3,pady = 3)
-tkwm.resizable(tt, "FALSE","FALSE")
+#tkwm.resizable(tt, "FALSE","FALSE")
 
 tkwait.window(tt)
 
@@ -212,5 +212,5 @@ return(output)
 
 }
 
-#hui <- mqqcGUI()
+hui <- mqqcGUI()
 #print(hui)
