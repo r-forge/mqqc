@@ -1,5 +1,5 @@
 FUNFINAL <-
-function(finalMQQC = "D:/resultsmqqc/",folder,sucFolder){
+function(finalMQQC = "D:/resultsmqqc/",folder,sucFolder="_RmqqcFile_Processed"){
 returnVec <- c()
 dir.create(finalMQQC)
 dir.create(allPath <- paste(finalMQQC,"all",sep = "/"))
@@ -102,12 +102,13 @@ pdfFiles 	<- list.files(finalMQQC,pattern = ".pdf",recursive = T)
 ECstd 		<- pdfFiles %in% grep("^ECstd", pdfFiles, value = TRUE)
 
 allData <- list.files(paste(folder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
-allData <- read.csv(allData)
-EC			 	<- grep(as.character(allData$Name),"._.*_.*_ECstd_") 
+allData <- unique(read.csv(allData))
+EC			<- grep(as.character(allData$Name),"._.*_.*_ECstd_") 
 ECdata 		<- allData[EC,]
 
 allDataOrder <- allData[order(allData[,1]),]
 allDataOrder <- allDataOrder[order(allDataOrder[,2]),]
+
 machines 	<- unlist(strsplit(as.character(allDataOrder$Name),"_.*"))
 finalDat<- c()
 for(i in unique(machines)){
