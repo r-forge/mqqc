@@ -26,14 +26,17 @@ ttf1 <- tkframe(tt)
 ttf2 <- tkframe(tt)
 tkLFtable <- ttklabelframe(ttf2,text = "Species Table")
 
-MQpath <- tclVar(output$MQ)
+init <- "home"
+MQpath    <- tclVar(output$MQ)
+if(output$MQ != ""){init <- output$MQ}
 
 tkgrid(tklabel(tt,text = "MQQC",font = fontHeading),columnspan = 2)
 dirFrame <- ttklabelframe(ttf1,text = "MaxQuant Folder")
 
 	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
-	onBrowse <- function(){
-        File <- tclvalue(tkchooseDirectory(parent = tt,title = "MaxQuant Folder"))
+	onBrowse <- function(init){
+	      
+        File <- tclvalue(tkchooseDirectory(parent = tt,title = "MaxQuant Folder",init = init))
         if(File != ""){
         tclvalue(MQpath) <- File
         } 
@@ -49,8 +52,8 @@ StandardFasta <- tclVar(output$fastaFile)
 dirFrame <- ttklabelframe(tt,text = "Standard Fasta")
 
 	buttonRcmdr2 <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
-	onBrowse2 <- function(){
-        File <- tclvalue(tkgetOpenFile(parent = tt,title = "Default Fasta File"))
+	onBrowse2 <- function(init){
+        File <- tclvalue(tkgetOpenFile(parent = tt,title = "Default Fasta File",initialdir = init))
         
          if(File != ""){
         tclvalue(StandardFasta) <- File
@@ -68,8 +71,8 @@ Analysis.Folder <- tclVar(output$folder)
 dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 
 	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
-	onBrowse <- function(){
-        File <- tclvalue(tkchooseDirectory(parent = tt,title = "Analysis Folder"))
+	onBrowse <- function(init){
+        File <- tclvalue(tkchooseDirectory(parent = tt,title = "Analysis Folder",init = init))
           if(File != ""){
         tclvalue(Analysis.Folder) <- File
         } 
@@ -160,8 +163,8 @@ exportSpecies <- function(){
 dirFrame <- ttklabelframe(ttf1,text = "HTML Path")
 
 	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
-	onBrowse <- function(){
-		File <- tclvalue(tkchooseDirectory(parent = tt,title = "HTML Folder"))
+	onBrowse <- function(init){
+		File <- tclvalue(tkchooseDirectory(parent = tt,title = "HTML Folder",init = init))
 		if(File != ""){
         tclvalue(HTML) <- File
         } 
