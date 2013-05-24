@@ -29,19 +29,9 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
 
     if(icou == 1){finalPath <- allPath; icou <- icou+1}else{finalPath <- ECstdPath}
   
-    splitI        <- strsplit(basename(rownames(i)),"_",fixed = T)
-    splitIfinal   <- strsplit(list.files(finalPath),"_",fixed = T)
-    machineCol <- c()
-    finalCol <- c()
-    for(a in splitI){
-      tempA <- a[2]
-      machineCol <- c(machineCol,tempA)
-    }
-    for(a in splitIfinal){
-      tempA    <- a[1]
-      finalCol  <- c(finalCol,tempA)
-    }
-    
+    machineCol     <- unlist(strsplit(basename(rownames(i)),"_.*",fixed = F))
+    finalCol   			<- unlist(strsplit(list.files(finalPath),"_.*",fixed = F))
+
     # exclude older files from same machine
     machineCol <- machineCol[order(i$ctime)]
     i <- i[order(i$ctime),]
@@ -136,7 +126,7 @@ if(!exists("tableHtml")){tableHtml <- NULL}
 
 
 
-writeToHtml(pdfFiles[ECstd],pdfFiles[!ECstd],path = paste(finalMQQC,"index.html",sep = "/"),table = tableHtml)
+writeToHtml(sort(pdfFiles[ECstd]),sort(pdfFiles[!ECstd]),path = paste(finalMQQC,"index.html",sep = "/"),table = tableHtml)
 
 return(returnVec)
 }

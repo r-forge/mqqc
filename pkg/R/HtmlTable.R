@@ -1,0 +1,22 @@
+HtmlTable <- 
+function(x){
+.cols <- colnames(x)
+x 		<- apply(x,2,as.character) 
+htmlTableString <- "<table rules = \"cols\"  id=\"table-design\">"
+
+collapse	<- function(...,sep = "\n"){x <- paste(unlist(list(...)),collapse = sep) ;return(x)}
+htmlRow <- function(x,start ="<thead>" ,end = "</thead>",stringTag = "th"){
+	x <- sapply(x,function(x){
+		paste("<", stringTag,">",as.character(x),"</", stringTag,">",sep = "")
+	})
+	x <- c(start,x,end)
+}
+
+header <-htmlRow(.cols)
+
+rows <- apply(x,1,htmlRow,start = "<tr align = \"center\">",end = "</tr>", stringTag = "td")
+htmlTable <- collapse(htmlTableString,header,rows,"</table>")
+return(htmlTable)
+}
+#hui <- HtmlTable(finalDat)
+#print(hui)

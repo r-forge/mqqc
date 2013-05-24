@@ -73,7 +73,11 @@ tab2 <- paste(tabTop2,collVec2,"</div>",sep = "\n")
 # table
 ####
 
-if(length(table)> 0){
+
+
+
+
+if(length(table)> 0){	
 	tabTop3 <- "
 
      <div class=\"tabbertab\">
@@ -82,7 +86,12 @@ if(length(table)> 0){
 tab3 <- paste(tabTop3,table,"</div>",sep = "\n")
 
 	
-}else{tab3 = ""}
+}else{tab3 = "
+
+     <div class=\"tabbertab\">
+	  <h2>Tables</h2>
+	  </div>
+	  " }
 
 
 finalHtml <- paste(initHtml, tab1,tab2,tab3,endHtml)
