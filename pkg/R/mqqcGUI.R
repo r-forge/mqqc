@@ -114,15 +114,15 @@ speciesFun <- 	function(){
 			 species <- read.csv(species.path)
 			 try(speciesTK(species))	
 				species$Fasta <- .GlobalEnv$mqqcSpeciesSet
-              write.csv(species,file =paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F, row.names = F)
+              write.csv(species,file =species.path,quote = F, row.names = F)
 			
 	}
 speciesFunFix <- 	function(){
 		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
 			 species <- read.csv(species.path)
-			 try(fix(species))	
-				species$Fasta <- .GlobalEnv$mqqcSpeciesSet
-              write.csv(species,file =paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F, row.names = F)
+			 try(species <- fix(species))	
+			 write.csv(species,file =species.path,quote = F, row.names = F)
+         print("wrote Species Table")
 		
 	}
 

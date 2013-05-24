@@ -2,7 +2,6 @@ tkControl <-
 function(info = "MQQC INFO BOX",info2 = "Status..." ,info3 = ""){
 
 if(!all(is.na(c(info,info2)))){
-	print("New")
   	  info <- paste(info,info2,sep = "\n")
 
 require(tcltk)
@@ -13,7 +12,7 @@ if(!exists("tt")){
   tkString2 <<- tklabel(tt,text = info3)
  
   tkgrid(.GlobalEnv$tkString)
-  tkgrid(.GlobalEnv$tkString3)
+  tkgrid(.GlobalEnv$tkString2)
 }
 if(tclvalue(tkwinfo("exists",tt)) == "0"){
   tt <<- tktoplevel()
@@ -31,7 +30,9 @@ tkconfigure(.GlobalEnv$tkString2,text = info3)
 }
 }else{
 	print("hui")
-	try(tkconfigure(.GlobalEnv$tkString2,text = info3))
+  if(info3!=""){
+	  try(tkconfigure(.GlobalEnv$tkString2,text = info3))
+  }
 }
 
 
