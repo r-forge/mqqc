@@ -212,5 +212,5 @@ return(output)
 
 }
 
-hui <- mqqcGUI()
+#hui <- mqqcGUI()
 #print(hui)
