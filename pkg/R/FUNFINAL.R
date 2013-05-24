@@ -106,8 +106,11 @@ allData <- unique(read.csv(allData))
 EC			<- grep(as.character(allData$Name),"._.*_.*_ECstd_") 
 ECdata 		<- allData[EC,]
 
-allDataOrder <- allData[order(allData[,1]),]
-allDataOrder <- allDataOrder[order(allDataOrder[,2]),]
+tempOrd  <- regexpr("^([^_]*_[^_]*)",allData[,1])
+final <- substr(allData[,1],start = tempOrd,stop = attributes(tempOrd)$match.length)
+allDataOrder <- allData[order(final),]
+
+#allDataOrder <- allDataOrder[order(allDataOrder[,2]),]
 
 machines 	<- unlist(strsplit(as.character(allDataOrder$Name),"_.*"))
 finalDat<- c()
