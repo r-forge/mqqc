@@ -73,10 +73,6 @@ tab2 <- paste(tabTop2,collVec2,"</div>",sep = "\n")
 # table
 ####
 
-
-
-
-
 if(length(table)> 0){
 	tabTop3 <- "
 
