@@ -76,3 +76,5 @@ setwd(.path)
 	try(system("open ."))
 
 }
+#start.qc()
+#system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))

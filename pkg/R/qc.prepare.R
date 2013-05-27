@@ -42,6 +42,13 @@ if(SpeciesTable){
 		if(any(temp)){
 		speciesUsed <- species[temp,]
 		thresholds	<- as.list(speciesUsed[1,])
+		thresholds <- lapply(thresholds,function(x){
+			x <- as.character(x)
+			x <- unlist(strsplit(x," "))
+			x <- as.numeric(x)
+			
+		})
+		
 		}
 }
 #.cols <- colnames(Data)
@@ -134,7 +141,11 @@ summary.Data$quanRet50ratio <- diff(tempQuan[c(1,3)])/diff(tempQuan[c(3,5)])
 #print(score)
 score$quanRetRSD 		<- 	thresholds$quanRetRSD/summary.Data$quanRetRSD
 score$quanRetSlope 		<-	thresholds$quanRetSlope /abs(summary.Data$quanRetSlope)
-score$quanRet50ratio 	<- 	thresholds$quanRet50ratio/abs(summary.Data$quanRet50ratio)
+if(abs(summary.Data$quanRet50ratio) > 1){
+score$quanRet50ratio 	<- 	thresholds$quanRet50ratio/abs(summary.Data$quanRet50ratio)}else{
+score$quanRet50ratio 	<- 	abs(summary.Data$quanRet50ratio)	/thresholds$quanRet50ratio
+	
+}
 
 # efficiency 
 msmsEff <- NA

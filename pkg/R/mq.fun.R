@@ -46,7 +46,7 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
     # writing XML
      
   if(SpeciesTable){
-  species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+  	species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
 	regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})
         
 	temp   	<-as.logical(sapply(regEx,grep, x = basename(filePath)))
@@ -55,6 +55,12 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 	if(!all(!temp)){
 	
 		speciesUsed <- species[temp,]
+	}else{
+		speciesUsed <- species[species$Abbreviation == "default",]
+	}	
+	
+	if(length(speciesUsed) > 0){
+	
 		if(dim(speciesUsed)[1] > 1){
 			speciesUsed <- speciesUsed[1,]
 		}
@@ -66,19 +72,20 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
     
 		db <- speciesUsed$Fasta
 		tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
-		if(tryError == "try-error"){
-					db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
-		}
+	if(tryError == "try-error"){
+				db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
+	}
     if(length(grep("/",db,fixed = T)) > 0){
       db <- path.convert(db)
     }
 
 	}else{
-		db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
+		db <- NA
 	}
-	
+	if(is.na(db)){
 
-    xmlNEW<- xml.replace("fastaFiles",db , xmlNEW)  
+    	xmlNEW<- xml.replace("fastaFiles",db , xmlNEW) 
+    } 
   }
     
     

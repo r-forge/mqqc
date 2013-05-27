@@ -25,8 +25,10 @@ if(tclvalue(tkwinfo("exists",tt)) == "0"){
 }else{  
 
 tkconfigure(.GlobalEnv$tkString,text = info)
-tkconfigure(.GlobalEnv$tkString2,text = info3)
+  if(info3!=""){
 
+	tkconfigure(.GlobalEnv$tkString2,text = info3)
+}
 }
 }else{
 	print("hui")

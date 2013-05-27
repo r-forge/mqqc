@@ -42,7 +42,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 
 	
 	loop <- T
-	
+	funlastLoop <- 0
 	while(loop){
 		
 	####
@@ -64,13 +64,25 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		
 	  
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
-		try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 		# update export folder   
-		if(is.function(FUNLAST)){
-		  FUNLAST(htmloutPath,folder,sucFolder)
-		}
+
 	}
-	setwd(folder)
+	
+funlastLoop +1
+
+if(funlastLoop == 5){
+		funlastLoop  <- 0
+		
+		try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+
+		if(is.function(FUNLAST)){
+			  FUNLAST(htmloutPath,folder,sucFolder)
+		}
+
+	}else{
+		funlastLoop <- funlastLoop +1
+	}
+setwd(folder)
 		
 		
 		
@@ -80,10 +92,10 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		obs.files			  <- list.files()
    		obs.files <- obs.files[!file.info(obs.files)[,2]]
 		temp.obs 			  <- grep("^_RmqqcFile_",obs.files)
-		temp.obs 			 <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
+	#	temp.obs 			 <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
 		temp.obs 			<- unique(temp.obs)
 		obs.files 			<- grepSubsetControl(temp.obs, obs.files)
-		
+		obs.files 			<- grep("raw$|txt$",obs.files,value = T)
 		obs.files.diff 		<- setdiff(obs.files,files) 
 		obs.files.minus 	<- setdiff(files,obs.files) 
 

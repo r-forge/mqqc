@@ -30,7 +30,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	col.intensity <- grep("intensity",tolower(colnames(data.i)))
 		#print("hui")
 
-	plot(data.i$retention.time,data.i$m.z,pch = 20,cex = intensity,col = 	Ramp.col,type = "n" ,ylab = "m/z",xlim = range(data.i$retention.time,na.rm = T),axes = F,ylim = range(data.i$m.z,na.rm = T),frame = T)
+	plot(data.i$retention.time,data.i$m.z,pch = 20,cex = intensity,col = 	Ramp.col,type = "n" ,ylab = "m/z",xlim = range(data.i$retention.time,na.rm = T),axes = F,ylim = range(data.i$m.z,na.rm = T),frame = F)
 	axis(2)
 	axis(1,labels = F)
 	axis(4,xpd = NA,labels = F,padj = 0.5)
@@ -39,7 +39,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	intens 		<- paste("Top 50%:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
 	name.file <- c(as.character(name.file), paste("unique peptides:",uniqueSeq),intens)
 	grid(col = "darkgrey",lwd = 1.5)
-	legend("topleft",legend = name.file,bg = "white",border = "transparent",bty = "transparent")
+	legend("topleft",legend = name.file,bg = "white",box.col = "transparent")
 		for(i in 1:length(unique(Ramp.col))){
 			mFac	<- diff(yrange<- range(data.i$m.z,na.rm = T))/250
 
@@ -74,7 +74,7 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 	dens.crt <- class(try(temp <- density(data.i$retention.time)))
 	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
 	
-		plot(temp$x,temp$y,main = "",axes = F,frame = T,xlim = range(data.i	$retention.time,na.rm = T),type = "l",xlab = "",ylab = "Density")
+		plot(temp$x,temp$y,main = "",axes = F,frame = F,xlim = range(data.i	$retention.time,na.rm = T),type = "l",xlab = "",ylab = "Density")
 		mtext("time in min",1,line = 1.9,cex = 0.6)
 		
 		
@@ -91,7 +91,7 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 
 	par(mai=c(0,0,0.1,0.1))
 	
-	plot(temp$y,temp$x,type = "l",axes = F,frame = T,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "")
+	plot(temp$y,temp$x,type = "l",axes = F,frame = F,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "")
 	grid(col = "darkgrey",lwd = 1.5)
 		axis(1,xpd = NA,las = 2)
 		mtext("Density",1,line = 4,cex = 0.6)

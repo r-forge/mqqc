@@ -3,7 +3,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = T)
 {
 	cat("\rplotting scores",rep(" ",100))
 #initiation of important vectors 
-grad.cols.vec <- c("black","blue","lightblue","green")
+grad.cols.vec <- c("black","blue","lightblue",colors()[50])
 
 
 colnames(data.i) <- tolower(colnames(data.i))
@@ -113,7 +113,7 @@ namesData[namesData=="quan.duplicates.msms"] <- "Peptide Duplicates"
 
 
 
-temp.pos 	<- barplot2(unlist(score.data),beside = T,col = c(col.temp[round.spec(unlist(score.data))]),horiz = T,names.arg = namesData ,las = 2, plot.grid = T, grid.col = "grey",xlim = c(0,1.6))
+temp.pos 	<- barplot2(unlist(score.data),beside = T,col = c(col.temp[round.spec(unlist(score.data))]),horiz = T,names.arg = namesData ,las = 2, plot.grid = T, grid.col = "grey",xlim = c(0,1.6),border = "transparent")
 ColUse 		<- cbind(c(col.temp[round.spec(unlist(score.data))]),names(score.data),namesData)
 
 #text(temp.pos,0,c("peptide ID","mass error","score","peak shape","elution time","dupl. peptide IDs"),las = 2,srt = 90,adj = c(1.1,1),xpd =NA,srt = 45)
@@ -158,26 +158,30 @@ if(log2){
 }
 temp.plot <- na.inf.fun(temp.plot)
 
-plot(temp.plot,type = "n",xlim = c(1:2),axes = F,frame = T,xlab = xlab,ylab = ylab,lwd = 5,las = 2,fg = fg.col,bty = "n",ylim = ylim)
+#boxplot(temp.plot,type = "n",xlim = c(1:2),axes = F,frame = T,xlab = xlab,ylab = ylab,lwd = 5,las = 2,fg = fg.col,bty = "n",ylim = ylim, boxwex = 2)
+boxplot(temp.plot,range = 0,col = "transparent",xlab = "",ylab = "",type = "n",axes = F,border = "transparent")
+
 mtext(xlab,1,line = 1)
-mtext(main,3,line = 0,cex = 0.6)
+mtext(main,3,line = 0.3,cex = 0.7)
 
 temp.lwd <- c(4,4,5,4,4)
 temp.col <- c(4,2,1,2,4)
 for(i in 1:5){
-	lines(c(1.2, 1.8),rep(temp.plot[i],2),lwd = temp.lwd[i],col = temp.col[i])
+#	lines(c(1.2, 1.8),rep(temp.plot[i],2),lwd = temp.lwd[i],col = temp.col[i])
 }
 
 if(log2){
 #abline(h=sort(c(-ref.data,ref.data,0)),col = "black", lty = "dashed",lwd = 1)	
-abline(h=sort(c(-ref.data,ref.data,0)),col = temp.col,lwd = 2,lty = "dotted")	
+abline(h=sort(c(-ref.data,ref.data,0)),col = temp.col,lwd = 2)	
 }
 if(!log2){
-abline(h=sort(c(ref.data)),col = temp.col,lty = "dotted",lwd = 2)	
+abline(h=sort(c(ref.data)),col = temp.col,lwd = 2)	
 	
 }
 axis(2,las = 2,fg = 1,lwd = 2)
 box(lwd = 4,fg = fg.col)
+boxplot(temp.plot,range = 0,col = fg.col,xlab = xlab,ylab = ylab,type = "n",axes = F,add = T)
+
 
 }
 
@@ -204,10 +208,13 @@ plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col
 	if(length(col.dir) == 0){col.dir <- col.temp[col.sel*100]}
 	
 	max(c(x,thresh))
-	barplot2(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg)
-	abline(h=thresh,lty = "dashed",lwd = 2)
+	barplot2(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35)
+	abline(h=thresh,lwd = 2,col = "grey")
+	abline(h=thresh,lwd = 2,col = "red")
+		box(lwd = 4,fg = col.dir)
+
 	mtext(main,3,cex =0.7,line = 0.3)
-	
+
 }
 
 #plot.stat(summary.data$msms.count,thresholds$msms.count, name.val = "MSMS counts")
@@ -260,7 +267,7 @@ try(plot.stat(log2(data.list$sd$quanRet50ratio),thresh = c(log2(data.list$th$qua
 # ET time slope
 ## 
 
-try(plot.stat((data.list$sd$quanRetSlope),thresh = c(data.list$th$quanRetSlope,-1*data.list$th$quanRetSlope),name.val = "ETime slope",main = "nLC",col = ColUse[ColUse[,2] == "quanRetSlope",1],xlimV = c(-0.5,0.5)))
+try(plot.stat((data.list$sd$quanRetSlope),thresh = c(data.list$th$quanRetSlope,-1*data.list$th$quanRetSlope),name.val = "ETime slope",main = "nLC",col = ColUse[ColUse[,2] == "quanRetSlope",1],xlimV = c(-0.05,0.05)))
 
 ##
 # ET time slope
@@ -285,3 +292,5 @@ if(open.doc){
 }
 }
 #temp <- start.qc(data)
+#plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)
+#system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))
