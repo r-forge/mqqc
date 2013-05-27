@@ -76,9 +76,12 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		
 		catFun(paste(Sys.time(),"Status: Observing", folder))
 		Sys.sleep(1)
+		# exclude _RmqqcFile_ and use exclusively raw txt
 		obs.files			  <- list.files()
-    obs.files <- obs.files[!file.info(obs.files)[,2]]
+   		obs.files <- obs.files[!file.info(obs.files)[,2]]
 		temp.obs 			  <- grep("^_RmqqcFile_",obs.files)
+		temp.obs 			 <- c(temp.obs,grep("TempWmicBatchFile.bat",obs.files),obs.files[grep("raw$|txt$",list.files(),invert = T)])
+		temp.obs 			<- unique(temp.obs)
 		obs.files 			<- grepSubsetControl(temp.obs, obs.files)
 		
 		obs.files.diff 		<- setdiff(obs.files,files) 
