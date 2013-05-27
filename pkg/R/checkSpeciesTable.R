@@ -23,7 +23,8 @@ checkSpeciesTable <-
       }
       
       if(length(colBad) > 0){
-        if(tclvalue(tkFix) == "yes"){          fix(species)
+      	tkFix <- tkmessageBox(type = "yesnocancel",icon = "question",message = "Could not resolve paths to fasta files. Fix paths?")
+        if(tclvalue(tkFix) == "no"){          fix(species)
           write.csv(species,file =paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F, row.names = F)
           
         }
