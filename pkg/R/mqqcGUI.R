@@ -26,7 +26,7 @@ ttf1 <- tkframe(tt)
 ttf2 <- tkframe(tt)
 tkLFtable <- ttklabelframe(ttf2,text = "Species Table")
 
-init <- "home"
+init <- "/home"
 MQpath    <- tclVar(output$MQ)
 if(output$MQ != ""){init <- output$MQ}
 
@@ -36,7 +36,7 @@ dirFrame <- ttklabelframe(ttf1,text = "MaxQuant Folder")
 	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
 	onBrowse <- function(init){
 	      
-        File <- tclvalue(tkchooseDirectory(parent = tt,title = "MaxQuant Folder",init = init))
+        File <- tclvalue(tkchooseDirectory(parent = tt,title = "MaxQuant Folder",initialdir = init))
         if(File != ""){
         tclvalue(MQpath) <- File
         } 
@@ -72,7 +72,7 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 
 	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
 	onBrowse <- function(init){
-        File <- tclvalue(tkchooseDirectory(parent = tt,title = "Analysis Folder",init = init))
+        File <- tclvalue(tkchooseDirectory(parent = tt,title = "Analysis Folder",initialdir = init))
           if(File != ""){
         tclvalue(Analysis.Folder) <- File
         } 
@@ -164,7 +164,7 @@ dirFrame <- ttklabelframe(ttf1,text = "HTML Path")
 
 	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
 	onBrowse <- function(init){
-		File <- tclvalue(tkchooseDirectory(parent = tt,title = "HTML Folder",init = init))
+		File <- tclvalue(tkchooseDirectory(parent = tt,title = "HTML Folder",initialdir = init))
 		if(File != ""){
         tclvalue(HTML) <- File
         } 

@@ -1,7 +1,16 @@
 successDelete <- 
   function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
   {
-    tempI 		<- list.files(listFolders(hotFolder),pattern = "evidence.txt",full.name = T,recursive = T)
+    tempI 				<- list.files(listFolders(hotFolder),pattern = "evidence.txt",full.name = T,recursive = T)
+    tempImqqc 		<- list.files(listFolders(hotFolder),pattern = "mqqc",full.name = T,recursive = T, include.dirs = T)
+    if(length(tempImqqc) > 0){
+    tempI  <- tempI[merge.control(dirname(tempI),dirname(tempImqqc))]
+    	if(any(!is.na(tempI))){
+    		tempI <- tempI[!is.na(tempI)]
+    	}
+    }
+	tempIproc <- sapply(dirname(tempI),list.files,pattern = "mqqcProcessed")
+	#tempI <- tempI[!as.logical(sapply(tempIproc,length))]
     mqqcInfo <- NULL
     
     if(length(tempI) > 0){
@@ -21,14 +30,17 @@ successDelete <-
           mqqcInfo <- c()
           for(i in 1:length(tempI)){
             tempmqqcInfo  <- list.files(dirname(tempI[i]),pattern = "mqqc",full.name = "T")
+            # check if mqqc is in folder
             if(length(tempmqqcInfo)!=0){
-                dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"))
+  	          write("",paste(dirname(tempI[i]),"mqqcProcessed",sep = "/"))
+
+               dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"))
                 
                qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T)
                 if(length(qcData)> 0){
                 	writeName <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
-                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv")
                 	for(ba in qcData){    
+	                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv")
                 		temp <- readLines(ba)  	
                 		if(length(checkList) ==  0){
                 			write(temp,file = writeName)
@@ -39,21 +51,17 @@ successDelete <-
                 	}
                 }
                 
-                file.rename(tempmqqcInfo,paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
+                if(any(basename(tempmqqcInfo)  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
+                 file.rename(tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" ],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
                 fileDelete <- paste(hotFolder,folderNameVec[i],sep = "/")
-                listFiles <- list.files(fileDelete,recursive = T,full.name = T)
-                listFiles <- unlist(lapply(listFiles,checkSize))
-                if(destDelete & all(listFiles == 0)){
-                  Sys.sleep(5)
-                  listFiles <- list.files(fileDelete,recursive = T,full.name = T)
-                  listFiles <- unlist(lapply(listFiles,checkSize))
-	
-                  if(destDelete & all(listFiles == 0)){
-
-                  unlink(fileDelete,recursive  = T) 
-                  Sys.sleep(1)
-                  unlink(fileDelete,recursive  = T) 
-                  }
+                
+	#        listFiles 	<- list.files(fileDelete,recursive = T,full.name = T)
+                time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(fileDelete)$ctime)
+              #  fileDelete <- fileDelete[time.vec > 86400]
+                if(time.vec > 86400){
+	                  unlink(fileDelete,recursive  = T) 
+                }
+                
                 }
             }
             

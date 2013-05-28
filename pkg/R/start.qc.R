@@ -53,10 +53,10 @@ qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = plac
 
 export 	<- unlist(qc.prepare.data$sd)
 
-add.vec <- c(rep.v,as.numeric(Sys.time()),make.names(Sys.time()))
+add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
 names(add.vec) <- c("Name","System.Time.s","System.Time")
 export <- t(as.matrix(c(add.vec ,export)))
-try(write.csv(export,paste(rep.v,".csv",sep = ""),quote = F,row.names = F))
+try(write.csv(export,paste(rep.v[a],".csv",sep = ""),quote = F,row.names = F))
 plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)
 
 list.collect[a] <- qc.prepare.data

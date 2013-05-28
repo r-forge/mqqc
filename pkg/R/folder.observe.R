@@ -62,7 +62,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
       }
 		}
 		
-	  
+	  	try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
 		# update export folder   
 
@@ -73,7 +74,6 @@ funlastLoop +1
 if(funlastLoop == 5){
 		funlastLoop  <- 0
 		
-		try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 
 		if(is.function(FUNLAST)){
 			  FUNLAST(htmloutPath,folder,sucFolder)

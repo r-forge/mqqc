@@ -2,6 +2,7 @@ HtmlTable <-
 function(x){
 .cols <- colnames(x)
 x 		<- apply(x,2,as.character) 
+if(is.vector(x)){x <- t(as.matrix(x))}
 htmlTableString <- "<table rules = \"cols\"  id=\"table-design\">"
 
 collapse	<- function(...,sep = "\n"){x <- paste(unlist(list(...)),collapse = sep) ;return(x)}

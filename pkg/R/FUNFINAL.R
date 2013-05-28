@@ -1,5 +1,5 @@
 FUNFINAL <-
-function(finalMQQC = "D:/resultsmqqc/",folder,sucFolder="_RmqqcFile_Processed"){
+function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed"){
 returnVec <- c()
 dir.create(finalMQQC)
 dir.create(allPath <- paste(finalMQQC,"all",sep = "/"))
@@ -69,8 +69,8 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
         unlink(old[2])
         paths 		<- new[2]
         finalFile <- paste(finalPath,paste(name,".pdf",sep = ""),sep = "/")
-        print(paths)
-        print(finalFile)
+       # print(paths)
+       # print(finalFile)
         file.copy(paths,finalFile)
       }
       if(exists("finalFile")){return(finalFile)}
@@ -102,7 +102,18 @@ pdfFiles 	<- list.files(finalMQQC,pattern = ".pdf",recursive = T)
 ECstd 		<- pdfFiles %in% grep("^ECstd", pdfFiles, value = TRUE)
 
 allData <- list.files(paste(folder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
-allData <- unique(read.csv(allData))
+if(length(allData) > 0){
+
+tryError <- class(try(allData <- unique(read.csv(allData))))
+if(tryError == "try-error"){
+allDataLines 	<- readLines(allData)
+allDataLines2 <- strsplit(allDataLines,",")
+length.lines 	<- unlist(lapply(allDataLines2,length))
+allDataLines  <- allDataLines[length.lines[1] == length.lines]
+write(allDataLines,allData)
+allData <- allDataLines	
+}
+
 EC			<- grep(as.character(allData$Name),"._.*_.*_ECstd_") 
 ECdata 		<- allData[EC,]
 
@@ -131,7 +142,7 @@ if(!exists("tableHtml")){tableHtml <- NULL}
 
 
 writeToHtml(sort(pdfFiles[ECstd]),sort(pdfFiles[!ECstd]),path = paste(finalMQQC,"index.html",sep = "/"),table = tableHtml)
-
+}
 return(returnVec)
 }
 		#  FUNFINAL(htmloutPath,folder,sucFolder)
