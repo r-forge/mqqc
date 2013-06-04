@@ -57,11 +57,10 @@ if(SpeciesTable){
 Data <- as.data.frame(Data)
 grep.col <- function(string,Data){x <- grep(string,colnames(Data),fixed = T)
 if(length(x) == 0){
-	#alarm()
-	; x <- 0
+	 x <- 0
 }
 if(length(x) > 1){
-	alarm(); cat("\rwarning, more than one match found",rep(" ",100))
+	 cat("\rwarning, more than one match found",rep(" ",100))
 }
 return(x)	
 	}
@@ -80,15 +79,24 @@ Data.i <- Data[unique(Data[,raw.files])[1] == Data[,raw.files],]
 
 
 # MSMS
-type.ident <- Data.i[,grep.col("type", Data.i)]
+
+type.ident 	<- Data.i[,grep.col("type", Data.i)]
 msms.count <- length(grep("MSMS", type.ident))
 summary.Data$msms.count <- msms.count
 
+
+seq 					<- Data.i$sequence[grep("MSMS",type.ident)]
+uniPepCount 	<- length(unique(seq))
+summary.Data$uniPepCount <- uniPepCount
+
+
 # Ret.time
 reten.ident 	<- Data.i[,grep.col("retention.time", Data.i)]
-reten.start 	<- reten.ident[,grep.col("start",reten.ident)]
+reten.start 		<- reten.ident[,grep.col("start",reten.ident)]
 reten.stop 		<- reten.ident[,grep.col("finish", reten.ident)]
 reten.mid 		<- reten.ident[,colnames(reten.ident) == "calibrated.retention.time"]
+
+
 ls.null()
 
 

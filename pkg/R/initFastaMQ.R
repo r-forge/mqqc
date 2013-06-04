@@ -73,7 +73,6 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
       for(i in db){
         tempI <- list.files(dirname(i),pattern = basename(i))
         if(length(tempI)== 0){
-          alarm()
           warnings1 <- "yes" #warnings1 <- tclvalue(tkmessageBox(message = paste(i,"is not existent.\nDo you like to choose a new fasta file?"),type = "yesno"))
           if((warnings1) == "yes"){
             db <- db[!db== i]

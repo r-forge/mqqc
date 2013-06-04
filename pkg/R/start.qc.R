@@ -8,7 +8,7 @@ if(!is.null(DataEvidence)){
 	if(is.vector(DataEvidence)){
 		.path <- dirname(DataEvidence)
 		.name <- basename(DataEvidence)
-		class(try(DataEvidence <- read.csv(DataEvidence,sep = "\t",stringsAsFactors = F)))
+		tryError <- class(try(DataEvidence <- read.csv(DataEvidence,sep = "\t",stringsAsFactors = F)))
 	}else{
 		.path <- getwd()
 		.name <- "unknown"
@@ -17,12 +17,16 @@ if(!is.null(DataEvidence)){
 
 library(tcltk)
 	evidence.path <- file.choose()
-	class(try(DataEvidence <- read.csv(evidence.path,sep = "\t",stringsAsFactors = F)))
+	tryError <- class(try(DataEvidence <- read.csv(evidence.path,sep = "\t",stringsAsFactors = F)))
 	.path <- dirname(evidence.path)
 	.name <- basename(evidence.path)
 }
 cat("\rData loaded",rep(" ",100))
 
+if(tryError == "try-error"){
+	  	          write("",paste(.path,"mqqcProcessed",sep = "/"))
+
+}
 
 	
 raw.files 		<- grep("raw.file",tolower(colnames(DataEvidence)),)
@@ -56,8 +60,15 @@ export 	<- unlist(qc.prepare.data$sd)
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
 names(add.vec) <- c("Name","System.Time.s","System.Time")
 export <- t(as.matrix(c(add.vec ,export)))
+tryError <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)))
+
+if(tryError == "try-error"){
+	TotalScoreRes <- list(TotalScore = "?",TotalScoreColor = "#666666")
+}
+tempScoreList <- t(as.matrix(unlist(TotalScoreRes)))
+export <- cbind(export, tempScoreList)
 try(write.csv(export,paste(rep.v[a],".csv",sep = ""),quote = F,row.names = F))
-plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)
+
 
 list.collect[a] <- qc.prepare.data
 a <- a+1

@@ -44,7 +44,17 @@ ms.col <- unlist(color.blind[c(5,6,1)])
 nc.col <- unlist(color.blind[c(3,4,2)])
 sum.scores <- c(sum(unlist(score.data[1:3])),sum(unlist(score.data)[4:6]))
 
-if(any(sum.scores > 3)){temp.xlim <- c(0,max(sum.scores))}else{temp.xlim <- c(0,3)}
+TotalScore <- unlist(score.data) 
+TotalScore[TotalScore > 1] <- 1
+TotalScore <- sum(TotalScore)/(length(TotalScore)-1)
+
+if(any(sum.scores > 3)){
+	
+	temp.xlim <- c(0,max(sum.scores))
+	
+	}else{temp.xlim <- c(0,3)
+		
+}
 nrowVal <- 6
 ncolVal <- 7
 extra <- 0
@@ -65,8 +75,11 @@ totalSpace 		<- cbind(profileSpace,rbind(scoreSpace,leftSpace))
 layout(totalSpace,width = c(2.3,0.3,0.5,0.5,0.5,0.5,0.5))
 par(mai = c(0,1,0.1,0))
 
+if(any(grep.col("calibrated.retention.time.start",data.i) == 0|grep.col("calibrated.retention.time.finish",data.i) == 0)){
+	dots <- F
+}else{dots <- T}
 
-try(plot.profile(data.i,F,T))
+try(plot.profile(data.i,F,dots))
 
 par(mai = c(0.5,2,0.2,0.1))
 
@@ -80,6 +93,7 @@ round.spec <- function(x){
 		x<- round(x*100)
 		x[x > 100] <- 100
 		x[is.na(x)] <- 100
+		x[x == 0] <- 1
 		return(x)
 		}
 col.temp <- (colorRampPalette(grad.cols.vec)(100))
@@ -166,9 +180,9 @@ mtext(main,3,line = 0.3,cex = 0.7)
 
 temp.lwd <- c(4,4,5,4,4)
 temp.col <- c(4,2,1,2,4)
-for(i in 1:5){
+#for(i in 1:5){
 #	lines(c(1.2, 1.8),rep(temp.plot[i],2),lwd = temp.lwd[i],col = temp.col[i])
-}
+#}
 
 if(log2){
 #abline(h=sort(c(-ref.data,ref.data,0)),col = "black", lty = "dashed",lwd = 1)	
@@ -290,7 +304,8 @@ cat("\r",getwd())
 if(open.doc){
 	try(        try(system(paste("open ", .pdf), intern = TRUE, 				ignore.stderr = TRUE)))
 }
+return(list(TotalScore = TotalScore,TotalScoreColor = col.temp[round.spec(TotalScore)]))
 }
 #temp <- start.qc(data)
-#plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)
+#try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = T,pdfOut = pdfOut))
 #system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))

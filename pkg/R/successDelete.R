@@ -40,11 +40,27 @@ successDelete <-
                 if(length(qcData)> 0){
                 	writeName <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
                 	for(ba in qcData){    
-	                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv")
+	                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
                 		temp <- readLines(ba)  	
                 		if(length(checkList) ==  0){
                 			write(temp,file = writeName)
                 		}else{
+                			checkListCol <- readLines(checkList,n = 1)
+                				if(checkListCol!= temp[1]){
+                					ImprCheckListCol 	<- unlist(strsplit(checkListCol,","))
+                					ImprTempCol 			<- unlist(strsplit(temp[1],","))
+
+                					updateCheckList <- merge.control(ImprCheckListCol,ImprTempCol)
+                					tempCheckList <- read.csv(checkList,quote = "")
+                					tempCheckList<- cbind(tempCheckList,"")
+                					updateCheckList[is.na(updateCheckList)] <- dim(tempCheckList)[2] 
+                					tempCheckList <- tempCheckList[, updateCheckList]
+                					colnames(tempCheckList) <- ImprTempCol
+                					file.rename(checkList,gsub("list_collect.csv$","list_collect_old.csv",checkList))
+                					write.csv(tempCheckList,checkList,sep = ",",row.names = F)
+
+                				}
+                			checkListCol <- unlist(strsplit(,","))
                 			write(temp[2],file = writeName,append = T)
                 		}
                 	

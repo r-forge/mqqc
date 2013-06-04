@@ -19,9 +19,8 @@ function(.layout,.names,templates,change.matrix){
 			}
 		
 		if(temp > dim(.layout)[1]){
-			#alarm();
 		try(	.layout[temp,] <- .layout[temp,]*change.matrix[i,])
-	}else{alarm()}
+	}else{}
 	}
 	
 	}

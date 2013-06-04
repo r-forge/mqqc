@@ -1,10 +1,17 @@
 mqqcGUI <- 
 function(){
 library(tcltk)
+	
 
 try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/")))
 if(!exists("output")){
-	output <- list(	
+	loadQ	<- tkmessageBox(message = "No Parameter file found. Import new Rdata container?",type = "yesno")
+	if(tclvalue(loadQ) == "yes"){
+		pathToRdata <- tkgetOpenFile()
+		try(load(tclvalue(pathToRdata)))
+		
+	}else{
+		output <- list(	
 		MQ = "",
 		folder ="",
 		fastaFile = "",
@@ -12,7 +19,21 @@ if(!exists("output")){
 		DeleteFiles =0,
 		cores = "auto" ,
 		SpeciesTable = T
-		)}
+		)
+	}
+	
+	
+}
+
+exportRdata <- function(){
+		species.path<- paste(path.package("mqqc"),"data/Param.Rdata",sep = "/")
+		out <- tclvalue(tkgetSaveFile(initialfile = "Param.Rdata"))
+		if(out!=""){
+			file.copy(species.path,out)
+		}
+}
+	
+
 
 fontHeading <- tkfont.create(family = "Tahoma",size=15,weight="bold")
 
@@ -22,6 +43,8 @@ if(length(checkMQ)> 0){
 }else{MQpath <- tclVar("MQ-path")}
 
 tt <- tktoplevel()
+
+
 ttf1 <- tkframe(tt)
 ttf2 <- tkframe(tt)
 tkLFtable <- ttklabelframe(ttf2,text = "Species Table")
@@ -91,7 +114,7 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 	########
 	# other buttons
 	########
-	
+
 	cb <- tkcheckbutton(ttf2)
 	cbVar <- tclVar(0)
 	tkconfigure(cb,variable=cbVar)
@@ -176,13 +199,15 @@ dirFrame <- ttklabelframe(ttf1,text = "HTML Path")
     tkgrid(browseButton,locationField)
 	tkgrid(dirFrame,columnspan = 2 )
 	
-	
-	
+
 tkgrid(ttf1,ttf2,pady = 1,padx = 1,sticky = "NSWE")
 .GlobalEnv$abort <- F
 tkgrid(tkbutton(tt,text = "go",command = function(){tkdestroy(tt)}),tkbutton(tt,text = "stop",command = function(){ .GlobalEnv$abort  <- T; tkdestroy(tt)}),columnspan = 1,padx = 3,pady = 3)
 #tkwm.resizable(tt, "FALSE","FALSE")
+	TKBexport <- tkbutton(ttf1,text = "export Param.Rdata",command = exportRdata)
+	#TKBload <- tkbutton(ttf1,text = "export Param.Rdata",command = exportRdata)
 
+	#tkgrid(TKBexport)
 tkwait.window(tt)
 
 if(.GlobalEnv$abort ){stop("abort by user")}

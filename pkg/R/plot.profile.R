@@ -49,6 +49,14 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 			Start	 	<- data.i$calibrated.retention.time.start[temp.i.sel]
 			Finish		<- data.i$calibrated.retention.time.finish[temp.i.sel]
 			
+			if(any(length(Start)== 0|length(Finish) == 0)){
+				Start <- y -1
+				Finish <- y +1
+				.border <- "grey"
+			}else{
+				.border <- "white"
+			}	
+			
 			.cols <- unique(Ramp.col)[i]
 			#print(.cols)
 			if(linePlot){
@@ -56,7 +64,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 			apply(tempM,1,function(x){
 				xPoly <- c(x[1],x[3],x[2],x[3],x[1] )
 yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
-				polygon(xPoly,yPoly,col = .cols,border = "white",lwd = 0.5)
+				polygon(xPoly,yPoly,col = .cols,border = .border,lwd = 0.5)
 				
 			})
 				

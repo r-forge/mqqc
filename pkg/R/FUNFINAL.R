@@ -6,14 +6,15 @@ dir.create(allPath <- paste(finalMQQC,"all",sep = "/"))
 dir.create(ECstdPath <- paste(finalMQQC,"ECstd",sep = "/"))
 
 if(length(list.files(finalMQQC,pattern = "example.css",recursive = T))== 0){
-	
-from <- 	list.files(path.package("mqqc"),recursive = T,full.name = T,pattern = "example.css")
-to		 <- 	paste(finalMQQC,"example.css",sep = "/")
-try(file.copy(from,to))
-from <- 	list.files(path.package("mqqc"),recursive = T,full.name = T,pattern = "tabber.js")
-to		 <- 	paste(finalMQQC,"tabber.js",sep = "/")
-try(file.copy(from,to))
-	
+unzip(list.files(paste(path.package("mqqc"),"data/",sep = "/"),full.name = T,pattern = "zip"),exdir = finalMQQC)	
+
+# from <- 	list.files(path.package("mqqc"),recursive = T,full.name = T,pattern = "example.css")
+# to		 <- 	paste(finalMQQC,"example.css",sep = "/")
+# try(file.copy(from,to))
+# from <- 	list.files(path.package("mqqc"),recursive = T,full.name = T,pattern = "tabber.js")
+# to		 <- 	paste(finalMQQC,"tabber.js",sep = "/")
+# try(file.copy(from,to))
+
 }
 
 
@@ -112,9 +113,9 @@ length.lines 	<- unlist(lapply(allDataLines2,length))
 allDataLines  <- allDataLines[length.lines[1] == length.lines]
 write(allDataLines,allData)
 allData <- allDataLines	
-}
 
-EC			<- grep(as.character(allData$Name),"._.*_.*_ECstd_") 
+}
+EC				<- grep("._.*_.*_ECstd",as.character(allData$Name)) 
 ECdata 		<- allData[EC,]
 
 tempOrd  <- regexpr("^([^_]*_[^_]*)",allData[,1])
@@ -131,17 +132,75 @@ for(i in unique(machines)){
 	finalDat <- rbind(finalDat,x)
 }	
 
-finalDat <- cbind(as.character(finalDat$Name), as.character(finalDat$System.Time), finalDat$msms.count,round(as.numeric(finalDat$quan.msms.min),2) ,round(as.numeric(finalDat$mass.error.cal.50),2),finalDat$score.50.)
-colnames(finalDat) <- c("Sample","Time","Peptide Count","MSMS/min","mass error in ppm","Score M")
+### Choose for EC 
+
+machinesEC 	<- unlist(strsplit(as.character(ECdata$Name),"_.*"))
+finalECdat <- c()
+for(i in unique(machinesEC)){
+	x <- ECdata[machinesEC ==i,]
+	if(dim(x)[1] > 10){x <- x[1:10,]}
+	finalECdat <- rbind(finalECdat,x)
+}	
+
+finalDat <- cbind(as.character(finalDat$Name), as.character(finalDat$System.Time), finalDat$msms.count,finalDat$uniPepCount,round(as.numeric(finalDat$quan.msms.min),2) ,round(as.numeric(finalDat$mass.error.cal.50),2),finalDat$score.50.)
+colnames(finalDat) <- c("Sample","Time","Peptides","Unique Peptides","MSMS/min","mass error in ppm","Score M")
 
  try(tableHtml <-HtmlTable(finalDat))
 if(!exists("tableHtml")){tableHtml <- NULL}
 
 
+try(finalECdat <- cbind(as.character(finalECdat $Name), as.character(finalECdat$System.Time), finalECdat$msms.count, finalECdat$uniPepCount,round(as.numeric(finalECdat$quan.msms.min),2) ,round(as.numeric(finalECdat$mass.error.cal.50),2), finalECdat$score.50.))
+try(colnames(finalECdat) <- c("Sample","Time","Peptides","Unique Peptides","MSMS/min","mass error in ppm","Score M"))
+
+ try(tableHtml2 <-HtmlTable(finalECdat, tableDesign = "table-Design2"))
+if(!exists("tableHtml2")){tableHtml <- NULL}
 
 
 
-writeToHtml(sort(pdfFiles[ECstd]),sort(pdfFiles[!ECstd]),path = paste(finalMQQC,"index.html",sep = "/"),table = tableHtml)
+
+writeToHtml(sort(pdfFiles[ECstd]),sort(pdfFiles[!ECstd]),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 )
+
+# Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy")
+# htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts)
+####
+# modify Html
+####
+tempOrd  <- regexpr("^([^_]*_[^_]*)", ECdata[,1])
+final <- substr(ECdata[,1],start = tempOrd,stop = attributes(tempOrd)$match.length)
+allDataOrder <- allData[order(final),]
+
+#allDataOrder <- allDataOrder[order(allDataOrder[,2]),]
+machines 	<- unlist(strsplit(as.character(ECdata$Name),"_.*"))
+if(length(machines) > 0){
+te <- aggregate(as.character(ECdata$Name),list(machines),function(x){
+tempOrd  <- regexpr("^([^_]*_[^_]*)",x)
+final <- substr(x,start = tempOrd,stop = attributes(tempOrd)$match.length)
+
+x <- x[order(final,decreasing = T)]
+print(x)
+return(x[1])
+
+
+	
+	
+})
+
+
+MCec 			<- merge.control(ECdata[,1],te[,2])
+MCecDat 	<- ECdata[MCec[!is.na(MCec)],]
+Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy")
+FinalCecDat	<- merge.control(te[,1],Machines)
+Counts  <- MCecDat$msms.count[FinalCecDat]
+BGcolor <- MCecDat$TotalScoreColor[FinalCecDat]
+if(length(BGcolor)==0){
+	
+	BGcolor <- rep("#ffffff",length(Counts))
+}
+print(Counts)
+try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = Counts,BGcolor =as.character(BGcolor))
+)
+
+}
 }
 return(returnVec)
 }
