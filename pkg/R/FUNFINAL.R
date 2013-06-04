@@ -143,6 +143,7 @@ for(i in unique(machinesEC)){
 }	
 
 finalDat <- cbind(as.character(finalDat$Name), as.character(finalDat$System.Time), finalDat$msms.count,finalDat$uniPepCount,round(as.numeric(finalDat$quan.msms.min),2) ,round(as.numeric(finalDat$mass.error.cal.50),2),finalDat$score.50.)
+
 colnames(finalDat) <- c("Sample","Time","Peptides","Unique Peptides","MSMS/min","mass error in ppm","Score M")
 
  try(tableHtml <-HtmlTable(finalDat))
@@ -152,7 +153,7 @@ if(!exists("tableHtml")){tableHtml <- NULL}
 try(finalECdat <- cbind(as.character(finalECdat $Name), as.character(finalECdat$System.Time), finalECdat$msms.count, finalECdat$uniPepCount,round(as.numeric(finalECdat$quan.msms.min),2) ,round(as.numeric(finalECdat$mass.error.cal.50),2), finalECdat$score.50.))
 try(colnames(finalECdat) <- c("Sample","Time","Peptides","Unique Peptides","MSMS/min","mass error in ppm","Score M"))
 
- try(tableHtml2 <-HtmlTable(finalECdat, tableDesign = "table-Design2"))
+ try(tableHtml2 <-HtmlTable(finalECdat, tableDesign = "table-design2"))
 if(!exists("tableHtml2")){tableHtml <- NULL}
 
 

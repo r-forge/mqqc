@@ -60,7 +60,6 @@ successDelete <-
                 					write.csv(tempCheckList,checkList,sep = ",",row.names = F)
 
                 				}
-                			checkListCol <- unlist(strsplit(,","))
                 			write(temp[2],file = writeName,append = T)
                 		}
                 	

@@ -1,6 +1,6 @@
 HtmlTable <- 
-function(x){
-.cols <- colnames(x,tableDesign = "table-design")
+function(x ,tableDesign = "table-design"){
+.cols <- colnames(x)
 x 		<- apply(x,2,as.character) 
 if(is.vector(x)){x <- t(as.matrix(x))}
 htmlTableString <-paste( "<table rules = \"cols\"  id=\"",tableDesign,"\" class=\"tablesorter\">",sep = "")
