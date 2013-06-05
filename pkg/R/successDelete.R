@@ -67,17 +67,17 @@ successDelete <-
                 }
                 
                 if(any(basename(tempmqqcInfo)  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
-                 file.rename(tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" ],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
-                fileDelete <- paste(hotFolder,folderNameVec[i],sep = "/")
-                
-	#        listFiles 	<- list.files(fileDelete,recursive = T,full.name = T)
-                time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(fileDelete)$ctime)
-              #  fileDelete <- fileDelete[time.vec > 86400]
-                if(time.vec > 86400){
-	                  unlink(fileDelete,recursive  = T) 
-                }
-                
-                }
+       DelCont         <-  file.rename(tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" ],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
+       if(DelCont){
+       		write("",paste(unique(dirname(tempmqqcInfo)),"DeleteTag",sep = "/"))
+       	
+       }
+       
+      }
+      
+
+      
+      
             }
             
           }
@@ -85,5 +85,24 @@ successDelete <-
           
         }
     }
+    
+     fileDelete <- list.files(hotFolder,pattern = "^DeleteTag$",recursive = T,full.name = T)
+     DelFun <- 	function(x,time.thresh = 86400){
+                time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(x)$ctime)
+              #  fileDelete <- fileDelete[time.vec > 86400]
+                if(time.vec >time.thresh){
+                		print("deleting FIle")
+	                  unlink(dirname(fileDelete),recursive  = T) 
+                }
+             }
+             
+             
+     if(length(fileDelete) > 0 & destDelete){
+     	lapply(fileDelete,DelFun)     	
+     }
+	#        listFiles 	<- list.files(fileDelete,recursive = T,full.name = T)
+	
+
+    
     return(mqqcInfo)
   }
