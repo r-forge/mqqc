@@ -85,7 +85,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
           ####
           
           
-          dbLib <- list.files(checkMQ,recursive = T,pattern = "databases.xml",full.name = T)[1]
+          dbLib <- list.files(checkMQ.bin,recursive = T,pattern = "databases.xml",full.name = T)[1]
           
           dbLib <- readLines(dbLib)
           

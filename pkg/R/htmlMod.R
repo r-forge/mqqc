@@ -40,9 +40,6 @@ temp <- unlist(strsplit(temp,"\n"))
 html <- readLines(pathHtml)
 title <- grep("<h1>MQQC</h1>", html,fixed = T)
 
-print(html)
-print(title)
-print(length(grep("VALIGN=TOP",html[(title-1)],fixed = T)) > 0)
 if(length(grep("VALIGN=TOP",html[(title-1)],fixed = T)) == 0){
 html <- html[ - title]
 html <- c(html[1:(title)],temp,html[(title):length(html)])

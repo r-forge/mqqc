@@ -8,11 +8,16 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		assign(names(Param)[i],Param[[i]])
 	}
 	cores <- as.numeric(cores)
+  	
+  	if(!Debug){
+  		options(warn = -1,show.error.messages = F, showWarnCalls = F)
+  	}else{
+  		options(warn = 1,show.error.messages = T, showWarnCalls = T)}
   }
   
   if(.Platform$OS.type == "windows"){
-  	hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
-	}
+		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
+}
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
@@ -57,13 +62,10 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		for(i in 1:length(evidenceToProcess)){
       if(checkSize(evidenceToProcess[i])==0){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...")
-			  tempI 		<- evidenceToProcess[i]
+			  tempI 				<- evidenceToProcess[i]
 			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,templateFasta=templateFasta))
       }
 		}
-		
-	  	try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
-
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
 		# update export folder   
 
@@ -71,12 +73,16 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	
 funlastLoop +1
 
-if(funlastLoop == 5){
+if(funlastLoop == 10){
 		funlastLoop  <- 0
 		
 
 		if(is.function(FUNLAST)){
-			  FUNLAST(htmloutPath,folder,sucFolder)
+		  htmloutPath <<- htmloutPath
+		  sucFolder <<- sucFolder
+				  FUNLAST(htmloutPath,folder,sucFolder)
+			  	  	try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+
 		}
 
 	}else{
@@ -95,7 +101,7 @@ setwd(folder)
 	#	temp.obs 			 <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
 		temp.obs 			<- unique(temp.obs)
 		obs.files 			<- grepSubsetControl(temp.obs, obs.files)
-		obs.files 			<- grep("raw$|txt$",obs.files,value = T)
+		obs.files 			<- grep("raw$|txt$",obs.files,value = T, ignore.case = T)
 		obs.files.diff 		<- setdiff(obs.files,files) 
 		obs.files.minus 	<- setdiff(files,obs.files) 
 

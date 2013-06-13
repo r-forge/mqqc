@@ -53,7 +53,7 @@ for(i in rep.v){
 
 temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.character(i),]	
 cat("\rstarting qc.prepare",rep(" ",100))
-qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta)
+qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
 
 export 	<- unlist(qc.prepare.data$sd)
 

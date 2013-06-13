@@ -36,8 +36,8 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
     # exclude older files from same machine
     machineCol <- machineCol[order(i$ctime)]
     i <- i[order(i$ctime),]
-    i <- i[!duplicated(machineCol),]
-    machineCol <- machineCol[!duplicated(machineCol)]
+   # i <- i[!duplicated(machineCol),]
+   # machineCol <- machineCol[!duplicated(machineCol)]
     # check if files are older than in folder
     fileFinal <- file.info(list.files(finalPath,full.name = T))
     newD 	<- cbind(machineCol,rownames(i),i$ctime,"new")
@@ -59,7 +59,13 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
       if(length(old)==0){ old <- rep(0,4)}
       
       if(is.matrix(new)&length(new) > 0){
-        new <- new[max(new[,4]),]
+        new <- new[new[,3] == max(new[,3]),]
+        print(new)
+        if(is.matrix(new)){
+        dateExtract	<- unlist(lapply(strsplit(basename(new[,2]),"_"),function(x){x <- x[2]}))
+        new <- new[dateExtract == max(dateExtract)]
+        	
+        }
       }
       if(is.matrix(old)&length(old) > 0){
         old <- old[max(old[,4]),]
@@ -70,13 +76,9 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
         unlink(old[2])
         paths 		<- new[2]
         finalFile <- paste(finalPath,paste(name,".pdf",sep = ""),sep = "/")
-       # print(paths)
-       # print(finalFile)
         file.copy(paths,finalFile)
       }
       if(exists("finalFile")){return(finalFile)}
-      
-      
     })
     returnVec <- c(returnVec,test)
 
@@ -173,31 +175,32 @@ allDataOrder <- allData[order(final),]
 #allDataOrder <- allDataOrder[order(allDataOrder[,2]),]
 machines 	<- unlist(strsplit(as.character(ECdata$Name),"_.*"))
 if(length(machines) > 0){
-te <- aggregate(as.character(ECdata$Name),list(machines),function(x){
-tempOrd  <- regexpr("^([^_]*_[^_]*)",x)
-final <- substr(x,start = tempOrd,stop = attributes(tempOrd)$match.length)
 
-x <- x[order(final,decreasing = T)]
-print(x)
-return(x[1])
-
-
+maxMachines <- sapply(unique(machines),function(x){
+	test 				<- ECdata[machines == x,]
+	dateExtract	<- unlist(lapply(strsplit(as.character(test$Name),"_"),function(x){x <- x[2]}))
+	test <- test[dateExtract == max(dateExtract),]
+	test <- test[test$System.Time.s == max(test$System.Time.s),]
 	
-	
+	return(test[1,])
+
 })
+maxMachines <- t(maxMachines)
+maxMachines <- as.data.frame(maxMachines)
 
-
-MCec 			<- merge.control(ECdata[,1],te[,2])
-MCecDat 	<- ECdata[MCec[!is.na(MCec)],]
 Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy")
-FinalCecDat	<- merge.control(te[,1],Machines)
-Counts  <- MCecDat$msms.count[FinalCecDat]
-BGcolor <- MCecDat$TotalScoreColor[FinalCecDat]
+FinalCecDat	<- merge.control(rownames(maxMachines),Machines)
+Counts  <- maxMachines$msms.count[FinalCecDat]
+Counts <- sapply(Counts,as.numeric)
+Counts[!as.logical(lapply(Counts,length))] <- "-"
+
+BGcolor <- maxMachines$TotalScoreColor[FinalCecDat]
+BGcolor <- sapply(BGcolor,as.character)
+BGcolor[!as.logical(lapply(BGcolor,length))] <- "#000000"
 if(length(BGcolor)==0){
 	
 	BGcolor <- rep("#ffffff",length(Counts))
 }
-print(Counts)
 try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = Counts,BGcolor =as.character(BGcolor))
 )
 
@@ -205,6 +208,7 @@ try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts =
 }
 return(returnVec)
 }
-		#  FUNFINAL(htmloutPath,folder,sucFolder)
-
-#test <- FUNFINAL(folder = folder,sucFolder = sucFolder)
+#FUNFINAL(htmloutPath,folder,sucFolder)
+#FUNFINAL(finalMQQC,folder)
+#
+#test <- FUNFINAL(folder ="/Users/temp",sucFolder = "_RmqqcFile_Processed",finalMQQC = "/Users/temp/html")

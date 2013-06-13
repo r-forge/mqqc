@@ -155,7 +155,6 @@ tab4 <- paste(tabTop4,Table2,"</div>",sep = "\n")
 
 
 finalHtml <- paste(initHtml, tab1,tab2,tab3,tab4,endHtml)
-print(finalHtml)
 write(finalHtml,file = path)
 #system("open test.html")
 }

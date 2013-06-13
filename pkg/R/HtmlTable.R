@@ -20,4 +20,3 @@ htmlTable <- collapse(htmlTableString,header,"<tbody>",rows,"</tbody>","</table>
 return(htmlTable)
 }
 #hui <- HtmlTable(finalDat)
-#print(hui)

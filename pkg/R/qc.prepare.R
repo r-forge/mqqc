@@ -1,6 +1,17 @@
 qc.prepare <- 
-function(Data, SpeciesTable,placeholder,templateFasta){
+function(Data, SpeciesTable,placeholder,templateFasta,path = "./"){
 score <- list()
+
+sumDat <- function(){
+	temp <- list.files(pattern = "summary")
+	if(length(temp) > 0){
+	temp <- read.csv(temp[1],sep = "\t")
+	colnames(temp) <- tolower(colnames(temp))
+	return(cbind(as.character(temp$raw.file),temp$ms.ms.identified....))
+	}else{return(NA)}
+}
+
+
 
 get.env2 <- environment() 
 ls.null <- function(get.env = get.env2){
@@ -31,9 +42,10 @@ thresholds$msmsEff 			  <- 60
 thresholds$quanRetRSD 		<- 0.05
 thresholds$quanRetSlope 	<- 0.02
 thresholds$quanRet50ratio	<- 1.2
+thresholds$msmsQuantile <-  c(4.5,5) # log10 Int
 if(SpeciesTable){
 	
-	      species 	<- read.csv(paste(path.package("mqqc"),"Data/MQQCspecies.csv",sep = "/"))
+	      species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
 	      RawFile <- unique(Data$Raw.file)[1]
 	      regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})	
 	      temp   	<-as.logical(sapply(regEx,grep, x = RawFile))
@@ -140,13 +152,13 @@ y <- temp$y
 ySel <- y[x > tempQuan[2]&x< tempQuan[4]]
 xSel <- x[x > tempQuan[2]&x< tempQuan[4]]
 slope <- NA
-try(slope <- coefficients(lm(y~x))[2])
+y<<- y
+x<<- x
+try(slope <- coefficients(lm(scale(y)~x))[2])
 rSDquanRet				<- sd(ySel)/median(ySel)
 summary.Data$quanRetRSD <- rSDquanRet
 summary.Data$quanRetSlope <- slope
 summary.Data$quanRet50ratio <- diff(tempQuan[c(1,3)])/diff(tempQuan[c(3,5)])
-#print("HUI")
-#print(score)
 score$quanRetRSD 		<- 	thresholds$quanRetRSD/summary.Data$quanRetRSD
 score$quanRetSlope 		<-	thresholds$quanRetSlope /abs(summary.Data$quanRetSlope)
 if(abs(summary.Data$quanRet50ratio) > 1){
@@ -155,15 +167,36 @@ score$quanRet50ratio 	<- 	abs(summary.Data$quanRet50ratio)	/thresholds$quanRet50
 	
 }
 
-# efficiency 
-msmsEff <- NA
-try(msmsEff <- length(Data.i.quant$ms.ms.scan.number[!is.na(Data.i.quant$ms.ms.scan.number)])/(max(Data.i.quant$ms.ms.scan.number,na.rm = T)-min(Data.i.quant$ms.ms.scan.number,na.rm = T)*0.9)*100)
-summary.Data$msmsEff 	<- msmsEff
-score$msmsEff 			<- msmsEff/thresholds$msmsEff
+# check MSMS
+msmsInfo <- msmsPlot(path = path)
+summary.Data$msmsQuantile <- msmsInfo
 
+score$msmsQuantile <- 	(log10(msmsInfo[3])/thresholds$msmsQuantile[1]*0.3)^1.25 + 
+										(log10(msmsInfo[4])/thresholds$msmsQuantile[2]*0.3)^1.25 + 
+										(log10(msmsInfo[5])/(thresholds$msmsQuantile[2]*1.2)*0.1)^1.25+ 
+										(log10(msmsInfo[1])/(thresholds$msmsQuantile[1]*0.7)*0.1)^1.25 + 
+										(log10(msmsInfo[2])/(thresholds$msmsQuantile[1]*0.9)*0.2)^1.25
+
+# efficiency 
+# msmsEff <- sumDat()
+# if(length(msmsEff) == 1){
+# if(any(is.na(msmsEff))){
+
+msmsEff <- NA
+try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(min(as.numeric(Data.i$ms.ms.ids[as.numeric(Data.i$ms.ms.ids) > as.numeric(max(Data.i.quant$ms.ms.ids,na.rm = T))]),na.rm = T))*100)
+# }else{msmsEff <- 0}
+
+# }else{
+	# msmsEff <- as.numeric(msmsEff[dim(msmsEff)[1],2])/thresholds$msmsEff
+# }
+summary.Data$msmsEff 	<- msmsEff
+# if(is.vector(msmsEff)){msmsEff <- as.matrix(msmsEff)}
+score$msmsEff 			<- msmsEff/thresholds$msmsEff
+summary.Data <<- summary.Data
+thresholds <<- thresholds
 # scores 
 score$msms 			<-  summary.Data$quan.msms.min/thresholds$quan.msms.min 
-score$mass.error 	<-  max(thresholds$mass.error.cal[1]/abs(summary.Data$mass.error.cal[c(2,4)]))*0.7+max(abs(summary.Data$mass.error.cal[c(1,5)])/thresholds$mass.error.cal[2])*0.3
+score$mass.error 	<-  thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.cal[c(2,4)]))*0.5+ thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.cal[c(3)]))*0.5
 score$score <- summary.Data$score[3]/thresholds$score
 # score nlc
 score$peak.shape 	<- thresholds$ret.peak.shape[1]/max(abs(log2((summary.Data$ret.peak.shape[c(2,4)]))))
@@ -171,8 +204,14 @@ score$peak.shape 	<- thresholds$ret.peak.shape[1]/max(abs(log2((summary.Data$ret
 score$ret.width 	<- thresholds$ret.width[1]/(summary.Data$ret.width[c(3)])
 
 score$quan.duplicates.msms 	<- thresholds$quan.duplicates.msms[1]/((((summary.Data$quan.duplicates.msms))))
-#print(score)
 return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant))
 }
+#qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
+#print(qc.prepare.data$sc$msmsQuantile)
+
 #Data.list <- qc.prepare(Data)
-#print(test$sc)
+#Data <- temp.DataEvidence
+# qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
+# print(qc.prepare.data$sc)
+# print(qc.prepare.data$sd$mass.error.cal)
+# tryError <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = T,pdfOut = pdfOut)))

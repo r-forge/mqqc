@@ -10,7 +10,7 @@ successDelete <-
     	}
     }
 	tempIproc <- sapply(dirname(tempI),list.files,pattern = "mqqcProcessed")
-	#tempI <- tempI[!as.logical(sapply(tempIproc,length))]
+	tempI <- tempI[!as.logical(sapply(tempIproc,length))]
     mqqcInfo <- NULL
     
     if(length(tempI) > 0){
@@ -42,12 +42,14 @@ successDelete <-
                 	for(ba in qcData){    
 	                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
                 		temp <- readLines(ba)  	
+                		
                 		if(length(checkList) ==  0){
                 			write(temp,file = writeName)
                 		}else{
                 			checkListCol <- readLines(checkList,n = 1)
                 				if(checkListCol!= temp[1]){
                 					ImprCheckListCol 	<- unlist(strsplit(checkListCol,","))
+                					ImprCheckListCol <- gsub("\"","", ImprCheckListCol)
                 					ImprTempCol 			<- unlist(strsplit(temp[1],","))
 
                 					updateCheckList <- merge.control(ImprCheckListCol,ImprTempCol)
@@ -57,7 +59,7 @@ successDelete <-
                 					tempCheckList <- tempCheckList[, updateCheckList]
                 					colnames(tempCheckList) <- ImprTempCol
                 					file.rename(checkList,gsub("list_collect.csv$","list_collect_old.csv",checkList))
-                					write.csv(tempCheckList,checkList,sep = ",",row.names = F)
+                					write.csv(tempCheckList,checkList,row.names = F,quote = F)
 
                 				}
                 			write(temp[2],file = writeName,append = T)
@@ -69,7 +71,13 @@ successDelete <-
                 if(any(basename(tempmqqcInfo)  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
        DelCont         <-  file.rename(tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" ],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
        if(DelCont){
-       		write("",paste(unique(dirname(tempmqqcInfo)),"DeleteTag",sep = "/"))
+       	tempmqqcInfo <<- tempmqqcInfo
+       	
+       	lengthSplitSlash <- length(unlist(strsplit(hotFolder,"/")))
+       	tempPath <- unique(dirname(tempmqqcInfo))
+       	
+		
+       		write("",paste(paste(unlist(strsplit(tempPath,"/"))[1:(lengthSplitSlash +1)],collapse ="/"),"DeleteTag",sep = "/"))
        	
        }
        

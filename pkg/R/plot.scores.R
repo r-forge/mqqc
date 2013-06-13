@@ -39,14 +39,20 @@ pdf(.pdf<- paste(pdf.name,".pdf",sep = ""),width = 15,height = 7.5,pointsize = 2
 library(gplots)
 real.data 		<- summary.data
 ref.data 		<- thresholds
-score.data 	<- score
+score.data 	<<- score
 ms.col <- unlist(color.blind[c(5,6,1)])
 nc.col <- unlist(color.blind[c(3,4,2)])
 sum.scores <- c(sum(unlist(score.data[1:3])),sum(unlist(score.data)[4:6]))
 
-TotalScore <- unlist(score.data) 
+TotalScore <<- unlist(score.data) 
 TotalScore[TotalScore > 1] <- 1
-TotalScore <- sum(TotalScore)/(length(TotalScore)-1)
+TotalScore <- as.data.frame(t(as.data.frame(TotalScore)))
+finalAna <- c(	TotalScore$"msmsQuantile.50%",
+						TotalScore$"msms",
+						TotalScore$"mass.error",
+						TotalScore$"score.50%")
+						
+TotalScore <- sum(as.numeric(finalAna))/(length(finalAna)-1)
 
 if(any(sum.scores > 3)){
 	
@@ -61,13 +67,21 @@ extra <- 0
 totalFill 	<- nrowVal* ncolVal
 
 profileSpace <- matrix(c(rep(1,(nrowVal-1)),2,rep(3,(nrowVal-1)),4),ncol = 2,nrow = nrowVal)
-scoreSpace 	 <- matrix(c(rep(5,2*(ncolVal-3)),6,6),ncol =(ncolVal-2),nrow = 2 )
+
+if(any(summary.data$msmsQuantile != 0)){
+	scoreSpace 	 <- matrix(c(6,6,rep(5,(2*(ncolVal-3)-2)),7,7),ncol =(ncolVal-2),nrow = 2 )	
+	addNum <- 1
+}else{
+	scoreSpace 	 <- matrix(c(6,6,rep(5,(2*(ncolVal-3)))),ncol =(ncolVal-2),nrow = 2 )	
+	addNum <- 0
+	
+}
 leftSpace	 	<- (nrowVal-2)*(ncolVal-2)/2
 leftSpace 		<- seq(from = 7,to = (leftSpace+6))
 topLeftSpace 	<- min(leftSpace):leftSpace[length(leftSpace)/2]
 downLeftSpace 	<- (leftSpace[length(leftSpace)/2]+1):max(leftSpace)
 leftSpace 		<- rbind(topLeftSpace, topLeftSpace, downLeftSpace, downLeftSpace)
-
+leftSpace <- leftSpace + addNum
 
 totalSpace 		<- cbind(profileSpace,rbind(scoreSpace,leftSpace))
 
@@ -98,7 +112,7 @@ round.spec <- function(x){
 		}
 col.temp <- (colorRampPalette(grad.cols.vec)(100))
 score.data <- score.data[names(score.data)!=""]
-orderScores <- c("msms","mass.error","score","msmsEff","quan.duplicates.msms","ret.width","peak.shape","quanRetRSD","quanRetSlope","quanRet50ratio")
+orderScores <- c("msms","mass.error","score","msmsQuantile","quan.duplicates.msms","msmsEff","ret.width","peak.shape","quanRetRSD","quanRetSlope","quanRet50ratio")
 
 score.order <- merge.control(names(score.data),orderScores)
 diff 		<- setdiff(1:length(names(score.data)),score.order[!is.na(score.order)])
@@ -115,32 +129,34 @@ namesData <- names(score.data)
 namesData[namesData=="quanRetRSD"] <- "ETime rSD"
 namesData[namesData=="quanRetSlope"] <- "ETime slope"
 namesData[namesData=="quanRet50ratio"] <- "ETime balance"
-namesData[namesData=="msmsEff"] <- "Peptide ID/msms"
+namesData[namesData=="quan.duplicates.msms"] <- "Multiple MSMS"
 namesData[namesData=="msms"] <- "Peptide ID/min"
 namesData[namesData=="mass.error"] <- "Mass error"
 namesData[namesData=="score"] <- "Score"
 namesData[namesData=="peak.shape"] <- "Peak Shape"
 namesData[namesData=="ret.width"] <- "Peak Width"
 namesData[namesData=="ret.width"] <- "Peak Width"
-namesData[namesData=="quan.duplicates.msms"] <- "Peptide Duplicates"
+namesData[namesData=="msmsQuantile"] <- "MSMS Intensities"
+namesData[namesData=="msmsEff"] <- "Efficiency MSMS"
 
 
 
+par(mai = c(0.5,1.5,0.2,0.5))
 
-temp.pos 	<- barplot2(unlist(score.data),beside = T,col = c(col.temp[round.spec(unlist(score.data))]),horiz = T,names.arg = namesData ,las = 2, plot.grid = T, grid.col = "grey",xlim = c(0,1.6),border = "transparent")
-ColUse 		<- cbind(c(col.temp[round.spec(unlist(score.data))]),names(score.data),namesData)
+temp.pos 	<- barplot2(unlist(score.data),beside = T,col = c(col.temp[round.spec(unlist(score.data))]),horiz = T,names.arg = namesData ,las = 2, plot.grid = T, grid.col = "grey",xlim = c(0,1.6),border = "transparent",xpd = F)
+ColUse 		<<- cbind(c(col.temp[round.spec(unlist(score.data))]),names(score.data),namesData)
 
 #text(temp.pos,0,c("peptide ID","mass error","score","peak shape","elution time","dupl. peptide IDs"),las = 2,srt = 90,adj = c(1.1,1),xpd =NA,srt = 45)
 mtext("Scores:",3,line = 0,cex = 0.6)
 abline(v=1,col = "grey",lwd = 5)
 abline(v=1,col = "red")
 
-par(mai = c(1,2,0.1,0.1))
+#par(mai = c(0.5,2,0.1,0.1))
 
 # col.vec for plot.quans 
 
 
-par(mai = c(0.5,1,0.2,0.2))
+par(mai = c(0.5,1.2,0.3,0.2))
 init.i <- 500
 
 plot(1,frame = F,axes=F,xlab = "",ylab = "",type = "n",ylim = c(0,init.i))
@@ -153,7 +169,7 @@ mtext("Good",2,adj = 1,cex = 0.8)
 mtext("Poor",2,adj = 0,cex = 0.8)
 #mtext("Color\nCode",3,cex = 0.8)
 #legend(max(temp.pos)+ temp.pos[1],max(temp.xlim),legend = c("peptide ID","mass error","score","peak shape","elution time","duplicated peptide IDs"),,fill = c(ms.col,nc.col),xpd = NA,xjust = 0,bty = "n",title = "Legend")
-
+abline(v=-14,xpd = NA,lwd = 3,col = "grey")
 
 
 par(mai = c(0,0,0,0))
@@ -222,7 +238,7 @@ plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col
 	if(length(col.dir) == 0){col.dir <- col.temp[col.sel*100]}
 	
 	max(c(x,thresh))
-	barplot2(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35)
+	barplot2(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35,xpd = F)
 	abline(h=thresh,lwd = 2,col = "grey")
 	abline(h=thresh,lwd = 2,col = "red")
 		box(lwd = 4,fg = col.dir)
@@ -236,17 +252,6 @@ plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col
 # Peptide ID/min
 ##
 try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "Peptide ID/min",main = "MS", col.dir = ColUse[ColUse[,2] == "msms",1]))
-##
-# Duplicates
-##
-try(plot.stat(summary.data$quan.duplicates.msms, thresholds$quan.duplicates.msms, name.val = "Duplicates/Peptide IDs in %",rev = T,main = "MS",col.dir = ColUse[ColUse[,2] == "quan.duplicates.msms",1]))
-
-##
-# Iden efficiency
-##
-try(plot.stat(length(data.i.quant$ms.ms.scan.number[!is.na(data.i.quant$ms.ms.scan.number)])/(max(data.i.quant$ms.ms.scan.number,na.rm = T)-min(data.i.quant$ms.ms.scan.number,na.rm = T)*0.9)*100,60,name.val = "identification efficiency in %",main = "MS",col = ColUse[ColUse[,2] == "msmsEff",1]))
-
-par(mai = c(0.2,1,0.5,0.2),bg = "lightblue")
 
 ###
 # mass error
@@ -259,6 +264,33 @@ try(plot.quans(summary.data$mass.error.cal,F,"","mass error in ppm",c(thresholds
 ###
 try(plot.quans(summary.data$score,F,"","score",c(0,50,100,150,400),fg.col = ColUse[ColUse[,2] == "score",1],main = "MS")
 )
+
+##
+# Duplicates
+##
+try(plot.stat(summary.data$quan.duplicates.msms, thresholds$quan.duplicates.msms, name.val = "Duplicates/Peptide IDs in %",rev = T,main = "MSMS",col.dir = ColUse[ColUse[,2] == "quan.duplicates.msms",1]))
+
+
+##
+# Iden efficiency
+##
+try(plot.stat(summary.data$msmsEff,60,name.val = "identification efficiency in %",main = "MSMS",col = ColUse[ColUse[,2] == "msmsEff",1]))
+
+##
+# msmsIntensities
+##
+print(summary.data$msmsQuantile)
+#return(summary.data)
+
+if(any(summary.data$msmsQuantile != 0)){
+threshDat <- as.numeric(unlist(strsplit(as.character(thresholds$msmsQuantile)," ")))
+
+try(plot.quans(as.numeric(log10(summary.data$msmsQuantile)),F,ref.data = c(threshDat[1]*0.7,threshDat[1]*0.9,threshDat, threshDat[2] * 1.2),main = "MSMS",xlab = "",ylab = "MSMS log10(Intensities)",fg.col = ColUse[ColUse[,2] == "msmsQuantile",1]))
+}
+
+par(mai = c(0.2,1,0.5,0.2),bg = "lightblue")
+
+
 ##
 # peak shape
 ##
@@ -306,6 +338,8 @@ if(open.doc){
 }
 return(list(TotalScore = TotalScore,TotalScoreColor = col.temp[round.spec(TotalScore)]))
 }
+#tryError <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)))
+
 #temp <- start.qc(data)
 #try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = T,pdfOut = pdfOut))
 #system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))

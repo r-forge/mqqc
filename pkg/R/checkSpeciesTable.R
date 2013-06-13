@@ -13,7 +13,6 @@ checkSpeciesTable <-
       for(i in 1:length(species$Fasta)){
         test.grep <- grep(paste("filename=\"",basename(as.character(species$Fasta[i])),"\"",sep  =""),dbLib,fixed = T)
         hm <- gsub(" ","",dbLib[test.grep])
-        print(test.grep)
 
 
         if(length(test.grep) == 0|!file.exists(as.character(species$Fasta[i]))){

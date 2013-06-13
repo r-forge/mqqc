@@ -34,7 +34,6 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
     xmlNEW 		<- 	xml.replace(c("paramGroups"),rep(1,length(filePath)), xmlNEW,start.string = "<int>",end.string = "</int>")
     # change processFolder
     procFold <- grep("processFolder",xmlNEW)
-    #  	print(xmlNew[procFold])
     input.path <- (dirname((filePath)))
     
     dir.create(paste(input.path,"combined/",sep = "/"))
@@ -64,7 +63,6 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 		if(dim(speciesUsed)[1] > 1){
 			speciesUsed <- speciesUsed[1,]
 		}
-		print(speciesUsed)
 
 		try(tkdestroy(tempT))
 		lastFile <- paste(basename(filePath),paste(unlist(speciesUsed[1,1:3]),collapse = "; "),sep = "\n")
@@ -99,7 +97,6 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
   	MQcmd <- path.convert(MQcmd)
   
   #  return(xmlNEW[2])
-    print(MQcmd)
   	MQmanager(MQcmd,folder,cores =cores)
   }else{
     print("Error in MQ start. No XML provided.")

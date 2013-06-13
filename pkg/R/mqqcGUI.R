@@ -87,7 +87,7 @@ dirFrame <- ttklabelframe(tt,text = "Standard Fasta")
     
     locationField <- ttkentry(dirFrame, textvariable=StandardFasta,justify = "right")        
     tkgrid(browseButton2,locationField)
-	tkgrid(dirFrame,padx = 5,pady = 5)
+	#tkgrid(dirFrame,padx = 5,pady = 5)
 
 
 Analysis.Folder <- tclVar(output$folder)
@@ -119,6 +119,15 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 	cbVar <- tclVar(0)
 	tkconfigure(cb,variable=cbVar)
 	tkgrid(tklabel(ttf2,text = "Clean up"),cb)
+	
+	########
+	# other buttons
+	########
+
+	cb <- tkcheckbutton(ttf2)
+	cbVar2 <- tclVar(0)
+	tkconfigure(cb,variable=cbVar2)
+	tkgrid(tklabel(ttf2,text = "Debug Mode"),cb)
 	
 	
 	######
@@ -207,7 +216,7 @@ tkgrid(tkbutton(tt,text = "go",command = function(){tkdestroy(tt)}),tkbutton(tt,
 	TKBexport <- tkbutton(ttf1,text = "export Param.Rdata",command = exportRdata)
 	#TKBload <- tkbutton(ttf1,text = "export Param.Rdata",command = exportRdata)
 
-	#tkgrid(TKBexport)
+	tkgrid(TKBexport)
 tkwait.window(tt)
 
 if(.GlobalEnv$abort ){stop("abort by user")}
@@ -221,6 +230,8 @@ output <- list(
 		fastaFile = tclvalue(StandardFasta),
 		htmloutPath = tclvalue(HTML),
 		DeleteFiles = as.logical(as.numeric(tclvalue(cbVar))),
+		Debug		 = as.logical(as.numeric(tclvalue(cbVar2))),
+
 		cores = cores ,
 		SpeciesTable = T
 		)

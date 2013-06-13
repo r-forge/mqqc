@@ -42,10 +42,8 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   
   TL <- TL[TL>0]
   if(length(TL) > 0){
-#    print(TL)
     for(i in 1:TL){
       try(tempi <- readLines(File))
-      #print(tempi)
       if(length(tempi)> 0){
         Sys.sleep(1)
         tempSys <- paste(tempi[1])

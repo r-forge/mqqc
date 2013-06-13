@@ -28,7 +28,6 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	par(mai=c(0,1,0.1,0))
 
 	col.intensity <- grep("intensity",tolower(colnames(data.i)))
-		#print("hui")
 
 	plot(data.i$retention.time,data.i$m.z,pch = 20,cex = intensity,col = 	Ramp.col,type = "n" ,ylab = "m/z",xlim = range(data.i$retention.time,na.rm = T),axes = F,ylim = range(data.i$m.z,na.rm = T),frame = F)
 	axis(2)
@@ -58,7 +57,6 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 			}	
 			
 			.cols <- unique(Ramp.col)[i]
-			#print(.cols)
 			if(linePlot){
 				tempM <- cbind(Start ,Finish,x,y)
 			apply(tempM,1,function(x){

@@ -31,7 +31,6 @@ tkconfigure(.GlobalEnv$tkString,text = info)
 }
 }
 }else{
-	print("hui")
   if(info3!=""){
 	  try(tkconfigure(.GlobalEnv$tkString2,text = info3))
   }
