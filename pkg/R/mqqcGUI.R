@@ -250,5 +250,5 @@ for(i in 1:4){
 return(output)
 
 }
-hui <- mqqcGUI()
+#hui <- mqqcGUI()
 #print(hui)
