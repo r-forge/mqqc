@@ -86,7 +86,7 @@ dirFrame <- ttklabelframe(tt,text = "Standard Fasta")
     
     
     locationField <- ttkentry(dirFrame, textvariable=StandardFasta,justify = "right")        
-    tkgrid(browseButton2,locationField)
+    #tkgrid(browseButton2,locationField)
 	#tkgrid(dirFrame,padx = 5,pady = 5)
 
 
@@ -250,6 +250,5 @@ for(i in 1:4){
 return(output)
 
 }
-
-#hui <- mqqcGUI()
+hui <- mqqcGUI()
 #print(hui)
