@@ -1,16 +1,37 @@
 msmsPlot <- 
-function(pdfOut = T,path = "./"){
+function(pdfOut = T,path = "./", RawFilesUsed = NULL){
 msmsPath <- list.files(path, pattern="msms.txt",full.name = T)
 if(length(msmsPath) > 0){
 	
-	if(pdfOut){
-		pdf("MSMS_Dis.pdf",pointsize = 20,width = 10)
-	par(mai = c(1.5,1.5,0.2,0.2))
-	}
+
 	
 	MSMS.Import <- read.table(msmsPath,colClasses = "character",sep = "\t",comment.char = "")
+	
+	
 	colnames(MSMS.Import) <- tolower(make.names(MSMS.Import[1,]))
-	MSMS.Import <- MSMS.Import[-1,]
+		MSMS.Import <- MSMS.Import[-1,]
+
+	if(length(RawFilesUsed) > 0){
+		mergeTemp <- merge.control(MSMS.Import$raw.file,RawFilesUsed)
+		mergeTemp  <- mergeTemp[!is.na(mergeTemp)] 
+		if(length(mergeTemp) > 0){
+			MSMS.Import <- MSMS.Import[unique(mergeTemp),]
+		}
+	}
+	if(length(unique(MSMS.Import$raw.file))== 1){
+		
+		.name 	<- paste("MSMS_Dens",unique(MSMS.Import$raw.file),sep = "_")
+		.name 	<- gsub(".raw$","",.name)
+		.name <- paste(.name,".pdf",sep = "")
+	}else{
+		.name <- "MSMS_Dis.pdf"
+	}
+	
+		if(pdfOut){
+		pdf(.name,pointsize = 20,width = 10)
+	par(mai = c(1.5,1.5,0.3,0.2))
+	}
+	
 
 	 test <- quantile(temp <- as.numeric(unlist(strsplit(as.character(MSMS.Import$intensities),";"))),na.rm  =T)
 	 #hist(log10(temp),breaks = 100)
@@ -48,7 +69,7 @@ colsVec <- lapply(Data2,function(x){
 
 maxx <- maxx+ maxx*c(0,0.2)
 
-plot(1,type = "n",ylim = c(0, maxv),ylab = "Density",xlab = "log10(Intensity)",frame = F,xlim = maxx)
+plot(1,type = "n",ylim = c(0, maxv),ylab = "Density",xlab = "log10(Intensity)",frame = F,xlim = maxx,main = "Fragment Ions Density Plot",sub = .name,mgp = c(2.3,1,0))
 grid(lwd = 4)
 a <- 1
 colsVec <- colsVec[order(orderMax,decreasing = T)]
@@ -71,5 +92,3 @@ return(c(quantile(Data2$all,na.rm = T)))
 
 }else{return(rep(0,5))}
 }
-
-#te <- msmsPlot()

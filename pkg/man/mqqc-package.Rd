@@ -13,8 +13,8 @@ As input for the quality control serves the evidence.txt from MQ calculations. T
 \tabular{ll}{
 Package: \tab mqqc\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2013-04-26\cr
+Version: \tab 1.1\cr
+Date: \tab 2013-07-11\cr
 License: \tab This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or

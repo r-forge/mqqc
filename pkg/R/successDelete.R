@@ -34,14 +34,15 @@ successDelete <-
             if(length(tempmqqcInfo)!=0){
   	          write("",paste(dirname(tempI[i]),"mqqcProcessed",sep = "/"))
 
-               dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"))
+               dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"), showWarnings = F)
                 
                qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T)
                 if(length(qcData)> 0){
                 	writeName <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
                 	for(ba in qcData){    
 	                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
-                		temp <- readLines(ba)  	
+                		temp <- readLines(ba)
+                		temp <- paste(temp,c("File.Path",ba),sep = ",")  	
                 		
                 		if(length(checkList) ==  0){
                 			write(temp,file = writeName)
@@ -63,12 +64,14 @@ successDelete <-
 
                 				}
                 			write(temp[2],file = writeName,append = T)
+                	#	PrepareMail("Title","message","henrik.zauber\\@mdc-berlin.de")
+                		
                 		}
                 	
                 	}
                 }
                 
-                if(any(basename(tempmqqcInfo)  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
+                if(any(list.files(dirname(tempmqqcInfo))  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
        DelCont         <-  file.rename(tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" ],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
        if(DelCont){
        	tempmqqcInfo <<- tempmqqcInfo
@@ -99,7 +102,6 @@ successDelete <-
                 time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(x)$ctime)
               #  fileDelete <- fileDelete[time.vec > 86400]
                 if(time.vec >time.thresh){
-                		print("deleting FIle")
 	                  unlink(dirname(fileDelete),recursive  = T) 
                 }
              }

@@ -1,7 +1,16 @@
 evidenceCheck <- 
-function(hotFolder)
+function(hotFolder, match = "evimsms")
 {
   tempI <- list.files(listFolders(hotFolder),pattern = "evidence.txt",full.name = T,recursive = T)
+  if(match == "evimsms"){
+   		msms <- list.files(listFolders(hotFolder),pattern = "msms.txt",full.name = T,recursive = T)
+   		
+   		tempI <- intersect(dirname(tempI),dirname(msms))
+   		tempI <- paste(tempI,"evidence.txt",sep = "/")
+   }
+    
+
+  
   mqqcInfo <- NULL
   if(length(tempI)> 0){
     # Check if evidence was already processed if yes, no output of evidence path

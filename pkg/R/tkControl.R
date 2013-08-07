@@ -1,5 +1,6 @@
 tkControl <-
-function(info = "MQQC INFO BOX",info2 = "Status..." ,info3 = ""){
+function(info = "MQQC INFO BOX",info2 = "Status..." ,info3 = "", htmloutPath = NULL){
+
 
 if(!all(is.na(c(info,info2)))){
   	  info <- paste(info,info2,sep = "\n")
@@ -13,6 +14,13 @@ if(!exists("tt")){
  
   tkgrid(.GlobalEnv$tkString)
   tkgrid(.GlobalEnv$tkString2)
+  tt2 <- tkframe(tt)
+  TKMail <- tkbutton(tt2,text = "@",command = fixMailList)
+TKSpecies <- tkbutton(tt2,text = "Table",command = speciesFunFix)
+TKClean <- tkbutton(tt2,text = "Empty Html",command = function(){CleanHtml(htmloutPath)})
+tkgrid(TKMail,TKSpecies,TKClean)
+tkgrid(tt2)
+
 }
 if(tclvalue(tkwinfo("exists",tt)) == "0"){
   tt <<- tktoplevel()
@@ -22,6 +30,14 @@ if(tclvalue(tkwinfo("exists",tt)) == "0"){
  
   tkgrid(.GlobalEnv$tkString)
   tkgrid(.GlobalEnv$tkString2)
+  
+  tt2 <- tkframe(tt)
+  TKMail <- tkbutton(tt2,text = "@",command = fixMailList)
+TKSpecies <- tkbutton(tt2,text = "Table",command = speciesFunFix)
+TKClean <- tkbutton(tt2,text = "Empty Html",command = function(){CleanHtml(htmloutPath)})
+tkgrid(TKMail,TKSpecies,TKClean)
+
+tkgrid(tt2)
 }else{  
 
 tkconfigure(.GlobalEnv$tkString,text = info)

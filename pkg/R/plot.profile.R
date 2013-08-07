@@ -36,7 +36,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	uniqueSeq 	<- length(unique(data.i$sequence))
 	intens 		<- quantile(data.i$intensity[!is.na(data.i$intensity)])
 	intens 		<- paste("Top 50%:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
-	name.file <- c(as.character(name.file), paste("unique peptides:",uniqueSeq),intens)
+	name.file <- c(as.character(name.file), paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
 	grid(col = "darkgrey",lwd = 1.5)
 	legend("topleft",legend = name.file,bg = "white",box.col = "transparent")
 		for(i in 1:length(unique(Ramp.col))){
@@ -105,3 +105,4 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 	plot(1,type = "n",frame = F,axes = F)
 }
 #plot.profile(data.i)
+#plot.profile(Data)

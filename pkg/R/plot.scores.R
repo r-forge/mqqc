@@ -47,7 +47,9 @@ sum.scores <- c(sum(unlist(score.data[1:3])),sum(unlist(score.data)[4:6]))
 TotalScore <<- unlist(score.data) 
 TotalScore[TotalScore > 1] <- 1
 TotalScore <- as.data.frame(t(as.data.frame(TotalScore)))
-finalAna <- c(	TotalScore$"msmsQuantile.50%",
+finalAna <- c(	TotalScore$"msmsQuantile",
+						TotalScore$"msms",
+						TotalScore$"msms",
 						TotalScore$"msms",
 						TotalScore$"mass.error",
 						TotalScore$"score.50%")
@@ -279,7 +281,6 @@ try(plot.stat(summary.data$msmsEff,60,name.val = "identification efficiency in %
 ##
 # msmsIntensities
 ##
-print(summary.data$msmsQuantile)
 #return(summary.data)
 
 if(any(summary.data$msmsQuantile != 0)){

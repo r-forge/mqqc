@@ -66,7 +66,7 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 
 		try(tkdestroy(tempT))
 		lastFile <- paste(basename(filePath),paste(unlist(speciesUsed[1,1:3]),collapse = "; "),sep = "\n")
-		tkControl(NA,NA,lastFile)
+		tkControl(NA,NA,lastFile,htmloutPath = htmloutPath)
     
 		db <- speciesUsed$Fasta
 		tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))

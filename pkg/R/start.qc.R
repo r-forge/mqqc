@@ -1,5 +1,5 @@
 start.qc <-
-function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER",templateFasta="PLACEHOLDER")
+function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER",templateFasta="PLACEHOLDER",SendMail = T)
 {
 require(tcltk)	
 #tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))
@@ -70,6 +70,23 @@ export <- cbind(export, tempScoreList)
 try(write.csv(export,paste(rep.v[a],".csv",sep = ""),quote = F,row.names = F))
 
 
+flatFile <- t(export)
+flatFile <- paste(rownames(flatFile),flatFile[,1],sep = "\t\t")
+flatFile <- paste(flatFile,collapse = "\n")
+flatFile <- paste("Your MQQC Analysis of",data.frame(export)$Name,"has finished.\nYou can check your file under http://selbachsrv.mdc-berlin.net/mqqc/index.html.\n\n",flatFile)
+
+test 		<- HtmlTable(t(export))
+export 	<- data.frame(export)
+
+MailList <- list.files(path.package("mqqc"),pattern = "MailList.txt",recursive=T,full.name = T)
+if(length(MailList) > 0&SendMail){
+	MailList  <- read.table(MailList,sep = "\t",colClasses = "character",stringsAsFactors = F)
+	MailList <- apply(MailList,2,as.character)
+	
+	Mail <- MailList[MailList[,1] == unlist(strsplit(as.character(export$Name),"_"))[3],2]
+	Mail <- Mail[1]
+	PrepareMail(paste("MQQC",data.frame(export)$Name,data.frame(export)$msms.count,"Peptides"),flatFile,gsub("@","\\@",as.character(Mail),fixed = T))
+}
 list.collect[a] <- qc.prepare.data
 a <- a+1
 }
@@ -84,7 +101,7 @@ if(show.path){
 setwd(.path)
 
 	try(return(list(qc = qc.prepare.data)))
-	try(system("open ."))
+	#try(system("open ."))
 
 }
 #start.qc()

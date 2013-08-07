@@ -1,6 +1,19 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T){
-  tkControl()
+function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F){
+  tkControl(htmloutPath = htmloutPath)
+  try(writeToHtml(path = htmloutPath))
+  
+  if(automatedStart){
+	Tryerror<- class(try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))))
+	if(Tryerror== "try-error"){
+			print("Error, could not auto start. No Param.Rdata available.")
+			stop()
+		}
+	Param <- output
+		for(i in 1:length(Param)){
+			assign(names(Param)[i],Param[[i]])
+		}
+}else{
   
   if(gui){
   	Param <- mqqcGUI()
@@ -12,8 +25,11 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   	if(!Debug){
   		options(warn = -1,show.error.messages = F, showWarnCalls = F)
   	}else{
-  		options(warn = 1,show.error.messages = T, showWarnCalls = T)}
+  		options(warn = 1,show.error.messages = T, showWarnCalls = T)
+  		}
   }
+
+}
   
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
@@ -61,9 +77,9 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
       if(checkSize(evidenceToProcess[i])==0){
-      			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...")
+      			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...", htmloutPath = htmloutPath)
 			  tempI 				<- evidenceToProcess[i]
-			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,templateFasta=templateFasta))
+			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,templateFasta=templateFasta,SendMail= SendMail))
       }
 		}
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
@@ -137,7 +153,7 @@ setwd(folder)
       		if(.Platform$OS.type == "windows"){
 		  		MQmanager(NULL,folder,cores =cores)
 		  	}else{
-		  		tkControl(paste(Sys.time(),"Status: Observing", folder),"")
+		  		tkControl(paste(Sys.time(),"Status: Observing", folder),"", htmloutPath = htmloutPath)
 		  	}
 		  
 		}

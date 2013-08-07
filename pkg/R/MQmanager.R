@@ -21,7 +21,7 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   if(length(TL)==0){
     TL <- grep("MaxQua",TL1, ignore.case = T)
   }
-  try(tkControl(paste(Sys.time(),"Status: Observing", folder),paste("\nCores used",length(TL),"/",cores)))  
+  try(tkControl(paste(Sys.time(),"Status: Observing", folder),paste("\nCores used",length(TL),"/",cores),htmloutPath = htmloutPath))  
   TL <- cores - length(TL)
   MQman <- list.files(folder , pattern = File)
   
@@ -44,6 +44,18 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   if(length(TL) > 0){
     for(i in 1:TL){
       try(tempi <- readLines(File))
+      tempi <<- tempi
+      first <- grep("ECstd",tempi)
+      if(length(first) > 0){
+      	last <- tempi[-first]
+      	first <- tempi[first]
+      	if(length(last) > 0){
+      		firstlast <- c(first,last)
+      		if(length(firstlast) > 0 ){
+      			tempi <- firstlast 
+      		}	
+      	}
+      }
       if(length(tempi)> 0){
         Sys.sleep(1)
         tempSys <- paste(tempi[1])

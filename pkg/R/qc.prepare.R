@@ -87,8 +87,8 @@ raw.files <- grep.col("raw.file",Data)
 
 Data.i <- Data[unique(Data[,raw.files])[1] == Data[,raw.files],]
 
-
-
+Data.i <<- Data.i
+RawFilesUsed <- unique(Data.i$raw.file)
 
 # MSMS
 
@@ -168,7 +168,8 @@ score$quanRet50ratio 	<- 	abs(summary.Data$quanRet50ratio)	/thresholds$quanRet50
 }
 
 # check MSMS
-msmsInfo <- msmsPlot(path = path)
+try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
+
 summary.Data$msmsQuantile <- msmsInfo
 
 score$msmsQuantile <- 	(log10(msmsInfo[3])/thresholds$msmsQuantile[1]*0.3)^1.25 + 
@@ -183,7 +184,7 @@ score$msmsQuantile <- 	(log10(msmsInfo[3])/thresholds$msmsQuantile[1]*0.3)^1.25 
 # if(any(is.na(msmsEff))){
 
 msmsEff <- NA
-try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(min(as.numeric(Data.i$ms.ms.ids[as.numeric(Data.i$ms.ms.ids) > as.numeric(max(Data.i.quant$ms.ms.ids,na.rm = T))]),na.rm = T))*100)
+try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
 # }else{msmsEff <- 0}
 
 # }else{

@@ -9,8 +9,7 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
   }
 	folder.name <- gsub(".","",folder.name,fixed = T)
 	if(length(list.files(pattern = folder.name)) > 0){
-		folder.name <- paste(folder.name,make.names(Sys.time()),sep = "")	
-		
+		folder.name <- paste(folder.name,make.names(Sys.time()),sep = "")			
 	}
 	
 	dir.create(folder.name)

@@ -1,19 +1,23 @@
-	checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
-	if(length(checkMQ)==0){
-		cat("\rChoose MQ Directory!",rep(" ",100))
-		MQloop <- T
-		require(tcltk)
-		while(MQloop){
-			
-			checkMQ <- tk_choose.dir( caption = "Please select folder containing MQ.")	
-			checkMQ.bin <- list.files(paste(checkMQ,"bin",sep = "/"),pattern = "MaxQuantCmd.exe",full.name = T)
+my.read.table2=function(path,sep = "\t",header = T,convertToMatrix = T) {
+ s = file.info( path )$size 
+  cat("Reading File\r")
+ buf <<- readChar( path, s, useBytes=T)
+   cat("Splitting File\r")
+ buf <<- strsplit(buf,"\n",fixed=T,useBytes=T)[[1]]
+ if(convertToMatrix){
+ buf <<- strsplit(buf,sep,fixed=T,useBytes=T)
+  buf <- unlist(buf)
+ cols <<- length(unlist(strsplit(readLines(path,n = 1),sep,fixed = T,useBytes = T)))
+ rows <<- length(buf)/cols
+ buf <- matrix(buf,nrow = rows,ncol = cols,byrow = T)
+ if(header){
+	try( 	colnames(buf) <- buf[1,])
+ 	buf <- buf[-1,]
+ }
+ return(buf)
+}else{return(buf)}
+}
 
-			if(length(checkMQ.bin) != 0){
-				write(checkMQ,file = paste(path.package("mqqc"),"data","MQpath",sep ="/"))
-				MQloop = F
-				
-			}
-		}	
-	}else{
-		checkMQ.bin <- readLines(checkMQ)
-	}
+
+path <- "/Users/Selbach/erik/misMatch/allPeptides.txt"
+system.time(test <- my.read.table2(path,convertToMatrix = T))
