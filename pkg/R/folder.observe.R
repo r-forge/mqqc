@@ -6,7 +6,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(automatedStart){
 	Tryerror<- class(try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))))
 	if(Tryerror== "try-error"){
-			print("Error, could not auto start. No Param.Rdata available.")
+			print("Error, could not auto staret. No Param.Rdata available.")
 			stop()
 		}
 	Param <- output
@@ -70,10 +70,11 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	# Check if there is any evidence to process...
 	####
 	setwd(folder)
-
+	funlastLoop +1
+	if(funlastLoop == 10){
 	evidenceToProcess <- checkMqqcInfo(folder)
   
-  evidenceToProcess <- evidenceCheck(folder)  
+  evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
       if(checkSize(evidenceToProcess[i])==0){
@@ -85,9 +86,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
 		# update export folder   
 
-	}
-	
-funlastLoop +1
+	} # evidence loop
+	} # funlastLoop
 
 if(funlastLoop == 10){
 		funlastLoop  <- 0

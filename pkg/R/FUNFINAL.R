@@ -1,9 +1,18 @@
 FUNFINAL <-
 function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed"){
+	 	collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
+
+   		if( file.exists(collectListPath)){
+	collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
+	collectList <- collectList[!duplicated(collectList$Name),]
+		}
+	
    finalDatPdfMover <- function(dat,fileDir = "files",finalMQQC,folder,sucFolder){
+
+   	
     dir.create(path.temp <- paste(finalMQQC, fileDir,sep = "/"), showWarnings = F)
-    allFiles <- list.files(path.temp)
-    toMoveFiles <- gsub(".csv",".pdf", basename(as.character(dat$File.Path)))
+    #allFiles <- list.files(path.temp)
+    allFiles <- gsub(".csv",".pdf", basename(as.character(dat$File.Path)))
 
 	#toMoveFiles <- setdiff(toMoveFiles, allFiles)
     
@@ -78,8 +87,28 @@ unzip(list.files(paste(path.package("mqqc"),"data/",sep = "/"),full.name = T,pat
 
 files 			<- list.files(paste(folder,sucFolder,sep = "/"),full.name = T,pattern = ".pdf",recursive = T)
 files 			<- files[grep("^MSMS_Dens",basename(files),invert = T)]
-filesInfo 	<- file.info(files)
-ECstd 		<- grep("._.*_.*_ECstd",basename(files))
+
+files.dupli <- files[duplicated(basename(files))]
+files			 <- files[!duplicated(basename(files))]
+if(exists(collectList)){
+	collectListName 	<- paste(collectList$Name,".pdf",sep = "") # prepare names in collectList for mapping against files
+	tempTime 			<- merge.control(collectListName,basename(files))# 
+	collectListTime 	<- collectList[tempTime,]# extract time infor from collectList (faster)
+	filesInfo 				<- file.info(files.dupli) # duplicated entries will be checked for pdf date 
+	filesInfo 				<- cbind(c(files,files.dupli),c(collectListTime$System.Time.s, filesInfo$ctime))
+
+}else{
+	filesInfo <- file.info(files,files.dupli)
+	filesInfo <- cbind(rownames(filesInfo),filesInfo$ctime)
+}
+
+
+
+
+colnames(filesInfo) <- c("name","ctime")
+filesInfo <- as.data.frame(filesInfo)
+
+ECstd 		<- grep("._.*_.*_ECstd",basename(filesInfo[,1]))
 ECstdfiles <- filesInfo[ECstd,]
 if(length(ECstd) > 0){
   filesInfo <- filesInfo[-ECstd,]
@@ -93,12 +122,12 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
 
     if(icou == 1){finalPath <- allPath; icou <- icou+1}else{finalPath <- ECstdPath}
   
-    machineCol     <- 	unlist(strsplit(basename(rownames(i)),"_.*",fixed = F))
+    machineCol     <- 	unlist(strsplit(basename(as.character(i[,1])),"_.*",fixed = F))
     finalCol   			<- 	unlist(strsplit(list.files(finalPath),"_.*",fixed = F))
 
     # exclude older files from same machine
     machineCol <- machineCol[order(i$ctime)]
-    i <- i[order(i$ctime),]
+    i 					<- i[order(i$ctime),]
    # i <- i[!duplicated(machineCol),]
    # machineCol <- machineCol[!duplicated(machineCol)]
     # check if files are older than in folder
@@ -126,14 +155,17 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
         new <- new[new[,3] == max(new[,3]),]
         if(is.matrix(new)){
         dateExtract	<- unlist(lapply(strsplit(basename(new[,2]),"_"),function(x){x <- x[2]}))
-        new <- new[dateExtract == max(dateExtract)]
-        	
+        
+        new <- new[dateExtract == max(dateExtract),]
+        if(is.matrix(new)){
+        	new <- new[1,]
+        }	
         }
       }
       if(is.matrix(old)&length(old) > 0){
         old <- old[max(old[,4]),]
       }
-      
+
       if(as.numeric(old[3]) < as.numeric(new[3])){
         
         unlink(old[2])
@@ -171,9 +203,9 @@ for(i in list(one = filesInfo,two = ECstdfiles)){
 ###
 pdfFiles 	<- list.files(finalMQQC,pattern = ".pdf",recursive = T)
 ECstd 		<- pdfFiles %in% grep("^ECstd", pdfFiles, value = TRUE)
-Samples 		<- pdfFiles %in% grep("^all/", pdfFiles, value = TRUE)
+Samples 	<- pdfFiles %in% grep("^all/", pdfFiles, value = TRUE)
 
-allData <- list.files(paste(folder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
+allData 	<- list.files(paste(folder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
 if(length(allData) > 0){
 
 tryError <- class(try(allData <- unique(read.csv(allData))))

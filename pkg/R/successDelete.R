@@ -1,8 +1,18 @@
 successDelete <- 
   function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
   {
-    tempI 				<- list.files(listFolders(hotFolder),pattern = "evidence.txt",full.name = T,recursive = T)
-    tempImqqc 		<- list.files(listFolders(hotFolder),pattern = "mqqc",full.name = T,recursive = T, include.dirs = T)
+  	folders <- listFolders(hotFolder)
+  	collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
+  	# Search only in folders which have not been processed, reduces search space
+	if( file.exists(collectListPath)){
+	collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
+	imported 		<- collectList[,dim(collectList)[2]]
+  	processed  <- unlist(lapply(strsplit(imported,"/combined"),function(x){return(x[1])}))
+  	folders <- setdiff(folders,processed)	
+	}
+
+    tempI 				<- list.files(folders,pattern = "evidence.txt",full.name = T,recursive = T)
+    tempImqqc 		<- list.files(folders,pattern = "mqqc",full.name = T,recursive = T, include.dirs = T)
     if(length(tempImqqc) > 0){
     tempI  <- tempI[merge.control(dirname(tempI),dirname(tempImqqc))]
     	if(any(!is.na(tempI))){
