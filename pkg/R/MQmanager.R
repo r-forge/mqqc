@@ -21,6 +21,9 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmdt",cores = 1){
   if(length(TL)==0){
     TL <- grep("MaxQua",TL1, ignore.case = T)
   }
+  if(!exists("TL")){TL <- NULL}
+   mqqcRunningMQ <<- paste("",length(TL),"/",cores)
+
   try(tkControl(paste(Sys.time(),"Status: Observing", folder),paste("\nCores used",length(TL),"/",cores),htmloutPath = htmloutPath))  
   TL <- cores - length(TL)
   MQman <- list.files(folder , pattern = File)

@@ -2,6 +2,7 @@ successDelete <-
   function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
   {
   	folders <- listFolders(hotFolder)
+  	folders <- folders[grep("^_RmqqcFile",basename(folders),invert = T)]
   	collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
   	# Search only in folders which have not been processed, reduces search space
 	if( file.exists(collectListPath)){
@@ -10,7 +11,7 @@ successDelete <-
   	processed  <- unlist(lapply(strsplit(imported,"/combined"),function(x){return(x[1])}))
   	folders <- setdiff(folders,processed)	
 	}
-
+	if(length(folders) > 0){
     tempI 				<- list.files(folders,pattern = "evidence.txt",full.name = T,recursive = T)
     tempImqqc 		<- list.files(folders,pattern = "mqqc",full.name = T,recursive = T, include.dirs = T)
     if(length(tempImqqc) > 0){
@@ -106,20 +107,31 @@ successDelete <-
           
         }
     }
-    
-     fileDelete <- list.files(hotFolder,pattern = "^DeleteTag$",recursive = T,full.name = T)
-     DelFun <- 	function(x,time.thresh = 86400){
-                time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(x)$ctime)
+    }
+    files <- list.files(hotFolder)
+    files <- grep("^_RmqqcFile",files,value = T,invert = T)
+     fileDelete <- list.files(files,pattern = "^DeleteTag$",recursive = T,full.name = T)
+     DelFun <- 	function(fileDelete,time.thresh = 86400,move = T, destDelete = F,hotFolder){
+                time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(fileDelete)$ctime)
               #  fileDelete <- fileDelete[time.vec > 86400]
                 if(time.vec >time.thresh){
-	                  unlink(dirname(fileDelete),recursive  = T) 
+                	if(destDelete){
+                	 	unlink(dirname(fileDelete),recursive  = T) 
+                	}
+                	if(move&! destDelete){
+                						file.rename(paste(hotFolder,basename(dirname(fileDelete)),sep = "/"),paste(hotFolder,"_RmqqcFile_Old",basename(dirname(fileDelete)),sep = "/"))
+
+                	}
                 }
              }
              
-             
-     if(length(fileDelete) > 0 & destDelete){
-     	lapply(fileDelete,DelFun)     	
-     }
+         if(length(fileDelete) > 0){    
+     		if(destDelete){
+     			lapply(fileDelete,DelFun,hotFolder = hotFolder, destDelete = T,move = F)     	
+     		}else{
+     			lapply(fileDelete,DelFun,hotFolder = hotFolder,move = T, destDelete = F)     	
+     		}
+     	}
 	#        listFiles 	<- list.files(fileDelete,recursive = T,full.name = T)
 	
 

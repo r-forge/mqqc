@@ -1,6 +1,8 @@
 start.qc <-
-function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER",templateFasta="PLACEHOLDER",SendMail = T)
+function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER",templateFasta="PLACEHOLDER",SendMail = T, exitPath = NULL)
 {
+	
+SourceTime <- file.info(DataEvidence)$ctime
 require(tcltk)	
 #tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))
 cat("\rLoading data",rep(" ",100))
@@ -25,7 +27,6 @@ cat("\rData loaded",rep(" ",100))
 
 if(tryError == "try-error"){
 	  	          write("",paste(.path,"mqqcProcessed",sep = "/"))
-
 }
 
 	
@@ -53,7 +54,7 @@ for(i in rep.v){
 
 temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.character(i),]	
 cat("\rstarting qc.prepare",rep(" ",100))
-qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
+qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
 
 export 	<- unlist(qc.prepare.data$sd)
 
@@ -67,6 +68,19 @@ if(tryError == "try-error"){
 }
 tempScoreList <- t(as.matrix(unlist(TotalScoreRes)))
 export <- cbind(export, tempScoreList)
+
+if(length(exitPath) > 0){
+	exitPath  <-  paste(exitPath,paste(Sys.Date(),gsub(".raw$","raw",rep.v[a]),"folder",sep = "_"),paste(rep.v[a],".csv",sep = ""),sep = "/")
+	names(exitPath) <- "filePath"
+	SourceTime <- as.numeric(SourceTime)
+	names(SourceTime) <- "SourceFileTime"
+	Status <- "fresh"
+	names(Status) <- "Status"
+	export <- cbind(export,exitPath, SourceTime, Status)
+	
+	
+}
+
 try(write.csv(export,paste(rep.v[a],".csv",sep = ""),quote = F,row.names = F))
 
 

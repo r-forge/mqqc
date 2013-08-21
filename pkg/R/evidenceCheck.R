@@ -6,13 +6,13 @@ function(hotFolder, match = "evimsms", sucFolder)
 	collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
 	imported 		<- collectList[,dim(collectList)[2]]
   	processed  <- unlist(lapply(strsplit(imported,"/combined"),function(x){return(x[1])}))
-
 	}
 	folders <- listFolders(hotFolder)
   	folders <- grep("_RmqqcFile_",listFolders(hotFolder),fixed = T,value = T,invert = T)
-  	if(exists(processed)){
+  	if(exists("processed")){
   		  try(folders <- setdiff(folders,processed))
   	}
+  	if(length(folders)> 0){
  	tempI <- list.files(listFolders(folders),pattern = "evidence.txt",full.name = T,recursive = T)
   if(match == "evimsms"){
    		msms <- list.files(dirname(tempI),pattern = "msms.txt",full.name = T,recursive = T)	
@@ -34,6 +34,7 @@ function(hotFolder, match = "evimsms", sucFolder)
    # mqqcInfo 	<- mqqcInfo[file.info(mqqcInfo)$isdir]
 
   }
+  }else{mqqcInfo <- NULL}
   return(mqqcInfo)
 }
 

@@ -60,6 +60,9 @@ DataL <- c(DataL,length(Data2$all))
 
 
 colsVec <- lapply(Data2,function(x){
+	if(length(x) == 1){
+		x <- c(x,x)
+	}
 	dens <- density(as.numeric(log10(x)))
 	maxv <<- max(maxv,max(dens$y),na.rm = T)
 	maxx <<- c(min(maxx,min(dens$x),na.rm = T),max(maxx,max(dens$x),na.rm = T))

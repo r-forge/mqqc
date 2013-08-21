@@ -1,7 +1,6 @@
 folder.observe <-
 function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F){
   tkControl(htmloutPath = htmloutPath)
-  try(writeToHtml(path = htmloutPath))
   
   if(automatedStart){
 	Tryerror<- class(try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))))
@@ -30,7 +29,9 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   }
 
 }
-  
+    try(writeToHtml(path = htmloutPath))
+dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
+
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
 }
@@ -72,15 +73,15 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	setwd(folder)
 	funlastLoop +1
 	if(funlastLoop == 10){
-	evidenceToProcess <- checkMqqcInfo(folder)
+	#evidenceToProcess <- checkMqqcInfo(folder)
   
-  evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
+  	evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
       if(checkSize(evidenceToProcess[i])==0){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...", htmloutPath = htmloutPath)
 			  tempI 				<- evidenceToProcess[i]
-			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,templateFasta=templateFasta,SendMail= SendMail))
+			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,templateFasta=templateFasta,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/")))
       }
 		}
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
@@ -95,9 +96,9 @@ if(funlastLoop == 10){
 
 		if(is.function(FUNLAST)){
 		  htmloutPath <<- htmloutPath
-		  sucFolder <<- sucFolder
-				  FUNLAST(htmloutPath,folder,sucFolder)
-			  	  	try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+  	  				try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+	  sucFolder <<- sucFolder
+				  	FUNLAST(htmloutPath,folder,sucFolder)
 
 		}
 
