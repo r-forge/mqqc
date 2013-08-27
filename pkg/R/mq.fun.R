@@ -26,9 +26,9 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 	# preparing XML
 	assign("filePath",filePath,envir = .GlobalEnv)
 	
-  	mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
+  	mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^init_mqpar",full.name = T)
   if(length(mqpar.name)!=0){
-    mqpar   	<- 	readLines(mqpar.name)
+    mqpar   			<- 	readLines(mqpar.name)
     xmlNEW 		<- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
     xmlNEW 		<- 	xml.replace(c("fileNames"),basename(filePath), xmlNEW)
     xmlNEW 		<- 	xml.replace(c("paramGroups"),rep(1,length(filePath)), xmlNEW,start.string = "<int>",end.string = "</int>")
@@ -71,6 +71,7 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 		db <- speciesUsed$Fasta
 		tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
 	if(tryError == "try-error"){
+		cat("\nError, Could not read fasta, switched to default database.\n")
 				db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
 	}
     if(length(grep("/",db,fixed = T)) > 0){
@@ -80,9 +81,10 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 	}else{
 		db <- NA
 	}
-	if(is.na(db)){
+	if(!is.na(db)){
 
     	xmlNEW<- xml.replace("fastaFiles",db , xmlNEW) 
+    	print(xmlNew)
     } 
   }
     

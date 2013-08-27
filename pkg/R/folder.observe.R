@@ -147,7 +147,7 @@ setwd(folder)
 			  }
 			  
 			}
-		#	catFun("Closed Loop")
+		#	cat SpeciesTable"Closed Loop")
 
 		}else{
       		

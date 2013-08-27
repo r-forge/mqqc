@@ -164,7 +164,7 @@ if(!exists("tableHtml2")){tableHtml2 <- NULL}
 
 paste(finalMQQC,"all",paste(Machines,".pdf",sep = ""),sep = "/")
 
-writeToHtml(sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 )
+writeToHtml(sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 )
 
 
 try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))

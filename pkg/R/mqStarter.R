@@ -26,3 +26,10 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 	
 	return(path.file)	
 }
+
+#temp.batch.n <- "~/Grobi_20131213_HZ_MM_huha.raw"
+#InfoString = "_RmqqcFile_"
+#templateFasta = "._.*_.*_PLACEHOLDER_"
+#placeholder = "PLACEHOLDER"
+#1. mqStarter
+#2. mq.fun
