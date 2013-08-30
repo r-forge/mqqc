@@ -26,7 +26,7 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 	# preparing XML
 	assign("filePath",filePath,envir = .GlobalEnv)
 	
-  	mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^init_mqpar",full.name = T)
+  	mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
   if(length(mqpar.name)!=0){
     mqpar   			<- 	readLines(mqpar.name)
     xmlNEW 		<- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
@@ -84,7 +84,6 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 	if(!is.na(db)){
 
     	xmlNEW<- xml.replace("fastaFiles",db , xmlNEW) 
-    	print(xmlNew)
     } 
   }
     
