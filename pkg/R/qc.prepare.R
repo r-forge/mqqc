@@ -34,7 +34,7 @@ thresholds$msms.count 		<- 4000
 thresholds$ret.peak.shape <- c(0.5,3)
 thresholds$ret.width 		  <- c(0.3,1)
 thresholds$total.msms.min	<- 150
-thresholds$quan.msms.min	<- 250
+thresholds$quan.msms.min	<- 200
 thresholds$mass.error.cal <- c(0.5,5)
 thresholds$quan.duplicates.msms <- 0.05
 thresholds$score 			    <- 100
@@ -43,13 +43,14 @@ thresholds$quanRetRSD 		<- 0.05
 thresholds$quanRetSlope 	<- 0.02
 thresholds$quanRet50ratio	<- 1.2
 thresholds$msmsQuantile <-  c(4.5,5) # log10 Int
+thresholds$msmsCounts <- c(30,40)
 if(SpeciesTable){
 	
 	      species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
 	      RawFile <- unique(Data$Raw.file)[1]
 	      regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})	
 	      temp   	<-as.logical(sapply(regEx,grep, x = RawFile))
-		temp[is.na(temp)] <- FALSE
+			temp[is.na(temp)] <- FALSE
 
 		if(any(temp)){
 		speciesUsed <- species[temp,]
@@ -170,14 +171,16 @@ score$quanRet50ratio 	<- 	abs(summary.Data$quanRet50ratio)	/thresholds$quanRet50
 # check MSMS
 try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
 
-summary.Data$msmsQuantile <- msmsInfo
+summary.Data$msmsQuantile <- msmsInfo$MSMSint
+summary.Data$msmsMassCount <- msmsInfo$MSMSn
 
-score$msmsQuantile <- 	(log10(msmsInfo[3])/thresholds$msmsQuantile[1]*0.3)^1.25 + 
-										(log10(msmsInfo[4])/thresholds$msmsQuantile[2]*0.3)^1.25 + 
-										(log10(msmsInfo[5])/(thresholds$msmsQuantile[2]*1.2)*0.1)^1.25+ 
-										(log10(msmsInfo[1])/(thresholds$msmsQuantile[1]*0.7)*0.1)^1.25 + 
-										(log10(msmsInfo[2])/(thresholds$msmsQuantile[1]*0.9)*0.2)^1.25
+score$msmsQuantile <- 	(log10(msmsInfo$MSMSint[3])/thresholds$msmsQuantile[1]*0.3)^1.25 + 
+										(log10(msmsInfo$MSMSint[4])/thresholds$msmsQuantile[2]*0.3)^1.25 + 
+										(log10(msmsInfo$MSMSint[5])/(thresholds$msmsQuantile[2]*1.2)*0.1)^1.25+ 
+										(log10(msmsInfo$MSMSint[1])/(thresholds$msmsQuantile[1]*0.7)*0.1)^1.25 + 
+										(log10(msmsInfo$MSMSint[2])/(thresholds$msmsQuantile[1]*0.9)*0.2)^1.25
 
+score$msmsCount 	<-  msmsInfo$MSMSn[3]/thresholds$msmsCount[1]*0.5 + msmsInfo$MSMSn[2]/(thresholds$msmsCount[2] - diff(thresholds$msmsCount))*0.25 + msmsInfo$MSMSn[4]/(thresholds$msmsCount[2])*0.25
 # efficiency 
 # msmsEff <- sumDat()
 # if(length(msmsEff) == 1){

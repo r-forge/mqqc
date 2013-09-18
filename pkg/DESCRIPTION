@@ -1,7 +1,7 @@
 Package: mqqc
 Type: Package
 Title: Quality control of LCMS derived proteomic data
-Version: 1.2
+Version: 1.3
 Date: 2013-04-03
 Author: Henrik Zauber
 Maintainer: Who to complain to <yourfault@somewhere.net>

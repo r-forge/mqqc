@@ -146,10 +146,14 @@ try(collectListSorted <- cbind(	colorCode ,
 try(colnames(collectListSorted) <- c("",colsTemp,"Time","Peptides","Unique_Peptides","MSMS/min","mass_error_[ppm]","Score_M","",""))
 alignVec <<- c("center","left",rep("center",(dim(collectListSorted)[2]-2)))
 
+
+collectListSorted  <- collectListSorted[order(rownames(collectListSorted)),]
+
 if(it ==1){
 	 try(tableHtml2 <-HtmlTable(collectListSorted, tableDesign = "table-design2"))
 if(!exists("tableHtml2")){tableHtml2 <- NULL}
 	}else{
+		
 		 try(tableHtml <- HtmlTable(collectListSorted, align= alignVec))
 	}
 }else{	

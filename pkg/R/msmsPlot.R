@@ -33,7 +33,16 @@ if(length(msmsPath) > 0){
 	}
 	
 
-	 test <- quantile(temp <- as.numeric(unlist(strsplit(as.character(MSMS.Import$intensities),";"))),na.rm  =T)
+	 test <<- quantile(temp <- as.numeric(unlist(strsplit(as.character(MSMS.Import$intensities),";"))),na.rm  =T)
+	 MSMS.N <- sapply( strsplit(as.character(MSMS.Import$intensities),";"),length)
+	 MSMS.N <- quantile(MSMS.N[MSMS.N != 0])
+
+# huha <-temp/MSMS.N
+# huha <- huha[!is.infinite(huha)]
+# huha <- huha[huha !=0]
+# test <- quantile(huha)
+	 
+	 
 	 #hist(log10(temp),breaks = 100)
 
 
@@ -57,6 +66,7 @@ maxx <- 2
 orderMax <- c()
 Data2$all <-  as.numeric(unlist(strsplit(as.character(MSMS.Import$intensities),";")))
 DataL <- c(DataL,length(Data2$all))
+names(DataL)[length(DataL)] <- "all"
 
 
 colsVec <- lapply(Data2,function(x){
@@ -77,21 +87,25 @@ grid(lwd = 4)
 a <- 1
 colsVec <- colsVec[order(orderMax,decreasing = T)]
 cols <- cols[order(orderMax,decreasing = T)]
-DataL <- DataL[order(orderMax,decreasing = T)]
+DataL <- DataL[merge.control(names(DataL),names(colsVec))]
+DataRel <- DataL/max(DataL)
 lapply(colsVec,function(x){
-		points(x,col = "white",type = "l",lwd = 7)
-
+		
+	x$y <- x$y * DataRel[a]
+	points(x,col = "white",type = "l",lwd = 7)
 	points(x,col = cols[a],type = "l",lwd = 4)
 	
 	a <<- a+1
 })
 
+legend("topright",legend = paste(names(colsVec),"n:",DataL[merge.control(names(DataL),names(colsVec))])[order(names(colsVec))],col = cols[order(names(colsVec))],lwd = 10,bty = "n",cex = 1,xpd = NA, xjust = 0.5)
 
-legend("topright",legend = paste(names(colsVec),"n:",DataL)[order(names(colsVec))],col = cols[order(names(colsVec))],lwd = 10,bty = "n",cex = 1,xpd = NA, xjust = 0.5)
 if(pdfOut){
 graphics.off()	
 }
-return(c(quantile(Data2$all,na.rm = T)))
+return(list(MSMSint = quantile(Data2$all,na.rm = T),MSMSn = quantile(MSMS.N[MSMS.N != 0],na.rm = T)))
 
 }else{return(rep(0,5))}
 }
+#try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
+#hz.show.path(getwd())
