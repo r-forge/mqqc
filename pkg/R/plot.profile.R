@@ -1,11 +1,14 @@
 plot.profile <-
-function(data.i,layout = T,linePlot =F){	
-	if(layout){
+function(data.i,layout = T,linePlot =F,BSACheck = F){	
+if(layout){
 			layout(matrix(c(1,2,3,4),ncol = 2,nrow = 2),height = c(5,1.5),width = 	c(5,1))
 
 	}
-
-
+colnames(data.i) <- tolower(colnames(data.i))
+if(BSACheck){
+	
+	BSAEVI <- data.i[BSAgrep <- grep("P02769",data.i$proteins),]
+}
 
 name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	######
@@ -15,16 +18,26 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	# modify intensity
 
 	Ramp.col <- colorRampPalette(c("dodgerblue2","blue","darkblue","navyblue"))(101)
+	BSA.col <- colorRampPalette(c("orange","red","darkred","violet"))(101)
+
 	intensity <- data.i$intensity
 	intensity <- intensity/max(intensity,na.rm = T)*100
-	Ramp.col <- Ramp.col[(round(intensity)+1)]
+	intensity[is.na(intensity)] <- 0
+	if(BSACheck){
+		Ramp.col.BSA <- BSA.col[(round(intensity)+1)[BSAgrep]]
+	}
+		Ramp.col <- Ramp.col[(round(intensity,1)+1)]
+	if(BSACheck){
+		Ramp.col[BSAgrep] <- Ramp.col.BSA
+	}
+	
 	
 	intensity <- intensity/100*5
 	intensity[is.na(intensity)] <- 0
 	intensity <- sqrt(intensity)
 	intensity <- round(intensity,1)*1.5
 	
-	
+	Ramp.col[is.na(Ramp.col)] <- "grey"
 	par(mai=c(0,1,0.1,0))
 
 	col.intensity <- grep("intensity",tolower(colnames(data.i)))
@@ -53,7 +66,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 				Finish <- y +1
 				.border <- "grey"
 			}else{
-				.border <- "white"
+				.border <- "lightgrey"
 			}	
 			
 			.cols <- unique(Ramp.col)[i]
@@ -75,18 +88,39 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 		
 		}
 		
+		if(BSACheck){
+			BSAx <- data.i$retention.time[BSAgrep]
+BSAy <- data.i$m.z[BSAgrep]
+BSAmz <- round(BSAy,1)
+text(BSAx,BSAy,BSAmz,pos = 3,cex = 0.4)
+		}
+		
 	par(mai=c(0.6,1,0,0))
 	
 	dens.crt <- class(try(temp <- density(data.i$retention.time)))
 	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
 	
-		plot(temp$x,temp$y,main = "",axes = F,frame = F,xlim = range(data.i	$retention.time,na.rm = T),type = "l",xlab = "",ylab = "Density")
+		plot(temp$x,temp$y,main = "",axes = F,frame = F,xlim = range(data.i$retention.time,na.rm = T),type = "l",xlab = "",ylab = "Density")
 		mtext("time in min",1,line = 1.9,cex = 0.6)
 		
 		
 		axis(2,xpd = NA,las = 2)
 		axis(1)
+
+	if(BSACheck){
+		BSAdensFactor <- length(BSAgrep)/dim(data.i)[1]
+		
+		
+			dens.crt <- class(try(temp <- density(data.i$retention.time[BSAgrep])))
+	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
+	
+		points(temp$x,temp$y* BSAdensFactor,main = "",axes = F,frame = F,xlim = range(data.i$retention.time[BSAgrep],na.rm = T),type = "l",xlab = "",ylab = "Density",col = "orange")
+		mtext("time in min",1,line = 1.9,cex = 0.6)
+				legend("topright",legend = c("all","BSA"),col = c(1,"orange"),lwd = 1,bty = "n")
+
+	}
 	dens.crt <- class(try(	temp <-density(data.i$m.z)))
+	
 	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}	
 		grid(col = "darkgrey",lwd = 1.5)
 
@@ -102,7 +136,20 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 		axis(1,xpd = NA,las = 2)
 		mtext("Density",1,line = 4,cex = 0.6)
 
-	plot(1,type = "n",frame = F,axes = F)
+	
+	if(BSACheck){
+	dens.crt <- class(try(	temp <-density(data.i$m.z[BSAgrep])))
+		if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}	
+	par(mai=c(0,0,0.1,0.1))
+	
+	points(temp$y*BSAdensFactor,temp$x,type = "l",axes = F,frame = F,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "",col = "orange")
+
+		legend("topright",legend = c("all","BSA"),col = c(1,"orange"),lwd = 1,bty = "n")
+	}
+		plot(1,type = "n",frame = F,axes = F)
+
+	
+	
 }
 #plot.profile(data.i)
 #plot.profile(Data)

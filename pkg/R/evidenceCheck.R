@@ -15,7 +15,8 @@ function(hotFolder, match = "evimsms", sucFolder)
   	if(length(folders)> 0){
  	tempI <- list.files(folders,pattern = "evidence.txt",full.name = T,recursive = T)
  	#tempI <- paste(folders, tempI,sep = "")
-  if(match == "evimsms"){
+
+  if(match == "evimsms"& length(tempI) > 0){
    		msms <- list.files(dirname(tempI),pattern = "msms.txt",full.name = T,recursive = T)	
    		tempI <- intersect(dirname(tempI),dirname(msms))
    		tempI <- paste(tempI,"evidence.txt",sep = "/")

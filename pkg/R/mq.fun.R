@@ -1,6 +1,6 @@
 mq.fun <-
-function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER"){
-
+function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER",skipUnknown = T){
+RunFile <- T
 	# creating string for system call of MQ
 	#check MQ path
 	checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
@@ -71,8 +71,15 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 		db <- speciesUsed$Fasta
 		tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
 	if(tryError == "try-error"){
-		cat("\nError, Could not read fasta, switched to default database.\n")
-				db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
+		
+		if(skipUnknown){
+					cat("\nError, Could not read fasta, run is aborted.\n")
+				 	RunFile <- F
+		}else{
+			cat("\nError, Could not read fasta, switched to default database.\n")
+		}
+		
+		db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
 	}
     if(length(grep("/",db,fixed = T)) > 0){
       db <- path.convert(db)
@@ -87,18 +94,19 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
     } 
   }
     
-    
-	write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
+    if(RunFile){
+		write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
   	
     
-  	threads <- 1
-  	MQ		<- "MaxQuantCmd.exe"
+  		threads <- 1
+  		MQ		<- "MaxQuantCmd.exe"
   	
-  	MQcmd <- paste(checkMQ.bin,"/bin/",MQ," ", xml.path," ",threads,sep = "")
-  	MQcmd <- path.convert(MQcmd)
+  		MQcmd <- paste(checkMQ.bin,"/bin/",MQ," ", xml.path," ",threads,sep = "")
+  		MQcmd <- path.convert(MQcmd)
   
-  #  return(xmlNEW[2])
-  	MQmanager(MQcmd,folder,cores =cores)
+  		#  return(xmlNEW[2])
+  		MQmanager(MQcmd,folder,cores =cores)
+  	}
   }else{
     print("Error in MQ start. No XML provided.")
   }

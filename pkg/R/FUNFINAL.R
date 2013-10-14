@@ -1,5 +1,5 @@
 FUNFINAL <-
-function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed"){
+function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy")){
 
 dir.create(finalMQQC, showWarnings = F)
 dir.create(allPath <- paste(finalMQQC,"all",sep = "/"), showWarnings = F)
@@ -18,7 +18,6 @@ unzip(list.files(paste(path.package("mqqc"),"data/",sep = "/"),full.name = T,pat
 
 }
 
-Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy")
 HotLink = rep("-",length(Machines))
 HotLinkCol = rep("#ffffff",length(Machines))
 collectListPath <- paste(folder,sucFolder,"list_collect.csv",sep = "/")
@@ -35,13 +34,17 @@ if(file.exists(collectListPath)){
 	it <- 1
 	for(iList in list(ECstd,Normal)){
 		tempListOne <- collectList[iList,]
+		if(it == 1){
+try(			plottingTimeLineFunction(tempListOne,finalMQQC)
+)		}
 		
 		collectListSorted <- c()
 		collectListSortedLife <- c()
 		Names 		<- sapply(strsplit(tempListOne$Name,"_"),function(x){x[1]})
 	for(iNames in unique(Names)){
 		tempList <- tempListOne[Names == iNames,]
-		tempList <- tempList[order(tempList$SourceTime,decreasing = T),]
+		try(		tempList <- tempList[order(tempList$SourceTime,decreasing = T),]
+)
 		if(dim(tempList)[1] > 10){
 			tempList <- tempList[1:10,]
 		}
@@ -168,10 +171,14 @@ if(!exists("tableHtml2")){tableHtml2 <- NULL}
 
 paste(finalMQQC,"all",paste(Machines,".pdf",sep = ""),sep = "/")
 
-writeToHtml(sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 )
+writeToHtml(inputVec = sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),
+inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 )
 
 
 try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))
 }
 
 }
+
+#finalMQQC <- htmloutPath
+#sucFolder="_RmqqcFile_Processed"

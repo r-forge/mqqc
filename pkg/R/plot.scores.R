@@ -1,7 +1,7 @@
 plot.scores <-
-function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = T)
+function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSACheck = F)
 {
-	cat("\rplotting scores",rep(" ",100))
+cat("\rplotting scores",rep(" ",100))
 #initiation of important vectors 
 grad.cols.vec <- c("black","blue","lightblue",colors()[50])
 
@@ -54,6 +54,10 @@ finalAna <- c(	TotalScore$"msmsQuantile",
 						TotalScore$"mass.error",
 						TotalScore$"score.50%")
 						
+if(BSACheck){
+	finalAna[2:4] <- TotalScore$ProteinCoverage
+}
+
 TotalScore <- sum(as.numeric(finalAna))/(length(finalAna)-1)
 
 if(any(sum.scores > 3)){
@@ -74,7 +78,7 @@ if(any(summary.data$msmsQuantile != 0)&  1==0){
 	scoreSpace 	 <- matrix(c(6,6,rep(5,(2*(ncolVal-3)-2)),7,7),ncol =(ncolVal-2),nrow = 2 )	
 	addNum <- 1
 }else{
-	scoreSpace 	 <- matrix(c(6,6,6,6,rep(5,(2*(ncolVal-4)))),ncol =(ncolVal-2),nrow = 2 )	
+	scoreSpace 	 <- matrix(c(6,6,6,6,19,19,rep(5,(2*(ncolVal-4)))),ncol =(ncolVal-2),nrow = 2 )	
 	addNum <- 0
 	
 }
@@ -107,7 +111,7 @@ if(any(grep.col("calibrated.retention.time.start",data.i) == 0|grep.col("calibra
 	dots <- F
 }else{dots <- T}
 
-try(plot.profile(data.i,F,dots))
+try(plot.profile(data.i,F,dots,BSACheck= BSACheck))
 
 par(mai = c(0.4,2,0.2,0.1))
 
@@ -126,7 +130,13 @@ round.spec <- function(x){
 		}
 col.temp <- (colorRampPalette(grad.cols.vec)(100))
 score.data <- score.data[names(score.data)!=""]
-orderScores <- c("msms","mass.error","score","msmsQuantile","quan.duplicates.msms","msmsEff","ret.width","peak.shape","quanRetRSD","quanRetSlope","quanRet50ratio")
+orderScores <- c("msms","mass.error","score","msmsQuantile","quan.duplicates.msms","msmsCount","msmsEff","ret.width","peak.shape","quanRetRSD","quanRetSlope","quanRet50ratio")
+if(BSACheck){
+	
+	orderScores[1] <- "ProteinCoverage"
+}
+
+
 
 score.order <- merge.control(names(score.data),orderScores)
 diff 		<- setdiff(1:length(names(score.data)),score.order[!is.na(score.order)])
@@ -145,6 +155,8 @@ namesData[namesData=="quanRetSlope"] <- "ETime slope"
 namesData[namesData=="quanRet50ratio"] <- "ETime balance"
 namesData[namesData=="quan.duplicates.msms"] <- "Multiple MSMS"
 namesData[namesData=="msms"] <- "Peptide ID/min"
+namesData[namesData=="ProteinCoverage"] <- "BSA Protein Coverage in %"
+
 namesData[namesData=="mass.error"] <- "Mass error"
 namesData[namesData=="score"] <- "Score"
 namesData[namesData=="peak.shape"] <- "Peak Shape"
@@ -181,9 +193,14 @@ for(col.i in 1:init.i){
 
 mtext("Good",2,adj = 1,cex = 0.8)
 mtext("Poor",2,adj = 0,cex = 0.8)
+if(BSACheck){
+	mtext("BSA",2,cex = 1.5,line = 4,las = 2,col = "darkgrey")
+}
+
+
 #mtext("Color\nCode",3,cex = 0.8)
 #legend(max(temp.pos)+ temp.pos[1],max(temp.xlim),legend = c("peptide ID","mass error","score","peak shape","elution time","duplicated peptide IDs"),,fill = c(ms.col,nc.col),xpd = NA,xjust = 0,bty = "n",title = "Legend")
-abline(v=-11.5,xpd = NA,lwd = 3,col = "grey")
+abline(v=-7.2,xpd = NA,lwd = 3,col = "grey")
 
 
 par(mai = c(0,0,0,0))
@@ -265,8 +282,12 @@ plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col
 ##
 # Peptide ID/min
 ##
-try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "Peptide ID/min",main = "MS", col.dir = ColUse[ColUse[,2] == "msms",1]))
+if(BSACheck){
+	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MS", col.dir = ColUse[ColUse[,2] == "ProteinCoverage",1]))
 
+}else{
+try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "Peptide ID/min",main = "MS", col.dir = ColUse[ColUse[,2] == "msms",1]))
+}
 ###
 # mass error
 ###

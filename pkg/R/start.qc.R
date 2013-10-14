@@ -55,17 +55,37 @@ list.collect <- list(length=length(rep.v))
 a <- 1
 
 for(i in rep.v){
-
+####
+# Subset evidence
+####
 temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.character(i),]	
 cat("\rstarting qc.prepare",rep(" ",100))
-tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
-))
+
+####
+# Calculation of Scores
+####
+
+tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)))
 export 	<- unlist(qc.prepare.data$sd)
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
 names(add.vec) <- c("Name","System.Time.s","System.Time")
 export <- t(as.matrix(c(add.vec ,export)))
-tryError2 <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)))
+ 
+####
+# BSACheck
+####
+BSACheck <- gsub(placeholder,"BSA", templateFasta,fixed = T)
+if(length(grep(BSACheck,i)) > 0){
+	
+	BSACheck <- T
+}else{BSACheck <- F}
+####
+####
+# Plotting
+####
+
+tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
 
 if(tryError == "try-error"){
 	TotalScoreRes <- list(TotalScore = "?",TotalScoreColor = "#666666")

@@ -73,8 +73,10 @@ dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 	setwd(folder)
 	funlastLoop +1
 	if(funlastLoop == 10){
+		
+		try(ThreadControl(folder))
 	#evidenceToProcess <- checkMqqcInfo(folder)
-  
+ 	 
   	evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){

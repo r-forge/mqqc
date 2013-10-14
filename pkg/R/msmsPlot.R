@@ -73,10 +73,14 @@ colsVec <- lapply(Data2,function(x){
 	if(length(x) == 1){
 		x <- c(x,x)
 	}
-	dens <- density(as.numeric(log10(x)))
+	if(length(x)> 1){
+	dens <- density(as.numeric(log10(x)),na.rm = T)
 	maxv <<- max(maxv,max(dens$y),na.rm = T)
 	maxx <<- c(min(maxx,min(dens$x),na.rm = T),max(maxx,max(dens$x),na.rm = T))
 	orderMax <<- c(orderMax,max(dens$y,na.rm = T))
+	}else{
+		dens <- list(x = c(0,0),y = c(0,0))
+	}
 	return(dens)
 })
 
