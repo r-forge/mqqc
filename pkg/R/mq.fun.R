@@ -1,5 +1,5 @@
 mq.fun <-
-function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER_",placeholder = "PLACEHOLDER",skipUnknown = T){
+function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",skipUnknown = T){
 RunFile <- T
 	# creating string for system call of MQ
 	#check MQ path
