@@ -172,9 +172,9 @@ score$quanRet50ratio 	<- 	abs(summary.Data$quanRet50ratio)	/thresholds$quanRet50
 # check MSMS
 try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
 if(!exists("msmsInfo")){
-	msmsInfo <- rep(0,4)
+	msmsInfo <- rep(0,5)
 }
-if(length(msmsInfo) == 4){
+if(all(msmsInfo == 0)){
 	
 	summary.Data$msmsQuantile  <- c(0,0,0,0)
 	summary.Data$msmsMassCount <- c(0,0,0,0)

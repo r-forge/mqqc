@@ -1,6 +1,15 @@
 folder.observe <-
 function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F){
-  tkControl(htmloutPath = htmloutPath)
+  try(tkControl(htmloutPath = htmloutPath))
+  ###
+  # Check MailList
+  ###
+  MailFile  <- list.files(MailPath<- paste(path.package("mqqc"),"data",sep = "/"),pattern = "^MailSettings$")
+  if(length(MailFile) == 0){
+  	write(paste("username","password","smtp.server","emailaddress",sep = "\n"),file = paste(MailPath,"MailSettings",sep = "/"))
+  	
+  }
+  
   
   if(automatedStart){
 	Tryerror<- class(try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))))
