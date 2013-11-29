@@ -1,0 +1,94 @@
+plottingTimeLineFunction <- function(AllData,finalMQQC,TargetVec = "ECstd"){
+
+uniSample <- AllData[grep(TargetVec, AllData$Name),]
+UniMachine <- strsplit(as.character(uniSample$Name),"_")
+UniMachine <- sapply(UniMachine,function(x){x[1]})
+
+Vec.Test <- c("total.msms.min","msmsEff","msmsMassCount.50%","score.50%")
+ColMQQCTLPLOTTING <<- c()
+lapply(Vec.Test,function(x){
+	test<- aggregate(uniSample[,colnames(uniSample) == x],list(UniMachine),max)
+	ColMQQCTLPLOTTING <<- 	cbind(ColMQQCTLPLOTTING,test[,2])
+	rownames(ColMQQCTLPLOTTING) <<- test[,1]
+	
+	return(NULL)
+})
+MaxV<- apply(ColMQQCTLPLOTTING,2,max,na.rm = T)
+names(MaxV) <- Vec.Test
+for(i in unique(UniMachine)){
+	dir.create(paste(finalMQQC ,"TimeLines",sep = "/"))
+	pdf(pdfName <- paste(finalMQQC ,"TimeLines",paste(i,"TimeLine.pdf",sep = "-"),sep = "/"),height = 4,pointsize = 10,width = 15)
+	par(mai = c(1.5,0.8,0.8,0.1),mfrow = c(1,4))
+for(a in Vec.Test){
+	tempI <- uniSample[UniMachine == i,]
+	tempI <- tempI[order(tempI$System.Time.s),]
+	TimeI <- tempI$System.Time	
+	BestV <- MaxV[names(MaxV) == a] 	
+	TimeI <- strsplit(as.character(TimeI),".",fixed =T)
+	TimeI <- sapply(TimeI,function(x){
+		x1 <- paste(x[1:3],collapse = "-")
+		x2 <- paste(x[4:6],collapse = ":")
+		x <- c(x1,x2)
+		return(x)
+	})
+	if(length(grep(".50%",a))> 0){
+	CountUp <- tempI[,colnames(tempI) == gsub(".50%",".75%",a)]
+	CountLo <- tempI[,colnames(tempI) == gsub(".50%",".25%",a)]
+	BordPlot <- T
+
+	}else{BordPlot <- F}
+	
+	TimeI <- t(TimeI)
+	TimeI <- gsub("^X","", TimeI)
+	deleteTimeVec <- duplicated(substr(TimeI[,1],1,7))
+	Count <- tempI[,colnames(tempI) == a]
+	
+	y <- as.numeric(as.character(Count))
+	x <- as.numeric(as.character(tempI$System.Time.s))
+	if(length(x) == length(y) & length(y) > 0 & any(!is.na(Count))){
+		
+	if(BordPlot){
+		rangeVal <- range(c(Count,CountUp,CountLo),na.rm = T)
+		
+	}else{
+		rangeVal <- range(c(Count),na.rm = T)
+
+	}
+	rangeVal[1] <- 0
+if(!is.na(BestV)){
+	if(rangeVal[2] < BestV)
+	rangeVal[2] <- BestV
+
+}
+	
+
+plot(x, y,axes = F,type = "n",lwd = 4,xlab = "",ylab = a,main = paste(i,a,sep = "\n"),cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
+grid()
+	if(BordPlot){
+
+	#lines(x,CountUp,type = "l",lty = "dashed",lwd = 1,col = "red")
+	#lines(x,CountLo,type = "l",lty = "dashed",lwd = 1,col = "red")
+polygon(c(x, rev(x)), c(CountUp, rev(CountLo)),
+     col = "grey80", border = NA)
+     }
+     
+       lines(x,y,lwd =4,col = "grey30")
+	
+	axis(1,as.numeric(as.character(tempI$System.Time.s))[!deleteTimeVec],label = substr(TimeI[! deleteTimeVec,1],1,10),las = 2,cex.axis = 2)
+	axis(2,cex.axis = 2)
+	
+	if(!is.na(BestV)){
+		abline(h = BestV,col = "red",lty = "dotted",lwd = 2)
+	}
+	}
+
+}
+
+	graphics.off()
+
+}
+
+#system(paste("open",dirname(pdfName)))
+}
+
+#plottingTimeLineFunction(AllData,finalMQQC)
