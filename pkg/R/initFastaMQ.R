@@ -1,9 +1,10 @@
 initFastaMQ <-
-function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
+function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaInput = NULL)
 {
 	
 
   # check MQ path
+
   checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
   if(length(checkMQ)==0){
     cat("\rChoose MQ Directory!",rep(" ",100))
@@ -50,13 +51,20 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
     if(length(mqpar.name)== 0){
       newFasta  <- T
     }else{
-      newFasta  <- F
-      
+      newFasta  <- F    
     }
   }
   
   if(length(mqpar.name)== 0&newFasta){
     mqpar.name  <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar",full.name = T)
+    if(length(fastaInput) != 0){
+      if(file.exists(fastaInput)){
+        OwnXML <- T
+        mqpar.name <- fastaInput
+      }
+      
+    }
+    
     xmlTemplate <- readLines(mqpar.name) 
     Filters <- matrix(c("fasta", ".fasta", "All files", "*"),
                       2, 2, byrow = TRUE)
@@ -112,8 +120,15 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto")
       db <- path.convert(db)
       xmlNew<- xml.replace("fastaFiles",db ,xmlTemplate)  
       # writing XML
-      write(xmlNew,paste(path.package("mqqc"),"data/mqpar.xml",sep ="/"))  
+      if(OwnXML){
+        xmlOutPath <- mqpar.name
+      }else{
+        xmlOutPath <- paste(path.package("mqqc"),"data/mqpar.xml",sep ="/")
+        
       }
+      write(xmlNew,xmlOutPath)  
+      
+    }
     mqpar.name   <-   list.files(path.package("mqqc"),pattern = "^mqpar",recursive = T,full.name = T)
     
     if(length(mqpar.name) == 0 & SpeciesTable){

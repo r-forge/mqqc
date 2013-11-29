@@ -24,9 +24,65 @@ RunFile <- T
 	}
   
 	# preparing XML
-	assign("filePath",filePath,envir = .GlobalEnv)
-	
-  	mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
+	  assign("filePath",filePath,envir = .GlobalEnv)
+
+   
+      
+  if(SpeciesTable){
+    species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+      
+    regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})
+    
+    temp   	<-as.logical(sapply(regEx,grep, x = basename(filePath)))
+    temp[is.na(temp)] <- FALSE
+  
+  if(!all(!temp)){
+    
+    speciesUsed <- species[temp,]
+  }else{
+    speciesUsed <- species[species$Abbreviation == "default",]
+  }	
+
+  if(length(speciesUsed) > 0){
+    
+    if(dim(speciesUsed)[1] > 1){
+      speciesUsed <- speciesUsed[1,]
+    }
+    UseOwnXML <- file.exists(as.character(speciesUsed$Xml))
+    if(UseOwnXML){
+      mqpar.name <- speciesUsed$Xml
+    }
+    
+    try(tkdestroy(tempT))
+    lastFile <- paste(basename(filePath),paste(unlist(speciesUsed[1,1:3]),collapse = "; "),sep = "\n")
+    try(tkControl(NA,NA,lastFile,htmloutPath = htmloutPath))
+    
+    db <- speciesUsed$Fasta
+    tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
+    if(tryError == "try-error"){
+      
+      if(skipUnknown){
+        cat("\nError, Could not read fasta, run is aborted.\n")
+        RunFile <- F
+      }else{
+        cat("\nError, Could not read fasta, switched to default database.\n")
+      }
+      
+      db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
+    }
+    if(length(grep("/",db,fixed = T)) > 0){
+      db <- path.convert(db)
+    }
+    
+  }else{
+    db <- NA
+  }
+  
+  }
+
+  if(!UseOwnXML){
+    mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
+  }
   if(length(mqpar.name)!=0){
     mqpar   			<- 	readLines(mqpar.name)
     xmlNEW 		<- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
@@ -44,50 +100,7 @@ RunFile <- T
     xmlNEW[procFold] <- paste(xmlNEW[procFold],paste("processFolder=\"",input.path,"\">",sep = ""))  	
     # writing XML
      
-  if(SpeciesTable){
-  	species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
-	regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})
-        
-	temp   	<-as.logical(sapply(regEx,grep, x = basename(filePath)))
-	temp[is.na(temp)] <- FALSE
-
-	if(!all(!temp)){
-	
-		speciesUsed <- species[temp,]
-	}else{
-		speciesUsed <- species[species$Abbreviation == "default",]
-	}	
-	
-	if(length(speciesUsed) > 0){
-	
-		if(dim(speciesUsed)[1] > 1){
-			speciesUsed <- speciesUsed[1,]
-		}
-
-		try(tkdestroy(tempT))
-		lastFile <- paste(basename(filePath),paste(unlist(speciesUsed[1,1:3]),collapse = "; "),sep = "\n")
-		tkControl(NA,NA,lastFile,htmloutPath = htmloutPath)
-    
-		db <- speciesUsed$Fasta
-		tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
-	if(tryError == "try-error"){
-		
-		if(skipUnknown){
-					cat("\nError, Could not read fasta, run is aborted.\n")
-				 	RunFile <- F
-		}else{
-			cat("\nError, Could not read fasta, switched to default database.\n")
-		}
-		
-		db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
-	}
-    if(length(grep("/",db,fixed = T)) > 0){
-      db <- path.convert(db)
-    }
-
-	}else{
-		db <- NA
-	}
+  
 	if(!is.na(db)){
 
     	xmlNEW<- xml.replace("fastaFiles",db , xmlNEW) 

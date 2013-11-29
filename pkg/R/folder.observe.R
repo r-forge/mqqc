@@ -44,6 +44,17 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
   }
+  
+  if(SpeciesTable){
+    
+    species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+    XMLCheck <- species$Xml[file.exists(as.character(species$Xml))]
+    if(length(XMLCheck) > 0){
+      sapply(XMLCheck,function(x){
+        initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable,fastaInput=x)       
+      })
+    }
+  }
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
