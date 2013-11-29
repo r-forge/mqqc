@@ -14,7 +14,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(automatedStart){
 	Tryerror<- class(try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))))
 	if(Tryerror== "try-error"){
-			print("Error, could not auto staret. No Param.Rdata available.")
+			print("Error, could not auto start. No Param.Rdata available.")
 			stop()
 		}
 	Param <- output
@@ -26,8 +26,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(gui){
   	Param <- mqqcGUI()
   	for(i in 1:length(Param)){
-		assign(names(Param)[i],Param[[i]])
-	}
+		  assign(names(Param)[i],Param[[i]])
+	  }
 	cores <- as.numeric(cores)
   	
   	if(!Debug){
@@ -39,11 +39,11 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 
 }
     try(writeToHtml(path = htmloutPath))
-dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
+    dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
-}
+  }
 	
 	temp.name <- "test"
 	temp.name <- paste("_RmqqcFile_",temp.name,".txt",sep = "")
@@ -111,7 +111,7 @@ if(funlastLoop == 10){
 
 		if(is.function(FUNLAST)){
 		  htmloutPath <<- htmloutPath
-  	  				try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+  	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 	  sucFolder <<- sucFolder
 				  	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder)
 

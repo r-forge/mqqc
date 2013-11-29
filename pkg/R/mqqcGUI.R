@@ -117,7 +117,7 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 	########
 
 	cb <- tkcheckbutton(TKMisc)
-	cbVar <- tclVar(0)
+	cbVar <- tclVar(as.numeric(output$DeleteFiles))
 	tkconfigure(cb,variable=cbVar)
 	tkgrid(tklabel(TKMisc,text = "Clean up"),cb)
 	
@@ -126,7 +126,7 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 	########
 
 	cb <- tkcheckbutton(TKMisc)
-	cbVar2 <- tclVar(0)
+	cbVar2 <- tclVar(as.numeric(output$Debug))
 	tkconfigure(cb,variable=cbVar2)
 	tkgrid(tklabel(TKMisc,text = "Debug Mode"),cb)
 	
@@ -137,7 +137,7 @@ dirFrame <- ttklabelframe(ttf1,text = "Analysis Folder")
 	
 	tb1.duplicates.var 					<- c("auto",1:24)
 	tb1.val.pep.duplicates 				<- tclVar()  
-	tclvalue(tb1.val.pep.duplicates) 	<-"auto"
+	tclvalue(tb1.val.pep.duplicates) 	<- (output$cores)
 	comboBox 							<- ttkcombobox(TKMisc,values=tb1.duplicates.var,textvariable = tb1.val.pep.duplicates,width = 17,state = "readonly",width = 6)
 	tkgrid(tklabel(TKMisc,text = "Cores"),comboBox,pady = 2)
 	tkgrid(TKMisc,sticky = "SW")

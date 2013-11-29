@@ -61,20 +61,21 @@ successDelete <-
                 			checkListCol <- readLines(checkList,n = 1)
                 				if(checkListCol!= temp[1]){
                 					ImprCheckListCol 	<- unlist(strsplit(checkListCol,","))
-                					ImprCheckListCol <- gsub("\"","", ImprCheckListCol)
+                					ImprCheckListCol  <- gsub("\"","", ImprCheckListCol)
                 					ImprTempCol 			<- unlist(strsplit(temp[1],","))
 
-                					updateCheckList <- merge.control(ImprCheckListCol,ImprTempCol)
+                					updateCheckList <- merge.control(ImprTempCol,ImprCheckListCol)
                 					tempCheckList <- read.csv(checkList,quote = "")
-                					tempCheckList<- cbind(tempCheckList,"")
-                					updateCheckList[is.na(updateCheckList)] <- dim(tempCheckList)[2] 
-                					tempCheckList <- tempCheckList[, updateCheckList]
-                					colnames(tempCheckList) <- ImprTempCol
-                					file.rename(checkList,gsub("list_collect.csv$","list_collect_old.csv",checkList))
-                					write.csv(tempCheckList,checkList,row.names = F,quote = F)
-
+                					#tempCheckList<- cbind(tempCheckList,"")
+                					#updateCheckList[is.na(updateCheckList)] <- dim(tempCheckList)[2] 
+                					#tempCheckList <- tempCheckList[, updateCheckList]
+                					#colnames(tempCheckList) <- ImprTempCol
+                					#file.rename(checkList,gsub("list_collect.csv$","list_collect_old.csv",checkList))
+                					#write.csv(tempCheckList,checkList,row.names = F,quote = F)
+                          tempDat <- unlist(strsplit(temp[2],","))[updateCheckList]
+                          temp[2] <- paste(tempDat,sep = ",",collapse = ",")
                 				}
-                			write(temp[2],file = writeName,append = T)
+                			try(write(temp[2],file = writeName,append = T))
                 	#	PrepareMail("Title","message","henrik.zauber\\@mdc-berlin.de")
                 		
                 		}
@@ -82,13 +83,13 @@ successDelete <-
                 	}
                 }
                 
-                if(any(list.files(dirname(tempmqqcInfo))  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
+      if(any(list.files(dirname(tempmqqcInfo))  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
        DelCont         <-  file.rename(tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" ],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
        if(DelCont){
        	tempmqqcInfo <<- tempmqqcInfo
        	
        	lengthSplitSlash <- length(unlist(strsplit(hotFolder,"/")))
-       	tempPath <- unique(dirname(tempmqqcInfo))
+       	tempPath          <- unique(dirname(tempmqqcInfo))
        	
 		
        		write("",paste(paste(unlist(strsplit(tempPath,"/"))[1:(lengthSplitSlash +1)],collapse ="/"),"DeleteTag",sep = "/"))
@@ -108,7 +109,7 @@ successDelete <-
         }
     }
     }
-    files <- list.files(hotFolder)
+    files <- list.files(hotFolder,full.name = T)
     files <- grep("^_RmqqcFile",files,value = T,invert = T)
      fileDelete <- list.files(files,pattern = "^DeleteTag$",recursive = T,full.name = T)
      DelFun <- 	function(fileDelete,time.thresh = 86400,move = T, destDelete = F,hotFolder){
@@ -125,7 +126,7 @@ successDelete <-
                 }
              }
              
-         if(length(fileDelete) > 0){    
+      if(length(fileDelete) > 0){    
      		if(destDelete){
      			lapply(fileDelete,DelFun,hotFolder = hotFolder, destDelete = T,move = F)     	
      		}else{
