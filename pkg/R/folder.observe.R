@@ -109,7 +109,9 @@ if(funlastLoop == 10){
 		funlastLoop  <- 0
 		
 
-		if(is.function(FUNLAST)){
+    
+    
+    if(is.function(FUNLAST)){
 		  htmloutPath <<- htmloutPath
   	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 	  sucFolder <<- sucFolder

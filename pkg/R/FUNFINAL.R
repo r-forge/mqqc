@@ -37,7 +37,7 @@ if(file.exists(collectListPath)){
 		tempListOne <- collectList[iList,]
 		if(it == 1){
 try(			plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC))
-		
+
 		}
 		
 		collectListSorted <- c()
@@ -109,7 +109,7 @@ pathMsMsPdf <- gsub(".csv$",".pdf",collectListSorted$exitPath)
 pathMsMsPdf <- paste(dirname(pathMsMsPdf),paste("MSMS_Dens_",basename(pathMsMsPdf),sep = ""),sep = "/")
 pathMsMsPdf <- gsub("raw.pdf$","pdf", pathMsMsPdf)
 
-
+		pathPdf <-		gsub(".RAW_folder/","RAW_folder/",pathPdf) # !!!! Temporal Solution, folder is written without ".", should be better fixed while folder is written
 
 ###
 # function to move pdf to html Output
