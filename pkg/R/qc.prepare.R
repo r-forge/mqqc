@@ -174,7 +174,7 @@ try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
 if(!exists("msmsInfo")){
 	msmsInfo <- rep(0,5)
 }
-if(all(msmsInfo == 0)){
+if(all(msmsInfo$MSMSint == 0)){
 	
 	summary.Data$msmsQuantile  <- c(0,0,0,0)
 	summary.Data$msmsMassCount <- c(0,0,0,0)

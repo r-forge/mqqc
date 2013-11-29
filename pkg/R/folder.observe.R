@@ -81,6 +81,10 @@ dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 	####
 	setwd(folder)
 	funlastLoop +1
+	
+	#####
+	# Initiation of MQ runs, if new Raw File in Folder was detected
+	####
 	if(funlastLoop == 10){
 		
 		try(ThreadControl(folder))
@@ -109,7 +113,7 @@ if(funlastLoop == 10){
 		  htmloutPath <<- htmloutPath
   	  				try(  successDelete(folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 	  sucFolder <<- sucFolder
-				  	FUNLAST(htmloutPath,folder,sucFolder)
+				  	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder)
 
 		}
 

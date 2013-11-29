@@ -28,14 +28,15 @@ if(file.exists(collectListPath)){
 	collectList   <- collectList[!duplicated(collectList$Name),]
 	Names 		<- collectList$Name
 	ECstd 			<- grep("._.*_.*_ECstd",collectList$Name)
+	BSA 			<- grep("._.*_.*_BSA",collectList$Name)	
 	Normal 		<- grep("._.*_.*_ECstd",collectList$Name,invert = T)
 	collectListAll <- list()
 	collectListLife <- list()	
 	it <- 1
-	for(iList in list(ECstd,Normal)){
+	for(iList in list(ECstd,Normal, BSA)){
 		tempListOne <- collectList[iList,]
 		if(it == 1){
-try(			plottingTimeLineFunction(tempListOne,finalMQQC)
+try(			plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC)
 )		}
 		
 		collectListSorted <- c()
@@ -72,7 +73,8 @@ try(			plottingTimeLineFunction(tempListOne,finalMQQC)
 	}
 	collectListAll[[it]] <- collectListSorted
 	collectListLife[[it]] <- collectListSortedLife
-	#Prepare for HTML
+
+#Prepare for HTML
 	temp <- stringSplitter(as.character(collectListSorted$Name))
 temp <- t(temp)
 temp <<- temp
@@ -137,6 +139,8 @@ tempPathsMsMs2 <- paste("<a href ='", tempPathsMsMs2,"'  target ='_blank' >MsMs<
 collectListSorted <- as.data.frame(collectListSorted)
 
 colnames(collectListSorted) <- make.names(colnames(collectListSorted))
+CoverageVec <- collectListSorted[grep("Coverage",colnames(collectListSorted))]
+if(length(CoverageVec) == 0){CoverageVec <- "NA"}
 try(collectListSorted <- cbind(	colorCode ,
 													input, 
 													as.character(collectListSorted$System.Time), 
@@ -144,9 +148,9 @@ try(collectListSorted <- cbind(	colorCode ,
 													collectListSorted$uniPepCount,
 													round(as.numeric(collectListSorted$quan.msms.min),2) ,
 													round(as.numeric(collectListSorted$mass.error.cal.50.),2), 
-													collectListSorted$score.50., tempPaths, tempPathsMsMs2))
+													collectListSorted$score.50., CoverageVec, tempPaths, tempPathsMsMs2))
 
-try(colnames(collectListSorted) <- c("",colsTemp,"Time","Peptides","Unique_Peptides","MSMS/min","mass_error_[ppm]","Score_M","",""))
+try(colnames(collectListSorted) <- c("",colsTemp,"Time","Peptides","Unique_Peptides","MSMS/min","mass_error_[ppm]","Score_M","Coverage","",""))
 alignVec <<- c("center","left",rep("center",(dim(collectListSorted)[2]-2)))
 
 
@@ -154,15 +158,25 @@ collectListSorted  <- collectListSorted[order(rownames(collectListSorted)),]
 
 if(it ==1){
 	 try(tableHtml2 <-HtmlTable(collectListSorted, tableDesign = "table-design2"))
-if(!exists("tableHtml2")){tableHtml2 <- NULL}
-	}else{
-		
+	if(!exists("tableHtml2")){tableHtml2 <- NULL}
+}
+if(it ==2){
 		 try(tableHtml <- HtmlTable(collectListSorted, align= alignVec))
 	}
+if(it ==3){
+	 try(tableHtml3 <-HtmlTable(collectListSorted, tableDesign = "table-design3"))
+	if(!exists("tableHtml3")){tableHtml3 <- NULL}
+}
+	
+	
 }else{	
 	if(it == 1){
 	tableHtml2 <- ""
-	}else{ tableHtml <- ""}}
+	}else{ tableHtml <- ""}
+	if(it == 3){
+		tableHtml3 <- ""
+	}
+}
 		
 	it <- it+1
 
@@ -172,7 +186,7 @@ if(!exists("tableHtml2")){tableHtml2 <- NULL}
 paste(finalMQQC,"all",paste(Machines,".pdf",sep = ""),sep = "/")
 
 writeToHtml(inputVec = sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),
-inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 )
+inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3)
 
 
 try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))
