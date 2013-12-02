@@ -31,7 +31,7 @@ RunFile <- T
   if(SpeciesTable){
     species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
       
-    regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})
+    regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, templateFasta,fixed = T)})
     
     temp   	<-as.logical(sapply(regEx,grep, x = basename(filePath)))
     temp[is.na(temp)] <- FALSE
@@ -119,7 +119,7 @@ RunFile <- T
   
   		#  return(xmlNEW[2])
   		MQmanager(MQcmd,folder,cores =cores)
-  	}
+  	
   }else{
     print("Error in MQ start. No XML provided.")
   }
