@@ -47,18 +47,18 @@ sum.scores <- c(sum(unlist(score.data[1:3])),sum(unlist(score.data)[4:6]))
 TotalScore <<- unlist(score.data) 
 TotalScore[TotalScore > 1] <- 1
 TotalScore <- as.data.frame(t(as.data.frame(TotalScore)))
-finalAna <- c(	TotalScore$"msmsQuantile",
-						TotalScore$"msms",
-						TotalScore$"msms",
-						TotalScore$"msms",
-						TotalScore$"mass.error",
-						TotalScore$"score.50%")
+finalAna <- c(	TotalScore$"msms",
+                TotalScore$"msms",
+						    TotalScore$"msmsCount.50%",
+						    TotalScore$"msmsQuantile.50%",
+					  	  TotalScore$"mass.error",
+						    TotalScore$"score.50%",TotalScore$"peak.shape")
 						
 if(BSACheck){
 	finalAna[2:4] <- TotalScore$ProteinCoverage
 }
 
-TotalScore <- sum(as.numeric(finalAna))/(length(finalAna)-1)
+TotalScore <- sum(as.numeric(as.character(finalAna)))/(length(finalAna))
 
 if(any(sum.scores > 3)){
 	
@@ -153,17 +153,17 @@ namesData <- names(score.data)
 namesData[namesData=="quanRetRSD"] <- "ETime rSD"
 namesData[namesData=="quanRetSlope"] <- "ETime slope"
 namesData[namesData=="quanRet50ratio"] <- "ETime balance"
-namesData[namesData=="quan.duplicates.msms"] <- "Multiple MSMS"
+namesData[namesData=="quan.duplicates.msms"] <- "Duplicates/Peptide IDs"
 namesData[namesData=="msms"] <- "Peptide ID/min"
 namesData[namesData=="ProteinCoverage"] <- "BSA Protein Coverage in %"
 
-namesData[namesData=="mass.error"] <- "Mass error"
-namesData[namesData=="score"] <- "Score"
-namesData[namesData=="peak.shape"] <- "Peak Shape"
-namesData[namesData=="ret.width"] <- "Peak Width"
-namesData[namesData=="ret.width"] <- "Peak Width"
-namesData[namesData=="msmsQuantile"] <- "MSMS Intensities"
-namesData[namesData=="msmsEff"] <- "Efficiency MSMS"
+namesData[namesData=="mass.error"]  <- "Mass error in ppm"
+namesData[namesData=="score"] <- "Andromeda Score"
+namesData[namesData=="peak.shape"]   <- "Peak Shape"
+namesData[namesData=="ret.width"]     <- "Peak Width"
+  namesData[namesData=="msmsQuantile"] <- "MSMS Intensities"
+namesData[namesData=="msmsEff"]   <- "Efficiency MSMS"
+namesData[namesData=="msmsCount"] <- "Fragments Counts / MSMS"
 
 
 
