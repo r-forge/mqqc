@@ -36,7 +36,7 @@ if(file.exists(collectListPath)){
 	for(iList in list(ECstd,Normal, BSA)){
 		tempListOne <- collectList[iList,]
 		if(it == 1){
-try(			plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC))
+try(plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC))
 
 		}
 		

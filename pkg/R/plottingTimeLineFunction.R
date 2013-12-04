@@ -1,18 +1,22 @@
 plottingTimeLineFunction <- function(AllData,finalMQQC,TargetVec = "ECstd"){
 
+
+
 uniSample <- AllData[grep(TargetVec, AllData$Name),]
 UniMachine <- strsplit(as.character(uniSample$Name),"_")
 UniMachine <- sapply(UniMachine,function(x){x[1]})
 
-Vec.Test <- c("total.msms.min","msmsEff","msmsMassCount.50%","score.50%")
+Vec.Test <- c("total.msms.min","msmsMassCount.50%","score.50%","mass.error.cal.50%")
 ColMQQCTLPLOTTING <<- c()
 lapply(Vec.Test,function(x){
-	test<- aggregate(uniSample[,colnames(uniSample) == x],list(UniMachine),max)
+	test<- aggregate(uniSample[,tolower(colnames(uniSample)) == tolower(x)],list(UniMachine),max,na.rm = T)
 	ColMQQCTLPLOTTING <<- 	cbind(ColMQQCTLPLOTTING,test[,2])
 	rownames(ColMQQCTLPLOTTING) <<- test[,1]
 	
 	return(NULL)
 })
+ColMQQCTLPLOTTING[is.infinite(ColMQQCTLPLOTTING)] <- 0.1
+ColMQQCTLPLOTTING <<- ColMQQCTLPLOTTING
 MaxV<- apply(ColMQQCTLPLOTTING,2,max,na.rm = T)
 names(MaxV) <- Vec.Test
 for(i in unique(UniMachine)){
@@ -45,6 +49,8 @@ for(a in Vec.Test){
 	
 	y <- as.numeric(as.character(Count))
 	x <- as.numeric(as.character(tempI$System.Time.s))
+  
+  if(all(is.na(y))){y[is.na(y)] <- 0;Count[is.na(Count)] <- 0}
 	if(length(x) == length(y) & length(y) > 0 & any(!is.na(Count))){
 		
 	if(BordPlot){
@@ -73,8 +79,14 @@ polygon(c(x, rev(x)), c(CountUp, rev(CountLo)),
      }
      
        lines(x,y,lwd =4,col = "grey30")
-	
-	axis(1,as.numeric(as.character(tempI$System.Time.s))[!deleteTimeVec],label = substr(TimeI[! deleteTimeVec,1],1,10),las = 2,cex.axis = 2)
+	time <- as.numeric(as.character(tempI$System.Time.s))[!deleteTimeVec]
+  label <- substr(TimeI[! deleteTimeVec,1],1,10)
+  if(as.numeric(Sys.time())-max(time) > 86400){
+    time <- c(time,as.numeric(Sys.time()))
+    label <- c(label,"today")  
+  }
+  
+	axis(1,time,label = label,las = 2,cex.axis = 2)
 	axis(2,cex.axis = 2)
 	
 	if(!is.na(BestV)){
@@ -83,7 +95,6 @@ polygon(c(x, rev(x)), c(CountUp, rev(CountLo)),
 	}
 
 }
-
 	graphics.off()
 
 }
