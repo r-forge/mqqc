@@ -49,7 +49,13 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	uniqueSeq 	<- length(unique(data.i$sequence))
 	intens 		<- quantile(data.i$intensity[!is.na(data.i$intensity)])
 	intens 		<- paste("Top 50%:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
-	name.file <- c(as.character(name.file), paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
+	
+  if(BSACheck){
+    name.file <- c(as.character(name.file), paste("BSA peptides:",length(grep("MSMS",BSAEVI$type)),", all peptides:",length(grep("MSMS",data.i$type))),intens)
+    
+  }else{
+    name.file <- c(as.character(name.file), paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
+  }
 	grid(col = "darkgrey",lwd = 1.5)
 	legend("topleft",legend = name.file,bg = "white",box.col = "transparent")
 		for(i in 1:length(unique(Ramp.col))){

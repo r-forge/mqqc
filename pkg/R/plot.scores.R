@@ -188,7 +188,7 @@ init.i <- 500
 plot(1,frame = F,axes=F,xlab = "",ylab = "",type = "n",ylim = c(0,init.i))
 col.temp.2 <- (colorRampPalette(grad.cols.vec)(init.i))
 for(col.i in 1:init.i){
-	abline(h = col.i,col = col.temp.2[col.i],lwd = 0.1)
+	abline(h = col.i,col = col.temp.2[col.i],lwd = 0.5)
 }
 
 mtext("Good",2,adj = 1,cex = 0.8)
