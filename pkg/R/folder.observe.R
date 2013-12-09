@@ -41,6 +41,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
     try(writeToHtml(path = htmloutPath))
     dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 
+  if(!file.exists(fastaFile)){fastaFile <- NULL}
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
   }

@@ -1,8 +1,10 @@
 initFastaMQ <-
-function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaInput = NULL,OwnXML = F)
+function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaInput = NULL,OwnXML = F,standardDB  = T)
 {
 	
-
+  if(standardDB){
+    db <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"fasta$",full.name = T)
+  }
   # check MQ path
 
   checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
