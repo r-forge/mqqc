@@ -22,7 +22,7 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 		write.table(t(as.matrix(vec)),file = paste(InfoString,"Info.txt",sep = ""),append = T,quote = F,sep = "\t",row.names = F,col.names = F)
 	}
 	# MQ function plus XML stuff
-	mq.fun(path.file,folder,cores, SpeciesTable,templateFasta,placeholder)
+	mq.fun(filePath = path.file ,folder,cores, SpeciesTable,templateFasta,placeholder)
 	
 	return(path.file)	
 }

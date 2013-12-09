@@ -1,6 +1,6 @@
 successDelete <- 
-  function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
-  {
+function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
+{
   	folders <- listFolders(hotFolder)
   	folders <- folders[grep("^_RmqqcFile",basename(folders),invert = T)]
   	collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
@@ -20,8 +20,13 @@ successDelete <-
     		tempI <- tempI[!is.na(tempI)]
     	}
     }
-	tempIproc <- sapply(dirname(tempI),list.files,pattern = "mqqcProcessed")
-	tempI <- tempI[!as.logical(sapply(tempIproc,length))]
+    tempI <- unique(tempI)
+	tempIproc 			<- sapply(dirname(tempI),list.files,pattern = "mqqcProcessed")
+  	tempIprocMoved <- sapply(dirname(tempI),list.files,pattern = "mqqcMoved")
+    
+	#tempI <- tempI[!as.logical(sapply(tempIproc,length))]
+  tempIproc <- !as.logical(sapply(tempIproc,length)) 
+    
     mqqcInfo <- NULL
     
     if(length(tempI) > 0){
@@ -36,8 +41,7 @@ successDelete <-
           folderNameVec <- c(folderNameVec,folderName[[i]][1])
         }
         
-        if(length(tempI)> 0){
-          # Check if evidence was already processed if yes, no output of evidence path
+        # Check if evidence was already processed if yes, no output of evidence path
           mqqcInfo <- c()
           for(i in 1:length(tempI)){
             tempmqqcInfo  <- list.files(dirname(tempI[i]),pattern = "mqqc",full.name = "T")
@@ -48,7 +52,7 @@ successDelete <-
                dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"), showWarnings = F)
                 
                qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T)
-                if(length(qcData)> 0){
+                if(length(qcData)> 0&tempIproc[i]){
                 	writeName <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
                 	for(ba in qcData){    
 	                	checkList <- list.files(paste(hotFolder,sucFolder,sep = "/"),pattern = "list_collect.csv",full.name = T)
@@ -82,8 +86,9 @@ successDelete <-
                 	
                 	}
                 }
-                
+      # start renaming      
       if(any(list.files(dirname(tempmqqcInfo))  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
+      write("",paste(dirname(tempI[i]),"mqqcMoved",sep = "/"))
        DelCont         <-  file.rename(tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" ],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
        if(DelCont){
        	tempmqqcInfo <<- tempmqqcInfo
@@ -106,7 +111,7 @@ successDelete <-
           }
           # mqqcInfo   <- mqqcInfo[file.info(mqqcInfo)$isdir]
           
-        }
+        
     }
     }
     files <- list.files(hotFolder,full.name = T)

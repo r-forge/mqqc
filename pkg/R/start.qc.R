@@ -112,11 +112,11 @@ flatFile <- t(export)
 flatFile <- paste(rownames(flatFile),flatFile[,1],sep = "\t\t")
 flatFile <- paste(flatFile,collapse = "\n")
 flatFile <- paste("################\n# MQQC Message #\n################\nYour MQQC Analysis of ",data.frame(export)$Name," has finished.\nYou can check your file under http://selbachsrv.mdc-berlin.net/mqqc/index.html.\n\n\n\n#####################\n#  Selected Values  #\n#####################\nNumber of identified peptides: "
-                  ,export$msms.count,"\n",
-                  "Coverage (median): ",export$Coverage,"\n",
-                  "Score (median): ",export$score.50.,"\n",
-                  "median Fragments/identified MSMS: ",export$msmsMassCount.50.,"\n",
-                  "MSMS Intensity (median): ",log10(as.numeric(as.character(export$msmsQuantile.50.))),
+                  ,data.frame(export)$msms.count,"\n",
+                  "Coverage (median): ",data.frame(export)$Coverage,"\n",
+                  "Score (median): ",data.frame(export)$score.50.,"\n",
+                  "median Fragments/identified MSMS: ",data.frame(export)$msmsMassCount.50.,"\n",
+                  "MSMS Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))),
                   "\n\n##########\n#  List  #\n##########\n"
                   
                   

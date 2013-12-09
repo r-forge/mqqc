@@ -1,5 +1,5 @@
 initFastaMQ <-
-function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaInput = NULL)
+function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaInput = NULL,OwnXML = F)
 {
 	
 

@@ -59,9 +59,13 @@ RunFile <- T
     
     db <- speciesUsed$Fasta
     tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
+          	stop()
+
     if(tryError == "try-error"){
+    
       
       if(skipUnknown){
+      	
         cat("\nError, Could not read fasta, run is aborted.\n")
         RunFile <- F
       }else{
@@ -118,6 +122,8 @@ RunFile <- T
   		MQcmd <- path.convert(MQcmd)
   
   		#  return(xmlNEW[2])
+  		cores <- as.numeric(cores)
+  		if(is.na(cores[1])){cores <- 1;print("Warning, set number of threads to 1.")}
   		MQmanager(MQcmd,folder,cores =cores)
   	
   }else{
