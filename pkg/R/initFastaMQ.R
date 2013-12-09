@@ -74,6 +74,10 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaI
       if(length(db)==0){
          db        <- tk_choose.files(filters = Filters,caption = "Select a fasta file for MQ search!")
       }
+      if(!file.exists(db)){
+        db <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"fasta$",full.name = T)
+      }
+      
          #db <- db2 
       warning.col <- c()
       warnings1 <- "no"

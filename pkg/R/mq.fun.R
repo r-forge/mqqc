@@ -1,7 +1,16 @@
 mq.fun <-
-function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",skipUnknown = T){
+function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",skipUnknown = T,UseOwnXML = F){
 RunFile <- T
-	# creating string for system call of MQ
+
+if(exists("db")){
+  if(!file.exists(db)){
+    db <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"fasta$",full.name = T)
+  }
+}else{
+  db <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"fasta$",full.name = T)
+}
+
+# creating string for system call of MQ
 	#check MQ path
 	checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
 	if(length(checkMQ)==0 & .Platform$OS.type == "windows"){
@@ -48,6 +57,7 @@ RunFile <- T
     if(dim(speciesUsed)[1] > 1){
       speciesUsed <- speciesUsed[1,]
     }
+    
     UseOwnXML <- file.exists(as.character(speciesUsed$Xml))
     if(UseOwnXML){
       mqpar.name <- speciesUsed$Xml
@@ -58,8 +68,8 @@ RunFile <- T
     try(tkControl(NA,NA,lastFile,htmloutPath = htmloutPath))
     
     db <- speciesUsed$Fasta
-    tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
 
+  
     if(tryError == "try-error"){
     
       
@@ -105,8 +115,7 @@ RunFile <- T
      
   
 	if(!is.na(db)){
-
-    	xmlNEW<- xml.replace("fastaFiles",db , xmlNEW) 
+    	xmlNEWf<- xml.replace("fastaFiles",db , xmlNEW) 
     } 
   }
     
@@ -123,7 +132,7 @@ RunFile <- T
   		#  return(xmlNEW[2])
   		cores <- as.numeric(cores)
   		if(is.na(cores[1])){cores <- 1;print("Warning, set number of threads to 1.")}
-  		MQmanager(MQcmd,folder,cores =cores)
+  		try(MQmanager(MQcmd,folder,cores =cores))
   	
   }else{
     print("Error in MQ start. No XML provided.")

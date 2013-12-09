@@ -1,5 +1,8 @@
 mqStarter <-
 function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,templateFasta,placeholder){
+  
+ 
+  
   PointGrp <- grep(".",unlist(strsplit(temp.batch.n,"")),fixed = T)
   temp.batch.n <- basename(temp.batch.n)
   if(length(PointGrp) < 0){

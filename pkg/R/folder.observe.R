@@ -29,7 +29,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		  assign(names(Param)[i],Param[[i]])
 	  }
 	cores <- as.numeric(cores)
-  	
+  	if(is.na(Debug)){Debug <- TRUE}
   	if(!Debug){
   		options(warn = -1,show.error.messages = F, showWarnCalls = F)
   	}else{
@@ -118,14 +118,14 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 
 if(funlastLoop == 10){
 		funlastLoop  <- 0
-		
-
+#		hi<- file.info(list.files())
+#	hu<- 	order(hi[,4])
     
     
     if(is.function(FUNLAST)){
 		  htmloutPath <<- htmloutPath
   	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
-	  sucFolder <<- sucFolder
+	    sucFolder <<- sucFolder
 				  	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder)
 
 		}
