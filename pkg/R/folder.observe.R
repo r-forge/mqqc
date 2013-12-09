@@ -140,16 +140,16 @@ setwd(folder)
 		catFun(paste(Sys.time(),"Status: Observing", folder))
 		Sys.sleep(1)
 		# exclude _RmqqcFile_ and use exclusively raw txt
-		obs.files			  <- list.files()
-   		obs.files <- obs.files[!file.info(obs.files)[,2]]
+		obs.files			  <- list.files(folder,full.name = T)
+   	obs.files       <- obs.files[!file.info(obs.files)[,2]]
 		temp.obs 			  <- grep("^_RmqqcFile_",obs.files)
-	#	temp.obs 			 <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
-		temp.obs 			<- unique(temp.obs)
+	#	temp.obs 			  <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
+		temp.obs 			  <- unique(temp.obs)
 		obs.files 			<- grepSubsetControl(temp.obs, obs.files)
 		obs.files 			<- grep("raw$|txt$",obs.files,value = T, ignore.case = T)
 		obs.files.diff 		<- setdiff(obs.files,files) 
 		obs.files.minus 	<- setdiff(files,obs.files) 
-
+    obs.files <- obs.files[grep("^_RmqqcFile_",basename(obs.files),invert = T)]
 		if(length(obs.files) > 0){
 			#cat(paste("\rfound.something",obs.files.diff))
 			files <- c(files, obs.files.diff)
@@ -161,7 +161,7 @@ setwd(folder)
 			  temp.batch.n 	<- names(temp.batch)[temp.batch == 0][1]
 			  if(!is.na(temp.batch.n)){
 			    # starting Maxquant stuff
-			    tryError <- class(try(fun(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, templateFasta = templateFasta, placeholder = placeholder)))
+			    tryError <- class(try(fun(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, templateFasta = templateFasta, placeholder = placeholder,InfoString = "_RmqqcFile_")))
 			    if(tryError == "try-error"){
 			      #	return(temp.batch.n)
 			      catFun(paste("error in file", temp.batch.n))

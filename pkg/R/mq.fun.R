@@ -59,7 +59,6 @@ RunFile <- T
     
     db <- speciesUsed$Fasta
     tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
-          	stop()
 
     if(tryError == "try-error"){
     

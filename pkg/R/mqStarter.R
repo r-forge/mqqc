@@ -1,6 +1,7 @@
 mqStarter <-
 function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,templateFasta,placeholder){
   PointGrp <- grep(".",unlist(strsplit(temp.batch.n,"")),fixed = T)
+  temp.batch.n <- basename(temp.batch.n)
   if(length(PointGrp) < 0){
     folder.name <-substr(temp.batch.n,1,(max(PointGrp)-1))
   }else{
@@ -13,7 +14,8 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 	}
 	
 	dir.create(folder.name)
-	try(file.rename(temp.batch.n,path.file <-   paste(getwd(),folder.name,temp.batch.n,sep = "/")))
+  setwd(folder)
+	try(file.rename(basename(temp.batch.n),path.file <-   paste(getwd(),folder.name,temp.batch.n,sep = "/")))
 	Sys.sleep(0.1)
 	vec <- c(path.file,0,0,0,0)
 	if(length(list.files(pattern = paste(InfoString,"Info.txt",sep = "")))== 0){
