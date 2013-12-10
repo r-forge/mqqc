@@ -115,8 +115,8 @@ flatFile <- paste("################\n# MQQC Message #\n################\nYour MQ
                   ,data.frame(export)$msms.count,"\n",
                   "Coverage (median): ",data.frame(export)$Coverage,"\n",
                   "Score (median): ",data.frame(export)$score.50.,"\n",
-                  "median Fragments/identified MSMS: ",data.frame(export)$msmsMassCount.50.,"\n",
-                  "MSMS Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))),
+                  "Median Fragments/identified MSMS: ",data.frame(export)$msmsMassCount.50.,"\n",
+                  "MSMS log10 Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))),
                   "\n\n##########\n#  List  #\n##########\n"
                   
                   
