@@ -140,7 +140,7 @@ if(length(MailList) > 0&SendMail){
 	
 	Mail <- MailList[MailList[,1] == unlist(strsplit(as.character(export$Name),"_"))[3],2]
 	Mail <- Mail[1]
-	PrepareMail(paste("MQQC",data.frame(export)$Name,data.frame(export)$msms.count,"Peptides"),flatFile,gsub("@","\\@",as.character(Mail),fixed = T))
+	PrepareMail(Title = paste("MQQC",data.frame(export)$Name,data.frame(export)$msms.count,"Peptides"),Message = flatFile,recipient=gsub("@","\\@",as.character(Mail),fixed = T))
 }
 list.collect[a]     <- qc.prepare.data
 a <- a+1

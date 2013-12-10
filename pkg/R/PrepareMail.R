@@ -11,12 +11,12 @@ MailList$from <- "from"
 MailList$title <- Title
 MailList$message <- Message
 
-MailSettings <- list.files(paste(path.package("mqqc"),"data",sep = "/"),pattern = "MailSettings",full.name = T)
+MailSettings <- list.files(paste(path.package("mqqc"),"data",sep = "/"),pattern = "MailSettings$",full.name = T)
 
 if(length(MailSettings) > 0){	
 		#print("hu")
 
-	MailSettings <- readLines(MailSettings)
+	MailSettings <- readLines(MailSettings[1])
 		#print("hu")
 
 	if(length(MailSettings) ==4){
