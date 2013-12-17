@@ -1,6 +1,7 @@
 successDelete <- 
 function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
 {
+	#grep("20131216_AD_ECst",folders)
   	folders <- listFolders(hotFolder)
   	folders <- folders[grep("^_RmqqcFile",basename(folders),invert = T)]
   	collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")

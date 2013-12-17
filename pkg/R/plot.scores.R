@@ -47,7 +47,7 @@ sum.scores <- c(sum(unlist(score.data[1:3])),sum(unlist(score.data)[4:6]))
 TotalScore <<- unlist(score.data) 
 TotalScore[TotalScore > 1] <- 1
 TotalScore <- as.data.frame(t(as.data.frame(TotalScore)))
-finalAna <- c(	TotalScore$"msms",
+finalAna <- c(	
                 TotalScore$"msms",
 						    TotalScore$"msmsCount.50%",
 						    TotalScore$"msmsQuantile.50%",
@@ -55,10 +55,11 @@ finalAna <- c(	TotalScore$"msms",
 						    TotalScore$"score.50%",TotalScore$"peak.shape")
 						
 if(BSACheck){
-	finalAna[2:4] <- TotalScore$ProteinCoverage
+	finalAna[1] <- TotalScore$ProteinCoverage
 }
 
 TotalScore <- sum(as.numeric(as.character(finalAna)))/(length(finalAna))
+if(TotalScore > finalAna[1]){TotalScore <- finalAna[1]}
 
 if(any(sum.scores > 3)){
 	
@@ -111,12 +112,8 @@ if(any(grep.col("calibrated.retention.time.start",data.i) == 0|grep.col("calibra
 	dots <- F
 }else{dots <- T}
 
-try(plot.profile(data.i,F,dots,BSACheck= BSACheck))
-
+try(plotData<- plot.profile(data.i,F,dots,BSACheck= BSACheck))
 par(mai = c(0.4,2,0.2,0.1))
-
-
-
 #assc#ign("score.data",score.data,envir = .GlobalEnv)
 #barplot2(cbind(score.data[1:3],rep(0,3)),names.arg = c("MS-score","nLC"),ylim = temp.xlim,col = ms.col,las = 2,ylab = "score")
 #temp.pos <- barplot2(cbind(rep(0,3),score.data[4:6]),ylim = temp.xlim,col = nc.col,las = 2,axes = F,add = T)
@@ -375,7 +372,10 @@ cat("\r",getwd())
 if(open.doc){
 	try(        try(system(paste("open ", .pdf), intern = TRUE, 				ignore.stderr = TRUE)))
 }
-return(list(TotalScore = TotalScore,TotalScoreColor = col.temp[round.spec(TotalScore)]))
+try(ASCIIprofileplot(plotData))
+
+
+return(list(TotalScore = TotalScore,TotalScoreColor = col.temp[round.spec(TotalScore)],plotData = plotData))
 }
 #tryError2 <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = T,pdfOut = T)))
 

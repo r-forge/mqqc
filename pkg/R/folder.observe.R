@@ -1,6 +1,11 @@
 folder.observe <-
 function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F){
   try(tkControl(htmloutPath = htmloutPath))
+  if(length(grep("txtplot",library())) == 0){
+	install.packages("txtplot")
+	}
+		require("txtplot")
+
   ###???
   # Check MailList
   ###
@@ -97,7 +102,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	#####
 	# Initiation of MQ runs, if new Raw File in Folder was detected
 	####
-	if(funlastLoop == 10){
+	if(funlastLoop %% 10 == 0){
 		
 		try(ThreadControl(folder))
 	#evidenceToProcess <- checkMqqcInfo(folder)
@@ -117,26 +122,20 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	} # evidence loop
 	} # funlastLoop
 
-if(funlastLoop == 10){
-		funlastLoop  <- 0
+if(funlastLoop %% 10 == 0){
 #		hi<- file.info(list.files())
 #	hu<- 	order(hi[,4])
     
-    
-    if(is.function(FUNLAST)){
-		  htmloutPath <<- htmloutPath
+    htmloutPath <<- htmloutPath
   	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
-	    sucFolder <<- sucFolder
-				  	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder)
+	sucFolder <<- sucFolder
 
-		}
+					try(	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder)
+)
+		
 
-	}else{
-		funlastLoop <- funlastLoop +1
 	}
-setwd(folder)
-		
-		
+setwd(folder)		
 		
 		catFun(paste(Sys.time(),"Status: Observing", folder))
 		Sys.sleep(1)
@@ -201,9 +200,10 @@ setwd(folder)
 			write(files,file = temp.name)
 		}
 
-  
+	if(funlastLoop %% 100 == 0)
+  		try(CleaningFun(folder))
 	}
-  
+  	
   
 	
 return(folder = folder)	

@@ -1,9 +1,11 @@
 start.qc <-
 function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER",templateFasta="PLACEHOLDER",SendMail = T, exitPath = NULL)
 {
-
+#DataEvidence <- NULL
 require(tcltk)	
-#tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))
+#tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))50  
+ 
+ 
 cat("\rLoading data",rep(" ",100))
 
 if(!is.null(DataEvidence)){
@@ -84,13 +86,21 @@ if(length(grep(BSACheck,i)) > 0){
 ####
 # Plotting
 ####
-
 tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
+TotalScoreRes <<- TotalScoreRes
+ASCIIplot <- NULL
+try(ASCIIplot <- readLines(list.files(pattern = "ASCIIplot.txt",full.name = T)))
+if(length(ASCIIplot) > 0){
+	ASCIIplot <- paste("\n\n#########\n","# Plots #\n","#########\n\nFor a correct view, please set your font to Menlo regular.\n\n", paste(ASCIIplot,collapse = "\n"),"\n",sep = "")
+}else{
+	ASCIIplot <- ""
+}
+
 
 if(tryError == "try-error"){
 	TotalScoreRes <- list(TotalScore = "?",TotalScoreColor = "#666666")
 }
-tempScoreList <- t(as.matrix(unlist(TotalScoreRes)))
+tempScoreList <- t(as.matrix(unlist(TotalScoreRes[1:2])))
 export <- cbind(export, tempScoreList)
 
 if(length(exitPath) > 0){
@@ -116,7 +126,7 @@ flatFile <- paste("################\n# MQQC Message #\n################\nYour MQ
                   "Coverage (median): ",data.frame(export)$Coverage,"\n",
                   "Score (median): ",data.frame(export)$score.50.,"\n",
                   "Median Fragments/identified MSMS: ",data.frame(export)$msmsMassCount.50.,"\n",
-                  "MSMS log10 Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))),
+                  "MSMS log10 Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))), ASCIIplot,
                   "\n\n##########\n#  List  #\n##########\n"
                   
                   
@@ -155,7 +165,7 @@ if(show.path){
 }
 setwd(.path)
 
-	try(return(list(qc = qc.prepare.data)))
+	#try(return(list(qc = qc.prepare.data)))
 	#try(system("open ."))
 
 }

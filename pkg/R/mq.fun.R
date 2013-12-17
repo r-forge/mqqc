@@ -3,7 +3,7 @@ function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACE
 RunFile <- T
 
 if(exists("db")){
-  if(!file.exists(db)){
+  if(!file.exists(as.character(db))){
     db <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"fasta$",full.name = T)
   }
 }else{
@@ -68,14 +68,14 @@ if(exists("db")){
     try(tkControl(NA,NA,lastFile,htmloutPath = htmloutPath))
     
     db <- speciesUsed$Fasta
+	tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
 
-  
     if(tryError == "try-error"){
     
       
       if(skipUnknown){
-      	
-        cat("\nError, Could not read fasta, run is aborted.\n")
+			try(write.csv("",paste(dirname(filePath),"DeleteTag",sep = "/")))
+			        cat("\nError, Could not read fasta, run is aborted.\n")
         RunFile <- F
       }else{
         cat("\nError, Could not read fasta, switched to default database.\n")
@@ -115,7 +115,7 @@ if(exists("db")){
      
   
 	if(!is.na(db)){
-    	xmlNEWf<- xml.replace("fastaFiles",db , xmlNEW) 
+    	xmlNEW<- xml.replace("fastaFiles",db , xmlNEW) 
     } 
   }
     
@@ -136,6 +136,7 @@ if(exists("db")){
   	
   }else{
     print("Error in MQ start. No XML provided.")
+	try(   	write.csv("",paste(dirname(filePath),"DeleteTag",sep = "/")))
   }
   
 	#convert slashes to backslashes

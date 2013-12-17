@@ -1,5 +1,6 @@
 plot.profile <-
 function(data.i,layout = T,linePlot =F,BSACheck = F){	
+plotData <- list()
 if(layout){
 			layout(matrix(c(1,2,3,4),ncol = 2,nrow = 2),height = c(5,1.5),width = 	c(5,1))
 
@@ -41,7 +42,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	par(mai=c(0,1,0.1,0))
 
 	col.intensity <- grep("intensity",tolower(colnames(data.i)))
-
+	plotData$profile <- cbind(data.i$retention.time,data.i$m.z)
 	plot(data.i$retention.time,data.i$m.z,pch = 20,cex = intensity,col = 	Ramp.col,type = "n" ,ylab = "m/z",xlim = range(data.i$retention.time,na.rm = T),axes = F,ylim = range(data.i$m.z,na.rm = T),frame = F)
 	axis(2)
 	axis(1,labels = F)
@@ -105,7 +106,7 @@ text(BSAx,BSAy,BSAmz,pos = 3,cex = 0.4)
 	
 	dens.crt <- class(try(temp <- density(data.i$retention.time)))
 	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
-	
+	plotData$retentionTime <- cbind(temp$x,temp$y)
 		plot(temp$x,temp$y,main = "",axes = F,frame = F,xlim = range(data.i$retention.time,na.rm = T),type = "l",xlab = "",ylab = "Density")
 		mtext("time in min",1,line = 1.9,cex = 0.6)
 		
@@ -119,7 +120,8 @@ text(BSAx,BSAy,BSAmz,pos = 3,cex = 0.4)
 		
 			dens.crt <- class(try(temp <- density(data.i$retention.time[BSAgrep])))
 	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
-	
+		plotData$BSAretentionTime <- cbind(temp$x,temp$y)
+
 		points(temp$x,temp$y* BSAdensFactor,main = "",axes = F,frame = F,xlim = range(data.i$retention.time[BSAgrep],na.rm = T),type = "l",xlab = "",ylab = "Density",col = "orange")
 		mtext("time in min",1,line = 1.9,cex = 0.6)
 				legend("topright",legend = c("all","BSA"),col = c(1,"orange"),lwd = 1,bty = "n")
@@ -136,7 +138,8 @@ text(BSAx,BSAy,BSAmz,pos = 3,cex = 0.4)
 
 
 	par(mai=c(0,0,0.1,0.1))
-	
+	plotData$mz <- cbind(temp$x,temp$y)
+
 	plot(temp$y,temp$x,type = "l",axes = F,frame = F,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "")
 	grid(col = "darkgrey",lwd = 1.5)
 		axis(1,xpd = NA,las = 2)
@@ -154,7 +157,7 @@ text(BSAx,BSAy,BSAmz,pos = 3,cex = 0.4)
 	}
 		plot(1,type = "n",frame = F,axes = F)
 
-	
+	return(plotData)
 	
 }
 #plot.profile(data.i)
