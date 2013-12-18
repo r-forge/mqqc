@@ -97,7 +97,7 @@ if(exists("db")){
     mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"^mqpar",full.name = T)
   }
   if(length(mqpar.name)!=0){
-    mqpar   			<- 	readLines(mqpar.name)
+    mqpar   			<- 	readLines(as.character(mqpar.name))
     xmlNEW 		<- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
     xmlNEW 		<- 	xml.replace(c("fileNames"),basename(filePath), xmlNEW)
     xmlNEW 		<- 	xml.replace(c("paramGroups"),rep(1,length(filePath)), xmlNEW,start.string = "<int>",end.string = "</int>")
