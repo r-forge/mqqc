@@ -200,7 +200,7 @@ setwd(folder)
 			write(files,file = temp.name)
 		}
 
-	if(funlastLoop %% 100 == 0)
+	if(funlastLoop %% 86400 == 0)
   		try(CleaningFun(folder))
 	}
   	
