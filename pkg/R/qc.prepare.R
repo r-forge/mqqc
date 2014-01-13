@@ -203,7 +203,7 @@ if(length(summaryPath) > 0){
 	if(is.data.frame(BSA)){
 		Coverage 	<- 	BSA$Sequence.coverage....
 	}else{
-		Coverage 	<- 	paste(quantile(summaryFile$Sequence.coverage....),collapse = " # ")
+		Coverage 	<- 	paste(quantile(summaryFile$Sequence.coverage....,na.rm = T),collapse = " # ")
 	}
 	
 	

@@ -41,8 +41,10 @@ if(exists("db")){
     species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
       
     regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, templateFasta,fixed = T)})
-    
-    temp   	<-as.logical(sapply(regEx,grep, x = basename(filePath)))
+    regEx <-  paste(regEx,"_",sep = "")
+    SearchString <- basename(filePath)
+   	SearchString 	<-  gsub(".raw$","_raw", SearchString)
+    temp   	<-as.logical(sapply(regEx,grep, x = SearchString))
     temp[is.na(temp)] <- FALSE
   
   if(!all(!temp)){

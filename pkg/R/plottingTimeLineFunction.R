@@ -7,6 +7,7 @@ UniMachine <- strsplit(as.character(uniSample$Name),"_")
 UniMachine <- sapply(UniMachine,function(x){x[1]})
 
 Vec.Test <- c("total.msms.min","msmsMassCount.50%","score.50%","mass.error.cal.50%")
+Names <- c("Peptide ID / min","Fragment Counts / MSMS","Andromeda Score","Mass Error")
 ColMQQCTLPLOTTING <<- c()
 lapply(Vec.Test,function(x){
 	test<- aggregate(uniSample[,tolower(colnames(uniSample)) == tolower(x)],list(UniMachine),max,na.rm = T)
@@ -23,6 +24,8 @@ for(i in unique(UniMachine)){
 	dir.create(paste(finalMQQC ,"TimeLines",sep = "/"))
 	pdf(pdfName <- paste(finalMQQC ,"TimeLines",paste(i,"TimeLine.pdf",sep = "-"),sep = "/"),height = 4,pointsize = 10,width = 15)
 	par(mai = c(1.5,0.8,0.8,0.1),mfrow = c(1,4))
+	
+it.a <- 1	
 for(a in Vec.Test){
 	tempI <- uniSample[UniMachine == i,]
 	tempI <- tempI[order(tempI$System.Time.s),]
@@ -68,7 +71,9 @@ if(!is.na(BestV)){
 }
 	
 
-plot(x, y,axes = F,type = "n",lwd = 4,xlab = "",ylab = a,main = paste(i,a,sep = "\n"),cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
+plot(x, y,axes = F,type = "n",lwd = 4,xlab = "",ylab = a,main = paste(i, Names[it.a],sep = "\n"),cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
+
+it.a <- it.a+1 # Counter for Names
 grid()
 	if(BordPlot){
 
