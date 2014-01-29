@@ -116,7 +116,7 @@ function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
     }
     }
     files <- list.files(hotFolder,full.name = T)
-    files <- grep("^_RmqqcFile",files,value = T,invert = T)
+    files <- files(grep("^_RmqqcFile",basename(files),value = F,invert = T))
      fileDelete <- list.files(files,pattern = "^DeleteTag$",recursive = T,full.name = T)
      DelFun <- 	function(fileDelete,time.thresh = 86400,move = T, destDelete = F,hotFolder){
                 time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(fileDelete)$ctime)
