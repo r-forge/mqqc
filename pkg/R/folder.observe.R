@@ -138,7 +138,7 @@ if(funlastLoop %% 10 == 0){
 setwd(folder)		
 		
 		catFun(paste(Sys.time(),"Status: Observing", folder))
-		Sys.sleep(1)
+		Sys.sleep(5)
 		# exclude _RmqqcFile_ and use exclusively raw txt
 		obs.files			  <- list.files(folder,full.name = T)
    	obs.files       <- obs.files[!file.info(obs.files)[,2]]

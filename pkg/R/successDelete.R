@@ -71,12 +71,12 @@ function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
 
                 					updateCheckList <- merge.control(ImprTempCol,ImprCheckListCol)
                 					tempCheckList <- read.csv(checkList,quote = "")
-                					#tempCheckList<- cbind(tempCheckList,"")
-                					#updateCheckList[is.na(updateCheckList)] <- dim(tempCheckList)[2] 
-                					#tempCheckList <- tempCheckList[, updateCheckList]
-                					#colnames(tempCheckList) <- ImprTempCol
-                					#file.rename(checkList,gsub("list_collect.csv$","list_collect_old.csv",checkList))
-                					#write.csv(tempCheckList,checkList,row.names = F,quote = F)
+                					tempCheckList<- cbind(tempCheckList,"")
+                					updateCheckList[is.na(updateCheckList)] <- dim(tempCheckList)[2] 
+                					tempCheckList <- tempCheckList[, updateCheckList]
+                					colnames(tempCheckList) <- ImprTempCol
+                					file.rename(checkList,gsub("list_collect.csv$","list_collect_old.csv",checkList))
+                					write.csv(tempCheckList,checkList,row.names = F,quote = F)
                           tempDat <- unlist(strsplit(temp[2],","))[updateCheckList]
                           temp[2] <- paste(tempDat,sep = ",",collapse = ",")
                 				}
