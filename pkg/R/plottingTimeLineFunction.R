@@ -10,7 +10,10 @@ Vec.Test <- c("total.msms.min","msmsMassCount.50%","score.50%","mass.error.cal.5
 Names <- c("Peptide ID / min","Fragment Counts / MSMS","Andromeda Score","Mass Error")
 ColMQQCTLPLOTTING <<- c()
 lapply(Vec.Test,function(x){
-	test<- aggregate(uniSample[,tolower(colnames(uniSample)) == tolower(x)],list(UniMachine),max,na.rm = T)
+	tempVal <- as.character(tolower(colnames(uniSample)))
+	tempVal[is.na(tempVal)] <- "NA"
+	tempVal <- tempVal	 == tolower(x)
+	test<- aggregate(uniSample[,tempVal],list(UniMachine),max,na.rm = T)
 	ColMQQCTLPLOTTING <<- 	cbind(ColMQQCTLPLOTTING,test[,2])
 	rownames(ColMQQCTLPLOTTING) <<- test[,1]
 	
@@ -28,6 +31,8 @@ for(i in unique(UniMachine)){
 it.a <- 1	
 for(a in Vec.Test){
 	tempI <- uniSample[UniMachine == i,]
+	colnames(tempI)[is.na(colnames(tempI))]<- "NA"
+	
 	tempI <- tempI[order(tempI$System.Time.s),]
 	TimeI <- tempI$System.Time	
 	BestV <- MaxV[names(MaxV) == a] 	

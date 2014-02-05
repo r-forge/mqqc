@@ -130,8 +130,7 @@ if(funlastLoop %% 10 == 0){
   	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 	sucFolder <<- sucFolder
 
-					try(	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder)
-)
+					try(	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder))
 		
 
 	}
@@ -141,7 +140,7 @@ setwd(folder)
 		Sys.sleep(5)
 		# exclude _RmqqcFile_ and use exclusively raw txt
 		obs.files			  <- list.files(folder,full.name = T)
-   	obs.files       <- obs.files[!file.info(obs.files)[,2]]
+   		obs.files      		 <- obs.files[!file.info(obs.files)[,2]]
 		temp.obs 			  <- grep("^_RmqqcFile_",obs.files)
 	#	temp.obs 			  <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
 		temp.obs 			  <- unique(temp.obs)

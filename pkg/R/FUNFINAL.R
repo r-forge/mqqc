@@ -34,9 +34,11 @@ if(file.exists(collectListPath)){
 	collectListLife <- list()	
 	it <- 1
 	for(iList in list(ECstd,Normal, BSA)){
+		
 		tempListOne <- collectList[iList,]
 		if(it == 1){
-try(plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC))
+			
+			try(plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC))
 
 		}
 		
@@ -93,10 +95,11 @@ colorCode <- collectListSorted$TotalScoreColor
 colorCode <- paste("<font color = '",colorCode,"'>&#9829;</font>",sep = "")
 
 TotalScore <- round(as.numeric(as.character(collectListSorted$TotalScore))*100) 
+TotalScore[is.na(TotalScore)] <- 0
 ncharL 		<- 3- nchar(TotalScore)
 TotalScoreAdd <- sapply(ncharL,function(x){
 	if(x !=0){
-		x <- paste(rep(0,x),collapse = "")
+		x <- paste(rep(0,abs(x)),collapse = "")
 		return(x)
 	}else{return("")}
 	
@@ -194,6 +197,8 @@ try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts =
 }
 
 }
+
+		try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder))
 
 #finalMQQC <- htmloutPath
 #sucFolder="_RmqqcFile_Processed"
