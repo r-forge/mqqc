@@ -95,7 +95,7 @@ colorCode <- collectListSorted$TotalScoreColor
 colorCode <- paste("<font color = '",colorCode,"'>&#9829;</font>",sep = "")
 
 TotalScore <- round(as.numeric(as.character(collectListSorted$TotalScore))*100) 
-TotalScore[is.na(TotalScore)] <- 0
+#TotalScore[is.na(TotalScore)] <- 0
 ncharL 		<- 3- nchar(TotalScore)
 TotalScoreAdd <- sapply(ncharL,function(x){
 	if(x !=0){
@@ -198,7 +198,7 @@ try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts =
 
 }
 
-		try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder))
+		#try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder))
 
 #finalMQQC <- htmloutPath
 #sucFolder="_RmqqcFile_Processed"

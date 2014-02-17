@@ -97,12 +97,12 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	# Check if there is any evidence to process...
 	####
 	setwd(folder)
-	funlastLoop +1
+	funlastLoop  <- funlastLoop +1
 	
 	#####
 	# Initiation of MQ runs, if new Raw File in Folder was detected
 	####
-	if(funlastLoop %% 10 == 0){
+	if(funlastLoop %% 2 == 0){
 		
 		try(ThreadControl(folder))
 	#evidenceToProcess <- checkMqqcInfo(folder)
@@ -122,7 +122,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	} # evidence loop
 	} # funlastLoop
 
-if(funlastLoop %% 10 == 0){
+if(funlastLoop %% 2 == 0){
 #		hi<- file.info(list.files())
 #	hu<- 	order(hi[,4])
     
@@ -137,7 +137,13 @@ if(funlastLoop %% 10 == 0){
 setwd(folder)		
 		
 		catFun(paste(Sys.time(),"Status: Observing", folder))
-		Sys.sleep(5)
+		#Sys.sleep(5)
+		tempTime <- sapply(1:10,function(x){
+			Sys.sleep(1)
+			cat("\rSleeping",x,"s")
+			
+		})
+		
 		# exclude _RmqqcFile_ and use exclusively raw txt
 		obs.files			  <- list.files(folder,full.name = T)
    		obs.files      		 <- obs.files[!file.info(obs.files)[,2]]
@@ -199,8 +205,11 @@ setwd(folder)
 			write(files,file = temp.name)
 		}
 
-	if(funlastLoop %% 86400 == 0)
+	if(funlastLoop %% 8640 == 0){
   		try(CleaningFun(folder))
+  		try(archiveProcessedFolder(folder))
+  	}
+  		
 	}
   	
   

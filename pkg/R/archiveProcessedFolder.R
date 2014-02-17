@@ -1,5 +1,6 @@
 archiveProcessedFolder <-
 function(folder = NULL, sucFolder = "_RmqqcFile_Processed"){
+	wd <- get()
 	if(file.exists(folder)){
 		setwd(folder)
 		setwd(sucFolder)
@@ -52,4 +53,5 @@ function(folder = NULL, sucFolder = "_RmqqcFile_Processed"){
 		
 	
 	}
+	setwd(wd)
 }
