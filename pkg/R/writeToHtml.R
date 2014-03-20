@@ -56,13 +56,17 @@ $(function() {
 <div id=\"container\" style=\"width:100%\">
 
 <div id=\"header\" style=\"background-color:#426787\">
-<h1 style=\"margin-bottom:0;color:#ffffff\">MQQC - MaxQuant Quality Control</h1></div>
+<h1 style=\"margin-bottom:0;color:#ffffff\">MQQC - MaxQuant Quality Control ",packageVersion("mqqc"),"</h1></div>
 
-<div id=\"menu\" style=\"height:100px;width:80%;float:left;\"> Last update: ",Sys.time(), "<br>MQ Threads:",mqqcRunningMQ,"
+<div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> Last update: ",Sys.time(), "<br>MQ Threads:",mqqcRunningMQ,"
 <form><input type=button value=\"Refresh\" onClick=\"history.go()\"></form>
 <p>
 <a href = \"./CheckListFormular.docx\">Check List Formular</a><br>
 </p>
+</div>
+
+<div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> 
+<embed src=\"./insertText.txt\" width = \"1080\" height = \"540\">
 </div>
 
 <div id=\"content\" style=\"height:100px;width:20%;float:left;\">
@@ -288,3 +292,6 @@ write(finalHtml,file = path)
 # writeToHtml(sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 )
 
 # system("open /Users/html/index.html")
+writeToHtml(inputVec = sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),
+inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3)
+system(paste("open ",paste(finalMQQC,"index.html",sep = "/")))
