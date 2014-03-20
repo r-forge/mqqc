@@ -9,13 +9,13 @@ successDelete <-
     if( file.exists(collectListPath)){
       collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
       imported 		<- collectList[,dim(collectList)[2]]
-      processed  <- unlist(lapply(strsplit(imported,"/combined"),function(x){return(x[1])}))
+      processed  <- unlist(lapply(strsplit(as.character(imported),"/combined"),function(x){return(x[1])}))
       folders <- setdiff(folders,processed)	
     }
     if(length(folders) > 0){
       tempI 				<- list.files(folders,pattern = "evidence.txt",full.name = T,recursive = T)
       tempImqqc 		<- list.files(folders,pattern = "mqqc",full.name = T,recursive = T, include.dirs = T)
-      if(length(tempImqqc) > 0){
+      if(length(tempImqqc) > 0 & length(tempI) > 0){
         tempI  <- tempI[merge.control(dirname(tempI),dirname(tempImqqc))]
         if(any(!is.na(tempI))){
           tempI <- tempI[!is.na(tempI)]
@@ -31,6 +31,7 @@ successDelete <-
       mqqcInfo <- NULL
       
       if(length(tempI) > 0){
+      	#preparing Path and foldername
         repl <- paste(hotFolder,"/",sep = "")
         repl <- gsub("//","/",repl)
         folderName  <- gsub(repl,"",tempI,fixed = T)
@@ -49,9 +50,7 @@ successDelete <-
           # check if mqqc is in folder
           if(length(tempmqqcInfo)!=0){
             write("",paste(dirname(tempI[i]),"mqqcProcessed",sep = "/"))
-            
             dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"), showWarnings = F)
-            
             qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T)
             if(length(qcData)> 0&tempIproc[i]){
               writeName <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
@@ -65,23 +64,36 @@ successDelete <-
                 }else{
                   checkListCol <- readLines(checkList,n = 1)
                   if(checkListCol!= temp[1]){
-                    ImprCheckListCol 	<- unlist(strsplit(checkListCol,","))
-                    ImprCheckListCol  <- gsub("\"","", ImprCheckListCol)
-                    ImprTempCol 			<- unlist(strsplit(temp[1],","))
+                   			 ImprCheckListCol 	<- unlist(strsplit(checkListCol,","))
+                    		ImprCheckListCol  <- gsub("\"","", ImprCheckListCol)
+                    		ImprTempCol 			<- unlist(strsplit(temp[1],","))
                     
-                    updateCheckList <- merge.control(ImprTempCol,ImprCheckListCol)
-                    tempCheckList <- read.csv(checkList,quote = "")
+                   			tempCheckList <- read.csv(checkList,quote = "")
+                            NewData <- read.csv(ba,quote = "")
+                    			new <- unique(c(colnames(tempCheckList),colnames(NewData)))
+                    			newOrder <- merge.control(new,colnames(tempCheckList))
+                    			NewOrderNew <- setdiff(1:length(new), newOrder)
+                    			if(length(NewOrderNew) > 0){
+                    				newOrder <- c(newOrder, NewOrderNew)
+                    			}
+                     		newOrderList <- merge.control(colnames(tempCheckList),new[newOrder])
+        						tempCheckListNew <- t(tempCheckList)[ newOrderList,]
+        						tempCheckListNew <-  t(tempCheckListNew)
+        						colnames(tempCheckListNew) <- new[newOrder]
+        						NewDataSort <- merge.control(colnames(NewData),new)
+        						attachVec <-t(NewData)[NewDataSort,]
+                    		tempCheckListNew <- rbind(tempCheckListNew,attachVec)
+                    			write.csv(tempCheckListNew, writeName,row.names = F,quote = F)
+
                     #tempCheckList<- cbind(tempCheckList,"")
                     #updateCheckList[is.na(updateCheckList)] <- dim(tempCheckList)[2] 
                     #tempCheckList <- tempCheckList[, updateCheckList]
                     #colnames(tempCheckList) <- ImprTempCol
                     #file.rename(checkList,gsub("list_collect.csv$","list_collect_old.csv",checkList))
                     #write.csv(tempCheckList,checkList,row.names = F,quote = F)
-                    tempDat <- unlist(strsplit(temp[2],","))[updateCheckList]
-                    temp[2] <- paste(tempDat,sep = ",",collapse = ",")
-                  }
+                  }else{
                   try(write(temp[2],file = writeName,append = T))
-                  
+                  }
                 }
                 
               }

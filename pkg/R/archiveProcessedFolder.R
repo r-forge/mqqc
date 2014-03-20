@@ -1,18 +1,17 @@
 archiveProcessedFolder <-
 function(folder = NULL, sucFolder = "_RmqqcFile_Processed"){
-	wd <- get()
+	wd <- getwd()
 	if(file.exists(folder)){
 		setwd(folder)
 		setwd(sucFolder)
 		temp <- list.files()
 		FolderNames <- grep("list_colle", temp,invert = T,value = T)
 		tempNameInfo 	<- file.info(FolderNames)
+		
 		SelectVec <- as.numeric(Sys.time())-as.numeric(tempNameInfo$mtime) > 7776000
 		FolderNames <- FolderNames[SelectVec]
 		tempName 	<- substring(FolderNames,1,10)
-
 		tempNameSplit 	<- strsplit(tempName,"-")	
-				
 		year <- sapply(tempNameSplit,function(x){
 			x[1]
 		})

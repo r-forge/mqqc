@@ -195,7 +195,7 @@ inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),pat
 
 try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))
 }
-
+cat("\rfinished FUNFINAL function")
 }
 
 		#try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder))

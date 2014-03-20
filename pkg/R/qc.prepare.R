@@ -42,8 +42,11 @@ thresholds$msmsEff 			  <- 60
 thresholds$quanRetRSD 		<- 0.05
 thresholds$quanRetSlope 	<- 0.02
 thresholds$quanRet50ratio	<- 1.2
-thresholds$msmsQuantile <-  c(4.5,5) # log10 Int
-thresholds$msmsCounts <- c(30,40)
+thresholds$msmsQuantile	 <-  c(4.5,5) # log10 Int
+thresholds$msmsCounts 	<- c(30,40)
+thresholds$Intensities 			<- c(50000000,1000000000)
+
+
 if(SpeciesTable){
 		colnames(Data) <- tolower(colnames(Data))
 
@@ -168,6 +171,19 @@ score$quanRet50ratio 	<- 	thresholds$quanRet50ratio/abs(summary.Data$quanRet50ra
 score$quanRet50ratio 	<- 	abs(summary.Data$quanRet50ratio)	/thresholds$quanRet50ratio
 	
 }
+# Intensity Value
+vals <- grep("^intensity",colnames(Data),ignore.case = T)
+if(length(vals) > 1){
+ValExclude <- grep("^intensity$",colnames(Data),ignore.case = T)
+vals <- setdiff(vals,ValExclude)
+}	
+Int <- Data[, vals]
+Int <- as.vector(Int)
+Int <- Int[Int != 0]
+IntQuan <- quantile(Int,na.rm = T)
+summary.Data$Intensity <- IntQuan
+tempScoreInt <- log10(IntQuan[3])/log10(thresholds$Intensities)[1]
+score$Intensity <- tempScoreInt
 
 # check MSMS
 try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
@@ -215,10 +231,17 @@ if(length(summaryPath) > 0){
 summary.Data$Coverage <- Coverage
 if(length(thresholds$ProteinCoverage) == 0){thresholds$ProteinCoverage <- 50}
 score$ProteinCoverage <- summary.Data$Coverage/thresholds$ProteinCoverage
-# efficiency 
-# msmsEff <- sumDat()
-# if(length(msmsEff) == 1){
-# if(any(is.na(msmsEff))){
+
+#####
+#Combined Scores
+#####
+
+# 1. nLC shape Combi
+nLCvec <- c(score$quanRetRSD,score$quanRet50ratio,score$quanRetSlope)
+nLCvec[nLCvec > 1] <- 1
+score$nLCcombi <- mean(nLCvec)
+
+
 
 msmsEff <- NA
 try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
@@ -242,6 +265,28 @@ score$peak.shape 	<- thresholds$ret.peak.shape[1]/max(abs(log2((summary.Data$ret
 score$ret.width 	<- thresholds$ret.width[1]/(summary.Data$ret.width[c(3)])
 
 score$quan.duplicates.msms 	<- thresholds$quan.duplicates.msms[1]/((((summary.Data$quan.duplicates.msms))))
+
+
+# 2. MS combi score
+MSvec <- c(score$Intensity,score$mass.error,score$msms)
+MSvec[MSvec > 1] <- 1
+score$combiMS <- mean(MSvec)
+# 3. MSMS combi score
+MSvec <- c(score$msmsCount,score$msmsQuantile,score$msms)
+MSvec[MSvec > 1] <- 1
+score$combiMSMS <- mean(MSvec)
+# 4. nLC combi score
+nLCvec <- c(score$nLCcombi,score$peak.shape,score$ret.width)
+nLCvec[nLCvec > 1] <- 1
+score$LCcombi <- mean(nLCvec)
+
+
+# efficiency 
+# msmsEff <- sumDat()
+# if(length(msmsEff) == 1){
+# if(any(is.na(msmsEff))){
+
+
 return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant))
 }
 #qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)

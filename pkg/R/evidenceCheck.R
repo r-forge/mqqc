@@ -5,7 +5,7 @@ function(hotFolder, match = "evimsms", sucFolder)
 	if( file.exists(collectListPath)){
 	collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
 	imported 		<- collectList[,dim(collectList)[2]]
-  	processed  <- unlist(lapply(strsplit(imported,"/combined"),function(x){return(x[1])}))
+  	processed  <- unlist(lapply(strsplit(as.character(imported),"/combined"),function(x){return(x[1])}))
 	}
 	folders <- listFolders(hotFolder)
   	folders <- grep("_RmqqcFile_",listFolders(hotFolder),fixed = T,value = T,invert = T)

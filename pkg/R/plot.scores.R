@@ -4,8 +4,9 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
 cat("\rplotting scores",rep(" ",100))
 #initiation of important vectors 
 grad.cols.vec <- c("black","blue","lightblue",colors()[50])
+grad.cols.vec <- c("black","indianred1","yellow2",colors()[50])
 
-
+MaxCol <- "blue"
 colnames(data.i) <- tolower(colnames(data.i))
 summary.data 	<- data.list$sd
 thresholds 		<- data.list$th
@@ -79,7 +80,7 @@ if(any(summary.data$msmsQuantile != 0)&  1==0){
 	scoreSpace 	 <- matrix(c(6,6,rep(5,(2*(ncolVal-3)-2)),7,7),ncol =(ncolVal-2),nrow = 2 )	
 	addNum <- 1
 }else{
-	scoreSpace 	 <- matrix(c(6,6,6,6,19,19,rep(5,(2*(ncolVal-4)))),ncol =(ncolVal-2),nrow = 2 )	
+	scoreSpace 	 <- matrix(c(rep(5,(ncolVal-2)),6,6,20,20,19,19),ncol =(ncolVal-2),nrow = 2 )	
 	addNum <- 0
 	
 }
@@ -94,9 +95,18 @@ leftSpace <- leftSpace + addNum
 }else{
 leftSpace	 	<- (nrowVal-2)*(ncolVal-2)/2
 leftSpace 		<- seq(from = 7,to = (leftSpace+6))
-leftSpace 		<- as.vector(sapply(leftSpace,function(x){x <- c(x,x)}))
-leftSpaceM <- matrix(leftSpace,nrow = (nrowVal-2),ncol = (ncolVal-2))
+n <- length(leftSpace) / (ncolVal-2)
+to <- (ncolVal-2)
+leftSpaceM <- c()
+init <- 1
+for(b in 1:n){
+	tempB <- rbind(leftSpace[init:(to*b)], leftSpace[init:(to*b)])
+	leftSpaceM <- rbind(leftSpaceM, tempB)
+	init <- init + to
+}
 leftSpace <- leftSpaceM
+#leftSpace 		<- as.vector(sapply(leftSpace,function(x){x <- c(x,x)}))
+#leftSpaceM <- matrix(leftSpace[1:],nrow = (nrowVal-2-2),ncol = (ncolVal-2))
 	
 }
 
@@ -113,6 +123,14 @@ if(any(grep.col("calibrated.retention.time.start",data.i) == 0|grep.col("calibra
 }else{dots <- T}
 
 try(plotData<- plot.profile(data.i,F,dots,BSACheck= BSACheck))
+xVal <- 1.6
+yVal <- 4.2
+abline(v=c(xVal, xVal*4.05),xpd = NA,lwd = 3,col = "grey")
+lines(x = c(xVal,1000),y = rep(yVal,2),xpd = NA,lwd = 3,col = "grey")
+lines(x = c(xVal,100),y = rep(yVal*0.56,2),xpd = NA,lwd = 3,col = "grey")
+#lines(x = rep(8.5,2),y = c(-5000,1000),xpd = NA,lwd = 3,col = "grey")
+
+
 par(mai = c(0.4,2,0.2,0.1))
 #assc#ign("score.data",score.data,envir = .GlobalEnv)
 #barplot2(cbind(score.data[1:3],rep(0,3)),names.arg = c("MS-score","nLC"),ylim = temp.xlim,col = ms.col,las = 2,ylab = "score")
@@ -164,44 +182,62 @@ namesData[namesData=="msmsCount"] <- "Fragments Counts / MSMS"
 
 
 
-par(mai = c(0.5,1.5,0.2,0.5))
+par(mai = c(0.5,1,0.3,0.5))
 
-temp.pos 	<- barplot2(unlist(score.data),beside = T,col = c(col.temp[round.spec(unlist(score.data))]),horiz = T,names.arg = namesData ,las = 2, plot.grid = T, grid.col = "grey",xlim = c(0,1.6),border = "transparent",xpd = F)
-ColUse 		<<- cbind(c(col.temp[round.spec(unlist(score.data))]),names(score.data),namesData)
+CombiScores <- score[grep("combi",names(score))]
+CombiScores <- CombiScores[grep("nLC",names(CombiScores),invert = T)]
+CombiScores <- unlist(CombiScores)
+CombiScores <- CombiScores[order(names(CombiScores))]
+namesData <- c("MS","MSMS","LC","All")
+temp.pos 	<- barplot2(c(CombiScores, TotalScore),beside = T,col = c(col.temp[round.spec(c(CombiScores, TotalScore))]),horiz = F,names.arg = namesData ,las = 1, plot.grid = T, grid.col = "grey",border = "transparent",xpd = F,ylim = c(0,1.2),ylab = "Score")
+ColUse 		<<- cbind(c(col.temp[round.spec(unlist(CombiScores))]),names(score.data),namesData)
 
 #text(temp.pos,0,c("peptide ID","mass error","score","peak shape","elution time","dupl. peptide IDs"),las = 2,srt = 90,adj = c(1.1,1),xpd =NA,srt = 45)
-mtext("MQQC Scores:",3,line = 0,cex = 0.6)
-abline(v=1,col = "grey",lwd = 5)
-abline(v=1,col = "red")
+mtext("System Performance",3,line = 0,cex = 0.6)
+#abline(h=1,col = "grey",lwd = 5)
+abline(h=1,col = MaxCol,lwd = 2)
 
 #par(mai = c(0.5,2,0.1,0.1))
 
 # col.vec for plot.quans 
 
 
-par(mai = c(0.5,2.2,0.3,0.5))
+par(mai = c(0.17,1,0.5,0.2),bg = "lightblue")
 init.i <- 500
-
-plot(1,frame = F,axes=F,xlab = "",ylab = "",type = "n",ylim = c(0,init.i))
+""
+#plot(1,frame = F,axes=F,xlab = "",ylab = "",type = "n",ylim = c(0,init.i))
 col.temp.2 <- (colorRampPalette(grad.cols.vec)(init.i))
-for(col.i in 1:init.i){
-	abline(h = col.i,col = col.temp.2[col.i],lwd = 0.5)
-}
 
-mtext("Good",2,adj = 1,cex = 0.8)
-mtext("Poor",2,adj = 0,cex = 0.8)
-if(BSACheck){
-	mtext("BSA",2,cex = 1.5,line = 4,las = 2,col = "darkgrey")
-}
+#par(mai = c(0.1,0.1,0.1,0.1),bg = "transparent")
+#empty.plot()
+
+par(mai = c(0.17,1,1,0.2),bg = "white")
+
+ hu <-barplot2(0.8,las = 2,col ="grey",ylab = "Parameter",ylim = c(0,1.2),bg = "transparent",angle = 45,density = 35,xpd = F,names.arg = "")
+abline(h=1,lwd = 3,col = MaxCol)
+text(hu*1.4,1,"Best",xpd = NA,col = MaxCol,pos = 4)
+mtext("LEGEND",3,col = "grey",line =  3)
+box(lwd = 4,fg = "grey")
+
+par(mai = c(0.17,1,0.5,0.2),bg = "lightblue")
+
+# for(col.i in 1:init.i){
+	# abline(h = col.i,col = col.temp.2[col.i],lwd = 0.5)
+# }
+
+
+# mtext("Good",2,adj = 1,cex = 0.8)
+# mtext("Poor",2,adj = 0,cex = 0.8)
+# if(BSACheck){
+	# mtext("BSA",2,cex = 1.5,line = 4,las = 2,col = "darkgrey")
+# }
 
 
 #mtext("Color\nCode",3,cex = 0.8)
 #legend(max(temp.pos)+ temp.pos[1],max(temp.xlim),legend = c("peptide ID","mass error","score","peak shape","elution time","duplicated peptide IDs"),,fill = c(ms.col,nc.col),xpd = NA,xjust = 0,bty = "n",title = "Legend")
-abline(v=-7.2,xpd = NA,lwd = 3,col = "grey")
-
 
 par(mai = c(0,0,0,0))
-empty.plot <- function(){plot(1,type = "n",axes = F,xlab = "",ylab ="")}
+empty.plot <- function(ylimVec = c(0,1)){plot(1,type = "n",axes = F,xlab = "",ylab ="",ylim = ylimVec)}
 #empty.col()
 #empty.plot()
 
@@ -230,10 +266,10 @@ temp.col <- c(4,2,1,2,4)
 
 if(log2){
 #abline(h=sort(c(-ref.data,ref.data,0)),col = "black", lty = "dashed",lwd = 1)	
-abline(h=sort(c(-ref.data,ref.data,0)),col = temp.col,lwd = 2)	
+abline(h=sort(c(-ref.data,ref.data,0)),col = temp.col,lwd = 2,lty = c(rep("11",2),rep("solid",3))	)
 }
 if(!log2){
-abline(h=sort(c(ref.data)),col = temp.col,lwd = 2)	
+abline(h=sort(c(ref.data)),col = temp.col,lwd = 2,lty = c(rep("11",2),rep("solid",3)))	
 	
 }
 axis(2,las = 2,fg = 1,lwd = 2)
@@ -244,10 +280,10 @@ boxplot(temp.plot,range = 0,col = fg.col,xlab = xlab,ylab = ylab,type = "n",axes
 }
 
 plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col.dir = NULL,xlimV = NULL){
-	col.temp <- (colorRampPalette(c("blue","yellow","green"))(thresh*100))
+	col.temp <- (colorRampPalette(c(MaxCol,"yellow","green"))(thresh*100))
 	
 		if(rev){
-		col.temp <- (colorRampPalette(c("blue","yellow"))(thresh*100))
+		col.temp <- (colorRampPalette(c(MaxCol,"yellow"))(thresh*100))
 		col.temp <- rev(c(col.temp,rep("green",thresh*100)))	
 		}
 
@@ -267,8 +303,8 @@ plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col
 	
 	max(c(x,thresh))
 	barplot2(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35,xpd = F,names.arg = "")
-	abline(h=thresh,lwd = 2,col = "grey")
-	abline(h=thresh,lwd = 2,col = "red")
+	#abline(h=thresh,lwd = 2,col = "grey")
+	abline(h=thresh,lwd = 3,col = MaxCol)
 		box(lwd = 4,fg = col.dir)
 
 	mtext(main,3,cex =0.7,line = 0.3)
@@ -280,33 +316,59 @@ plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col
 # Peptide ID/min
 ##
 if(BSACheck){
-	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MS", col.dir = ColUse[ColUse[,2] == "ProteinCoverage",1]))
+	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MS", col.dir = col.temp[round.spec(score$ProteinCoverage)]))
 
 }else{
 try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "Peptide ID/min",main = "MS", col.dir = ColUse[ColUse[,2] == "msms",1]))
 }
+
+####
+# Intensity
+####
+
+logInt <- log10(thresholds$Intensities)
+logInt <- c(min(logInt)- diff(logInt), logInt)
+logInt <- c(logInt,min(logInt) * 0.5,max(logInt) * 1.5)
+
+try(plot.quans(log10(summary.data$Intensity),F,"","log10 Intensity",logInt,fg.col = col.temp[round.spec(score$Intensity)],main = "MS"))
+
+
+
 ###
 # mass error
 ###
-try(plot.quans(summary.data$mass.error.cal,F,"","Mass error in ppm",c(thresholds$mass.error.cal,-thresholds$mass.error.cal,0),fg.col = ColUse[ColUse[,2] == "mass.error",1],main = "MS"))
+try(plot.quans(summary.data$mass.error.cal,F,"","Mass error in ppm",c(thresholds$mass.error.cal,-thresholds$mass.error.cal,0),fg.col = col.temp[round.spec(score$mass.error)],main = "MS"))
 
 
-###
-# score
-###
-try(plot.quans(summary.data$score,F,"","Andromeda score",c(0,50,100,150,400),fg.col = ColUse[ColUse[,2] == "score",1],main = "MSMS")
+#par(mai = c(0.2,1,0.5,0.2),bg = "lightblue")
+
+
+##
+# peak shape
+##
+try(plot.quans(summary.data$ret.peak.shape,T,"","log2(Peak shape)",thresholds$ret.peak.shape,fg.col = col.temp[round.spec(score$peak.shape)],main = "nLC")
+)
+##
+# peak width
+## 
+
+try(plot.quans(summary.data$ret.width,F,"","Peak width in min",c(0,0.1,0.3,1,4),fg.col = col.temp[round.spec(score$ret.width)],main = "nLC",ylim = range(summary.data$ret.width[1:4]))
 )
 
 ##
-# Duplicates
-##
-try(plot.stat(summary.data$quan.duplicates.msms, thresholds$quan.duplicates.msms, name.val = "Duplicates/Peptide IDs in %",rev = T,main = "MSMS",col.dir = ColUse[ColUse[,2] == "quan.duplicates.msms",1]))
+# ET time balance
+## 
+
+#try(plot.stat(log2(data.list$sd$quanRet50ratio),thresh = c(log2(data.list$th$quanRet50ratio),-1*log2(data.list$th$quanRet50ratio)),name.val = "log2 ETime balance",main = "nLC",col = ColUse[ColUse[,2] == "quanRet50ratio",1],xlimV = c(-1,1)))
+try(plot.stat(data.list$sc$nLCcombi, 1,name.val = "Elution Performance",main = "nLC",col = c(col.temp[round.spec(data.list$sc$nLCcombi)])))
+
+
 
 
 ##
 # Iden efficiency
 ##
-try(plot.stat(summary.data$msmsEff,60,name.val = "Identification efficiency in %",main = "MSMS",col = ColUse[ColUse[,2] == "msmsEff",1]))
+try(plot.stat(summary.data$msmsEff,60,name.val = "Identification efficiency in %",main = "MSMS",col = col.temp[round.spec(score$msmsEff)]))
 
 ##
 # msmsIntensities
@@ -316,46 +378,76 @@ try(plot.stat(summary.data$msmsEff,60,name.val = "Identification efficiency in %
 if(any(summary.data$msmsQuantile != 0)){
 threshDat <- as.numeric(unlist(strsplit(as.character(thresholds$msmsQuantile)," ")))
 
-try(plot.quans(as.numeric(log10(summary.data$msmsQuantile)),F,ref.data = c(threshDat[1]*0.7,threshDat[1]*0.9,threshDat, threshDat[2] * 1.2),main = "MSMS",xlab = "",ylab = "MSMS log10(Intensities)",fg.col = ColUse[ColUse[,2] == "msmsQuantile",1]))
+try(plot.quans(as.numeric(log10(summary.data$msmsQuantile)),F,ref.data = c(threshDat[1]*0.7,threshDat[1]*0.9,threshDat, threshDat[2] * 1.2),main = "MSMS",xlab = "",ylab = "MSMS log10(Intensities)",fg.col = col.temp[round.spec(score$msmsQuantile)]))
 }
 if(any(summary.data$msmsMassCount != 0)){
 threshDat <- as.numeric(unlist(strsplit(as.character(thresholds$msmsCount)," ")))
 
-try(plot.quans(as.numeric(summary.data$msmsMassCount),F,ref.data = c(0,threshDat[1]-diff(threshDat),threshDat[1], threshDat[2],threshDat[2]*2),main = "MSMS",xlab = "",ylab = "Fragment Counts / MSMS",fg.col = ColUse[ColUse[,2] == "msmsCount",1]))
+try(plot.quans(as.numeric(summary.data$msmsMassCount),F,ref.data = c(0,threshDat[1]-diff(threshDat),threshDat[1], threshDat[2],threshDat[2]*2),main = "MSMS",xlab = "",ylab = "Fragment Counts / MSMS",fg.col = col.temp[round.spec(score$msmsCount)]))
 }
 
-par(mai = c(0.2,1,0.5,0.2),bg = "lightblue")
 
 
-##
-# peak shape
-##
-try(plot.quans(summary.data$ret.peak.shape,T,"","log2(Peak shape)",thresholds$ret.peak.shape,fg.col = ColUse[ColUse[,2] == "peak.shape",1],main = "nLC")
-)
-##
-# peak width
-## 
-
-try(plot.quans(summary.data$ret.width,F,"","Peak width in min",c(0,0.1,0.3,1,4),fg.col = ColUse[ColUse[,2] == "ret.width",1],main = "nLC",ylim = range(summary.data$ret.width[1:4]))
+###
+# score
+###
+try(plot.quans(summary.data$score,F,"","Andromeda score",c(0,50,100,150,400),fg.col = col.temp[round.spec(score$score)],main = "Misc")
 )
 
 ##
-# ET time balance
+# Duplicates
+##
+try(plot.stat(summary.data$quan.duplicates.msms, thresholds$quan.duplicates.msms, name.val = "Duplicates/Peptide IDs in %",rev = T,main = "Misc",col.dir = col.temp[round.spec(score$quan.duplicates.msms)]))
+
+
+
+
+
+
+empty.plot()
+
+
+par(mai = c(0.17,1,0.5,0.2),bg = "lightblue")
+init.i <- 500
+""
+plot(1,frame = F,axes=F,xlab = "",ylab = "",type = "n",ylim = c(0,init.i))
+col.temp.2 <- (colorRampPalette(grad.cols.vec)(init.i))
+for(col.i in 1:init.i){
+	abline(h = col.i,col = col.temp.2[col.i],lwd = 0.5)
+}
+
+
+mtext("Good",2,adj = 1,cex = 0.7,xpd = NA)
+mtext("Poor",2,adj = 0,cex = 0.7,xpd = NA)
+mtext("Score Color Code",2,cex = 0.7,xpd = NA,line = 1.3)
+
+
+
+empty.plot(ylimVec = c(1,5))
+abline(h = c(1,2,3,4,5),col = c(4,2,1,2,4),lwd = 3,lty = c(rep("11",2),rep("solid",3)))
+
+text(rep(1,5),c(1,2,3,4,5),c("0%","25%","50%","75%","100%"),pos = 3,xpd = NA)##
+mtext("Quantile Color Code",2,cex = 0.7,line = 0.5) 
+
+
+# if(BSACheck){
+	# mtext("MQQC\nBSA",2,cex = 1.5,line = 4,las = 2,col = "darkgrey")
+# }else{
+# mtext("MQQC",2,cex = 1.5,line = 4,las = 2,col = "darkgrey")
+
+# }
+
+
+# ET time slope
 ## 
 
-try(plot.stat(log2(data.list$sd$quanRet50ratio),thresh = c(log2(data.list$th$quanRet50ratio),-1*log2(data.list$th$quanRet50ratio)),name.val = "log2 ETime balance",main = "nLC",col = ColUse[ColUse[,2] == "quanRet50ratio",1],xlimV = c(-1,1)))
+#try(plot.stat((data.list$sd$quanRetSlope),thresh = c(data.list$th$quanRetSlope,-1*data.list$th$quanRetSlope),name.val = "ETime slope",main = "nLC",col = ColUse[ColUse[,2] == "quanRetSlope",1],xlimV = c(-0.05,0.05)))
 
 ##
 # ET time slope
 ## 
 
-try(plot.stat((data.list$sd$quanRetSlope),thresh = c(data.list$th$quanRetSlope,-1*data.list$th$quanRetSlope),name.val = "ETime slope",main = "nLC",col = ColUse[ColUse[,2] == "quanRetSlope",1],xlimV = c(-0.05,0.05)))
-
-##
-# ET time slope
-## 
-
-try(plot.stat((data.list$sd$quanRetRSD),thresh = data.list$th$quanRetRSD,name.val = "ETime rSD",main = "nLC",col = ColUse[ColUse[,2] == "quanRetRSD",1]))
+#try(plot.stat((data.list$sd$quanRetRSD),thresh = data.list$th$quanRetRSD,name.val = "ETime rSD",main = "nLC",col = ColUse[ColUse[,2] == "quanRetRSD",1]))
 
 
 ##plot.quans(summary.data$mass.error.cal,F,"mass.error","mass.error in ppm",thresholds$mass.error.cal)
@@ -373,7 +465,6 @@ if(open.doc){
 	try(        try(system(paste("open ", .pdf), intern = TRUE, 				ignore.stderr = TRUE)))
 }
 try(ASCIIprofileplot(plotData))
-
 
 return(list(TotalScore = TotalScore,TotalScoreColor = col.temp[round.spec(TotalScore)],plotData = plotData))
 }

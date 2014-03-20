@@ -82,11 +82,12 @@ if(length(grep(BSACheck,i)) > 0){
 	
 	BSACheck <- T
 }else{BSACheck <- F}
-####
+
+
 ####
 # Plotting
 ####
-tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
+tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 TotalScoreRes <<- TotalScoreRes
 ASCIIplot <- NULL
 try(ASCIIplot <- readLines(list.files(pattern = "ASCIIplot.txt",full.name = T)))
@@ -103,6 +104,11 @@ if(tryError == "try-error"){
 tempScoreList <- t(as.matrix(unlist(TotalScoreRes[1:2])))
 export <- cbind(export, tempScoreList)
 
+# ScoreAdd <- c(TotalScoreRes$TotalScore,qc.prepare.data$sc[grep("combi",names(qc.prepare.data$sc))])
+# names(ScoreAdd)[1] <- "Total"
+# names(ScoreAdd) <- paste(names(ScoreAdd),"Score",sep = "_")
+# export <- cbind(export,t(as.matrix(ScoreAdd)))
+
 if(length(exitPath) > 0){
 	exitPath  <-  paste(exitPath,paste(Sys.Date(),gsub(".raw$","raw",rep.v[a]),"folder",sep = "_"),paste(rep.v[a],".csv",sep = ""),sep = "/")
 	names(exitPath) <- "filePath"
@@ -110,12 +116,14 @@ if(length(exitPath) > 0){
 	names(SourceTime) <- "SourceFileTime"
 	Status <- "fresh"
 	names(Status) <- "Status"
+	if(length(SourceTime) == 0){SourceTime <- "error"}
 	export <- cbind(export,exitPath, SourceTime, Status)
 	
 	
 }
 
 try(write.csv(export,paste(rep.v[a],".csv",sep = ""),quote = F,row.names = F))
+try(save(qc.prepare.data, TotalScoreRes ,file = paste(rep.v[a],".Rdata",sep = ""),quote = F,row.names = F))
 
 
 flatFile <- t(export)
