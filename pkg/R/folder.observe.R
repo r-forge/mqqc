@@ -10,13 +10,15 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   ###???
   # Check MailList
   ###
+  print("Checking Mail Settings")
   MailFile  <- list.files(MailPath<- paste(path.package("mqqc"),"data",sep = "/"),pattern = "^MailSettings$")
   if(length(MailFile) == 0){
   	write(paste("username","password","smtp.server","emailaddress",sep = "\n"),file = paste(MailPath,"MailSettings",sep = "/"))
   	
   }
   
-  
+    print("Initiate Settings")
+
   if(automatedStart){
 	Tryerror<- class(try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))))
 	if(Tryerror== "try-error"){
@@ -34,11 +36,14 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	if(.GlobalEnv$MQQCRestartNow == "yes"){
   		Param <- mqqcGUI()
 	}
-  	
+      print("Settings received")
+	
   	
   	for(i in 1:length(Param)){
 		  assign(names(Param)[i],Param[[i]])
 	  }
+      print("Settings loaded")
+	  
 	cores <- as.numeric(cores)
   	if(is.na(Debug)){Debug <- TRUE}
   	if(!Debug){
@@ -49,6 +54,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   }
 
 }
+	 print("Preparing MQQC")
+
     try(writeToHtml(path = htmloutPath))
     dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 
@@ -56,14 +63,15 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
   }
-  
+  print("Checking Species Table")
+ 
   if(SpeciesTable){
     
     species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
     XMLCheck <- species$Xml[file.exists(as.character(species$Xml))]
     if(length(XMLCheck) > 0){
       sapply(XMLCheck,function(x){
-        initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable,fastaInput=x)       
+        try(initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable,fastaInput=x))       
       })
     }
   }
@@ -94,7 +102,9 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 
 	}
 
-	
+	print("Starting Loop")
+	print("")
+
 	loop <- T
 	funlastLoop <- 0
 	while(loop){

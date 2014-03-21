@@ -4,7 +4,15 @@ library(tcltk)
 .GlobalEnv$MQQCRestored <- F
 
 try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/")))
-if(!exists("output")){
+
+outputError <- F
+if(exists("output")){
+  if(length(output) == 0){
+    outputError <- T
+  }
+}
+
+if(!exists("output")|outputError){
 	loadQ	<- tkmessageBox(message = "No Parameter file found. Import new Rdata container?",type = "yesno")
 	if(tclvalue(loadQ) == "yes"){
 		pathToRdata <- tkgetOpenFile()
@@ -315,5 +323,6 @@ for(i in 1:4){
 return(output)
 
 }
+
 #hui <- mqqcGUI()
 #print(hui)
