@@ -1,7 +1,7 @@
 mqqcGUI <- 
 function(){
 library(tcltk)
-	
+.GlobalEnv$MQQCRestored <- F
 
 try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/")))
 if(!exists("output")){
@@ -167,6 +167,7 @@ loadSpecies <- function(){
 		species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
 		inF <- 		try(readLines(inFile,n = 1))
 		oldF <- try(readLines(species.path ,n = 1))
+		tkMes <- "yes"
 		if(inF== oldF){
 				tkMes	<- tclvalue(tkmessageBox(icon = "warning",message = paste("Wrong  table format!\n\nHeader doesn't match. Should be:\n",oldF,"\n but is:\n",inF,"\nImport anyway?",sep = "\n"),type = "yesno"))
 
@@ -192,6 +193,45 @@ exportSpecies <- function(){
 			file.copy(species.path,out)
 		}
 }
+
+ExportImportFun <- function(){
+	tt2 <- tktoplevel()
+	tt2.rb1 <- tkradiobutton(tt2)
+	tt2.rb2 <- tkradiobutton(tt2)
+
+	
+	tt2.quant.method <- tclVar("Backup")
+    tkconfigure(tt2.rb1,variable=tt2.quant.method,value="Backup")
+	tkconfigure(tt2.rb2,variable=tt2.quant.method,value="Restore")
+	tkgrid(tklabel(tt2,text = "Backup"),tklabel(tt2,text = "Restore"))
+	tkgrid(tt2.rb1,tt2.rb2)
+	# Stop Go
+
+tkgrid(tkbutton(tt2,text = "go",command = function(){.GlobalEnv$aborttt2  <- F;tkdestroy(tt2)}),tkbutton(tt2,text = "stop",command = function(){ .GlobalEnv$aborttt2  <- T; tkdestroy(tt2)}),columnspan = 1,padx = 3,pady = 3)
+
+tkwait.window(tt2)
+if(.GlobalEnv$aborttt2){
+	
+}else{
+	.GlobalEnv$MQQCRestored <- F
+	if(tclvalue(tt2.quant.method) == "Backup"){
+		BackupRestoreSettings("b")
+	}else{
+		BackupRestoreSettings("r")	
+		.GlobalEnv$MQQCRestored <- T	
+		.GlobalEnv$MQQCRestartNow<- tclvalue(tkmessageBox(type = "yesno",message ="MQQC GUI needs to be restarted to apply the new settings. Restart now?"))
+	}
+}
+if(.GlobalEnv$MQQCRestartNow == "yes"){
+	print("Destroy")
+	.GlobalEnv$abort <- F
+	tkdestroy(tt)
+}
+}
+######
+
+
+
 	fastaSetFix <- tkbutton(tkLFtable,text = "Table",command = speciesFunFix)	
 	fastaSet <- tkbutton(tkLFtable,text = "Fasta",command = speciesFun)
 	exportSet <- tkbutton(tkLFtable,text = "Export",command = exportSpecies)
@@ -224,6 +264,10 @@ tkgrid(ttf1,ttf2,pady = 1,padx = 1,sticky = "NSWE")
 .GlobalEnv$abort <- F
 
 tkgrid(ttkseparator(tt),sticky = "WE",columnspan = 2,padx = 3,pady=1)
+	ExImBut <- tkbutton(tt,text = "Backup/Restore all",command = ExportImportFun)
+	tkgrid(ExImBut, columnspan = 3)	
+tkgrid(ttkseparator(tt),sticky = "WE",columnspan = 2,padx = 3,pady=1)
+	
 tkgrid(tkbutton(tt,text = "go",command = function(){tkdestroy(tt)}),tkbutton(tt,text = "stop",command = function(){ .GlobalEnv$abort  <- T; tkdestroy(tt)}),columnspan = 1,padx = 3,pady = 3)
 #tkwm.resizable(tt, "FALSE","FALSE")
 temp <- tkframe(ttf1)
@@ -234,8 +278,9 @@ temp <- tkframe(ttf1)
 	#TKBload <- tkbutton(ttf1,text = "export Param.Rdata",command = exportRdata)
 
 	tkgrid(TKBexport, TKMailImport,TKMail)
+	
 	tkgrid(temp)
-tkwait.window(tt)
+	tkwait.window(tt)
 
 if(.GlobalEnv$abort ){stop("abort by user")}
 
@@ -253,7 +298,9 @@ output <- list(
 		cores = cores ,
 		SpeciesTable = T
 		)
+if(!.GlobalEnv$MQQCRestored ){
 save(output,file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))
+}
 # check settings
 for(i in 1:4){
 	tempI <- as.character(output[[i]])

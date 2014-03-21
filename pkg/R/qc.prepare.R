@@ -1,9 +1,9 @@
 qc.prepare <- 
-function(Data, SpeciesTable,placeholder,templateFasta,path = "./"){
+function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL){
 score <- list()
 
 sumDat <- function(){
-	temp <- list.files(pattern = "summary")
+	temp <- list.files(.path,pattern = "summary",full.name = T)
 	if(length(temp) > 0){
 	temp <- read.csv(temp[1],sep = "\t")
 	colnames(temp) <- tolower(colnames(temp))
@@ -100,7 +100,7 @@ RawFilesUsed <- unique(Data.i$raw.file)
 type.ident 	<- Data.i[,grep.col("type", Data.i)]
 msms.count <- length(grep("MSMS", type.ident))
 summary.Data$msms.count <- msms.count
-
+ 
 
 seq 					<- Data.i$sequence[grep("MSMS",type.ident)]
 uniPepCount 	<- length(unique(seq))
@@ -244,7 +244,23 @@ score$nLCcombi <- mean(nLCvec)
 
 
 msmsEff <- NA
-try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
+ msmsEff <- sumDat()
+
+if(is.na(msmsEff)){
+	try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
+}else{
+	if(dim(msmsEff)[1] == 2){
+		msmsEff <- msmsEff[1,2]
+	}else{
+		if(dim(msmsEff)[1] == 2& filename != 0){
+			msmsEff <- msmsEff[msmsEff[,1] == gsub(".raw$","",filename),2]
+		}else{msmsEff <- 0}
+
+	}
+
+}
+msmsEff <- as.numeric(msmsEff)
+
 # }else{msmsEff <- 0}
 
 # }else{
@@ -282,7 +298,6 @@ score$LCcombi <- mean(nLCvec)
 
 
 # efficiency 
-# msmsEff <- sumDat()
 # if(length(msmsEff) == 1){
 # if(any(is.na(msmsEff))){
 

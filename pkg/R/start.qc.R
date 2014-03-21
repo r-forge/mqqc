@@ -67,7 +67,7 @@ cat("\rstarting qc.prepare",rep(" ",100))
 # Calculation of Scores
 ####
 
-tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)))
+tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path,filename = i)))
 export 	<- unlist(qc.prepare.data$sd)
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))

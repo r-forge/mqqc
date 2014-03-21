@@ -319,7 +319,7 @@ if(BSACheck){
 	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MS", col.dir = col.temp[round.spec(score$ProteinCoverage)]))
 
 }else{
-try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "Peptide ID/min",main = "MS", col.dir = ColUse[ColUse[,2] == "msms",1]))
+try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "Peptide ID/min",main = "MS", col.dir = col.temp[round.spec(score$msms)]))
 }
 
 ####

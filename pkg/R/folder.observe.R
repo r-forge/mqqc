@@ -1,5 +1,6 @@
 folder.observe <-
 function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F){
+  .GlobalEnv$MQQCRestartNow <- "no"
   try(tkControl(htmloutPath = htmloutPath))
   if(length(grep("txtplot",library())) == 0){
 	install.packages("txtplot")
@@ -28,8 +29,13 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		}
 }else{
   
-  if(gui){
-  	Param <- mqqcGUI()
+ 	if(gui){
+  		Param <- mqqcGUI()
+	if(.GlobalEnv$MQQCRestartNow == "yes"){
+  		Param <- mqqcGUI()
+	}
+  	
+  	
   	for(i in 1:length(Param)){
 		  assign(names(Param)[i],Param[[i]])
 	  }
