@@ -1,5 +1,5 @@
 successDelete <- 
-  function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F)
+  function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F,mqqcInfo = NULL)
   {
     #grep("20131216_AD_ECst",folders)
     folders <- listFolders(hotFolder)
@@ -28,7 +28,7 @@ successDelete <-
       #tempI <- tempI[!as.logical(sapply(tempIproc,length))]
       tempIproc <- !as.logical(sapply(tempIproc,length)) 
       
-      mqqcInfo <- NULL
+      
       
       if(length(tempI) > 0){
       	#preparing Path and foldername
@@ -104,7 +104,7 @@ successDelete <-
               MovTest <- tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" & basename(tempmqqcInfo) !=  "mqqcMoved" ]
               DelCont <- F
               if(length(MovTest) > 0){
-                DelCont         <-  file.rename(MovTest,paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
+                	DelCont         <-  file.rename(MovTest[1],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
               }
               if(DelCont){
                 tempmqqcInfo <<- tempmqqcInfo

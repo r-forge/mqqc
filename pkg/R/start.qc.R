@@ -99,10 +99,12 @@ if(length(ASCIIplot) > 0){
 
 
 if(tryError == "try-error"){
-	TotalScoreRes <- list(TotalScore = "?",TotalScoreColor = "#666666")
+	TotalScoreRes <- list(TotalScore = rep("?",4),TotalScoreColor = rep("#666666",4))
 }
 tempScoreList <- t(as.matrix(unlist(TotalScoreRes[1:2])))
 export <- cbind(export, tempScoreList)
+colnames(export)[colnames(export) == "TotalScoreColor.DS"] <- "TotalScoreColor"
+colnames(export)[colnames(export) == "TotalScore.DS"] <- "TotalScore"
 
 # ScoreAdd <- c(TotalScoreRes$TotalScore,qc.prepare.data$sc[grep("combi",names(qc.prepare.data$sc))])
 # names(ScoreAdd)[1] <- "Total"

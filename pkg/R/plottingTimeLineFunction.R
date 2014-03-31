@@ -1,18 +1,28 @@
 plottingTimeLineFunction <- function(AllData,finalMQQC,TargetVec = "ECstd"){
 
 
-
+#AllData <- backup
 uniSample <- AllData[grep(TargetVec, AllData$Name),]
 UniMachine <- strsplit(as.character(uniSample$Name),"_")
 UniMachine <- sapply(UniMachine,function(x){x[1]})
 
-Vec.Test <- c("total.msms.min","msmsMassCount.50%","score.50%","mass.error.cal.50%")
-Names <- c("Peptide ID / min","Fragment Counts / MSMS","Andromeda Score","Mass Error")
+Vec.Test <- c("quan.msms.min","msmsMassCount.50%","msmsQuantile.50%","score.50%","mass.error.cal.50%")
+Names <- c("Peptide ID / min","Fragment Counts / MSMS","log10 MSMS Median Intensity","Andromeda Score","Mass Error")
 ColMQQCTLPLOTTING <<- c()
-lapply(Vec.Test,function(x){
+log2Fun <- c("msmsQuantile.50.","msmsQuantile.25.","msmsQuantile.75.","msmsQuantile.100.","msmsQuantile.0.")
+for(i in log2Fun){
+	if(any(make.names(colnames(AllData)) == make.names(i))){
+		AllData[,make.names(colnames(AllData)) == i] <- log10(AllData[,make.names(colnames(AllData)) == i] )
+		print("uahfisuahfliusahfawef")
+	}
+	
+}
+
+lapply(make.names(Vec.Test),function(x){
+	print(x)
 	tempVal <- as.character(tolower(colnames(uniSample)))
 	tempVal[is.na(tempVal)] <- "NA"
-	tempVal <- tempVal	 == tolower(x)
+	tempVal <-make.names(tempVal)	 == make.names(tolower(x))
 	test<- aggregate(uniSample[,tempVal],list(UniMachine),max,na.rm = T)
 	ColMQQCTLPLOTTING <<- 	cbind(ColMQQCTLPLOTTING,test[,2])
 	rownames(ColMQQCTLPLOTTING) <<- test[,1]
@@ -23,19 +33,21 @@ ColMQQCTLPLOTTING[is.infinite(ColMQQCTLPLOTTING)] <- 0.1
 ColMQQCTLPLOTTING <<- ColMQQCTLPLOTTING
 MaxV<- apply(ColMQQCTLPLOTTING,2,max,na.rm = T)
 names(MaxV) <- Vec.Test
+colnames(ColMQQCTLPLOTTING) <- Vec.Test
 for(i in unique(UniMachine)){
 	dir.create(paste(finalMQQC ,"TimeLines",sep = "/"))
 	pdf(pdfName <- paste(finalMQQC ,"TimeLines",paste(i,"TimeLine.pdf",sep = "-"),sep = "/"),height = 4,pointsize = 10,width = 15)
-	par(mai = c(1.5,0.8,0.8,0.1),mfrow = c(1,4))
+	par(mai = c(1.5,0.8,0.8,0.1),mfrow = c(1,length(Vec.Test)))
 	
 it.a <- 1	
 for(a in Vec.Test){
+	MacLine <- ColMQQCTLPLOTTING[rownames(ColMQQCTLPLOTTING) == i,make.names(colnames(ColMQQCTLPLOTTING)) == make.names(a)]
 	tempI <- uniSample[UniMachine == i,]
 	colnames(tempI)[is.na(colnames(tempI))]<- "NA"
 	
 	tempI <- tempI[order(tempI$System.Time.s),]
 	TimeI <- tempI$System.Time	
-	BestV <- MaxV[names(MaxV) == a] 	
+	BestV <- MaxV[make.names(names(MaxV)) == make.names( a)] 	
 	TimeI <- strsplit(as.character(TimeI),".",fixed =T)
 	TimeI <- sapply(TimeI,function(x){
 		x1 <- paste(x[1:3],collapse = "-")
@@ -44,8 +56,8 @@ for(a in Vec.Test){
 		return(x)
 	})
 	if(length(grep(".50%",a))> 0){
-	CountUp <- tempI[,colnames(tempI) == gsub(".50%",".75%",a)]
-	CountLo <- tempI[,colnames(tempI) == gsub(".50%",".25%",a)]
+	CountUp <- tempI[,make.names(colnames(tempI)) == make.names(gsub(".50%",".75%",a))]
+	CountLo <- tempI[, make.names(colnames(tempI)) == make.names(gsub(".50%",".25%",a))]
 	BordPlot <- T
 
 	}else{BordPlot <- F}
@@ -53,10 +65,12 @@ for(a in Vec.Test){
 	TimeI <- t(TimeI)
 	TimeI <- gsub("^X","", TimeI)
 	deleteTimeVec <- duplicated(substr(TimeI[,1],1,7))
-	Count <- tempI[,colnames(tempI) == a]
+	Count <- tempI[,make.names(colnames(tempI)) == make.names(a)]
 	
 	y <- as.numeric(as.character(Count))
 	x <- as.numeric(as.character(tempI$System.Time.s))
+ 
+ 
   
   if(all(is.na(y))){y[is.na(y)] <- 0;Count[is.na(Count)] <- 0}
 	if(length(x) == length(y) & length(y) > 0 & any(!is.na(Count))){
@@ -76,7 +90,7 @@ if(!is.na(BestV)){
 }
 	
 
-plot(x, y,axes = F,type = "n",lwd = 4,xlab = "",ylab = a,main = paste(i, Names[it.a],sep = "\n"),cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
+plot(x, y,axes = F,type = "n",lwd = 4,xlab = "",ylab = Names[it.a],main = paste(i, Names[it.a],sep = "\n"),cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
 
 it.a <- it.a+1 # Counter for Names
 grid()
@@ -100,7 +114,10 @@ polygon(c(x, rev(x)), c(CountUp, rev(CountLo)),
 	axis(2,cex.axis = 2)
 	
 	if(!is.na(BestV)){
-		abline(h = BestV,col = "red",lty = "dotted",lwd = 2)
+		abline(h = BestV,col = "red",lty = "1414",lwd = 2)
+	}
+	if(length(MacLine) > 0){
+		abline(h = MacLine,col = "green",lty = "4949",lwd = 2)
 	}
 	}
 
@@ -108,7 +125,7 @@ polygon(c(x, rev(x)), c(CountUp, rev(CountLo)),
 	graphics.off()
 
 }
-
+#system(paste("open",pdfName))  
 #system(paste("open",dirname(pdfName)))
 }
 

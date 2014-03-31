@@ -12,18 +12,18 @@ initHtml <- paste("
 <meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\">
 <title>MQQC</title>
 
-<script type=\"text/javascript\" src=\"tabber.js\"></script>
-<script type=\"text/javascript\" src=\"jquery.js\"></script> 
-<script type=\"text/javascript\" src=\"tablesorter/jquery.tablesorter.js\"></script> 
+<script type=\"text/javascript\" src=\"html/tabber.js\"></script>
+<script type=\"text/javascript\" src=\"html/jquery.js\"></script> 
+<script type=\"text/javascript\" src=\"html/tablesorter/jquery.tablesorter.js\"></script> 
 
 
-<script type=\"text/javascript\" src=\"tabber.js\"></script>
-<link rel=\"stylesheet\" href=\"example.css\" TYPE=\"text/css\" MEDIA=\"screen\">
-<link rel=\"stylesheet\" href=\"example-print.css\" TYPE=\"text/css\" MEDIA=\"print\">
+<script type=\"text/javascript\" src=\"html/tabber.js\"></script>
+<link rel=\"stylesheet\" href=\"html/example.css\" TYPE=\"text/css\" MEDIA=\"screen\">
+<link rel=\"stylesheet\" href=\"html/example-print.css\" TYPE=\"text/css\" MEDIA=\"print\">
 
-<link rel=\"stylesheet\" href=\"example.css\" TYPE=\"text/css\" MEDIA=\"screen\">
-<link rel=\"stylesheet\" href=\"example-print.css\" TYPE=\"text/css\" MEDIA=\"print\">
-<link rel=\"stylesheet\" href=\"green/style.css\" TYPE=\"text/css\" MEDIA=\"screen\">
+<link rel=\"stylesheet\" href=\"html/example.css\" TYPE=\"text/css\" MEDIA=\"screen\">
+<link rel=\"stylesheet\" href=\"html/example-print.css\" TYPE=\"text/css\" MEDIA=\"print\">
+<link rel=\"stylesheet\" href=\"html/green/style.css\" TYPE=\"text/css\" MEDIA=\"screen\">
 
 <script type=\"text/javascript\">
 

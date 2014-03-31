@@ -3,7 +3,7 @@ function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NU
 score <- list()
 
 sumDat <- function(){
-	temp <- list.files(.path,pattern = "summary",full.name = T)
+	temp <- list.files(path,pattern = "summary",full.name = T)
 	if(length(temp) > 0){
 	temp <- read.csv(temp[1],sep = "\t")
 	colnames(temp) <- tolower(colnames(temp))
@@ -189,13 +189,19 @@ score$Intensity <- tempScoreInt
 try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
 if(!exists("msmsInfo")){
 	msmsInfo <- rep(0,5)
+	msmsInfo <-	list(MSMSint = "nodata",MSMSn = "nodata")
+}else{
+	if(!is.list(msmsInfo)){
+			msmsInfo <-	list(MSMSint = "nodata",MSMSn = "nodata")
+	}
 }
-if(all(msmsInfo$MSMSint == 0)){
+
+if(all(msmsInfo$MSMSint == 0)|all(is.character(unlist(msmsInfo)))){
 	
-	summary.Data$msmsQuantile  <- c(0,0,0,0)
-	summary.Data$msmsMassCount <- c(0,0,0,0)
-	score$msmsQuantile <- 0
-	score$msmsCount <- 0
+	summary.Data$msmsQuantile  <- c(0,0,NA,0,0)
+	summary.Data$msmsMassCount <- c(0,0,NA,0,0)
+	score$msmsQuantile <- NA
+	score$msmsCount <- NA
 }else{
 summary.Data$msmsQuantile <- msmsInfo$MSMSint
 summary.Data$msmsMassCount <- msmsInfo$MSMSn
@@ -304,12 +310,5 @@ score$LCcombi <- mean(nLCvec)
 
 return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant))
 }
-#qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
-#print(qc.prepare.data$sc$msmsQuantile)
-
-#Data.list <- qc.prepare(Data)
-#Data <- temp.DataEvidence
-# qc.prepare.data <- qc.prepare(temp.DataEvidence, SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path)
-# print(qc.prepare.data$sc)
-# print(qc.prepare.data$sd$mass.error.cal)
-# tryError <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = T,pdfOut = pdfOut)))
+#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path,filename = i)))
+#tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
