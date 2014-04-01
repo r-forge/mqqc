@@ -62,6 +62,18 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(!file.exists(fastaFile)){fastaFile <- NULL}
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
+  
+ 		###
+		# REG QUery HKEY_CLASSES_ROOT\MSFileReader.XRawfile
+		###
+		Registry <- system("REG QUery HKEY_CLASSES_ROOT",intern = T)
+		if(length(grep("MSFileReader",Registry,ignore.case=T,value = T)) == 0){
+		  CheckVal <- tclvalue(tkmessageBox(message = "Warning!\nMSFileReader seems not to be installed. Continue without?",type = "yesno",title = "MQQC Warning",icon = "warning"))
+		  if(CheckVal == "no"){
+        stop("Abort by user. Missing MSFileReader installation.")
+		  } 
+		} 	
+  
   }
   print("Checking Species Table")
  

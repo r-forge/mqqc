@@ -124,7 +124,10 @@ if(exists("db")){
     if(RunFile){
 		write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
   	
-    
+          if(file.exists(db)){
+        	try(CheckFastaDB(checkMQ.bin,basename(db)))
+    	  }
+      
   		threads <- 1
   		MQ		<- "MaxQuantCmd.exe"
   	
