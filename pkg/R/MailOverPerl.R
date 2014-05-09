@@ -7,7 +7,7 @@ DropZone <- grep("#DropZone",temp)
 temp <- temp[-c((DropZone+1):length(temp))]
 write(c(temp,addVec), perl.init)
 
-print("Mail")
+cat("Mail\n")
 wd <- getwd()
 setwd(dirname(perl.init))
 PerlSend <<- perl.init

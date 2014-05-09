@@ -33,7 +33,6 @@ write(html, pathHtml)
 
 }
 #try(htmlMod("/Users/html/index.html",Counts = c(1,2,3,4,5),BGcolor = rep("#123456",5)))
-#print(temp)
 
 #writeToHtml(sort(pdfFiles[ECstd]),sort(pdfFiles[!ECstd]),path = #paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml)
 

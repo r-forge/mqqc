@@ -1,7 +1,6 @@
 mq.fun <-
 function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",skipUnknown = T,UseOwnXML = F){
 RunFile <- T
-
 if(exists("db")){
   if(!file.exists(as.character(db))){
     db <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"fasta$",full.name = T)
@@ -122,31 +121,34 @@ if(exists("db")){
   }
     
     if(RunFile){
-		write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
-  	
-          if(file.exists(db)){
-        	try(CheckFastaDB(checkMQ.bin,basename(db)))
-    	  }
-      
+		  write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
+  	  
+      if(file.exists(db)){
+        try(CheckFastaDB(checkMQ.bin,basename(db)))
+      }
+    
   		threads <- 1
   		MQ		<- "MaxQuantCmd.exe"
   	
-  		MQcmd <- paste(checkMQ.bin,"/bin/",MQ," ", xml.path," ",threads,sep = "")
-  		MQcmd <- path.convert(MQcmd)
+  		MQcmd <- paste("\"",checkMQ.bin,"/bin/",MQ,"\" \"", xml.path,"\" ",threads,sep = "")
+  	#	MQcmd <- path.convert(MQcmd)
   
   		#  return(xmlNEW[2])
   		cores <- as.numeric(cores)
   		if(is.na(cores[1])){cores <- 1;print("Warning, set number of threads to 1.")}
-  		try(MQmanager(MQcmd,folder,cores =cores))
-  	
+  		
+      try(MQmanager(MQcmd,folder,cores =cores))
+    try(   	write(MQcmd,paste(dirname(filePath),"MQQC_MQcmd.txt",sep = "/")))
+  	  
+      
   }else{
     print("Error in MQ start. No XML provided.")
-	try(   	write.csv("",paste(dirname(filePath),"DeleteTag",sep = "/")))
+	  
+    
+    try(   	write.csv("",paste(dirname(filePath),"DeleteTag",sep = "/")))
+  
   }
   
 	#convert slashes to backslashes
 }
-#mq.fun("D:/mqqctest/Bert_20130403_PG_Ecoli_salt_16RAW_folder/Bert_20130403_PG_Ecoli_salt_16.RAW","D:/mqqctest/")
-#folder <- "D:/mqqctest/"
-#filePath <- "D:/mqqctest/Bert_20130403_PG_Ecoli_salt_161RAW_folder/Bert_20130403_PG_Ecoli_salt_161.RAW"
-#temp2 <- "D:/mqqctest/Bert_20130403_PG_Ecoli_salt_16RAW_folder/Bert_20130403_PG_Ecoli_salt_16.RAW"
+

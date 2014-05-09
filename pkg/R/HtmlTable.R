@@ -1,10 +1,8 @@
 HtmlTable <- 
 function(x ,tableDesign = "table-design",align = NULL){
 if(length(align) == 0|length(align)!= dim(x)[2]){
-	#print("uhiwfuweihfiuwehf")
 	align <- rep("center",dim(x)[2])
 }		
-	#print(align)
 
 .cols <- colnames(x)
 x 		<- apply(x,2,as.character) 
@@ -23,7 +21,6 @@ htmlRow <- function(x,start ="<thead>" ,end = "</thead>",stringTag = "th",align 
 }
 
 header <-htmlRow(.cols,align = rep("center",dim(x)[2]))
-		#print("f")
 
 rows <- apply(x,1,htmlRow,start = "<tr align = \"center\">",end = "</tr>", stringTag = "td", align = align)
 htmlTable <- collapse(htmlTableString,header,"<tbody>",rows,"</tbody>","</table>")

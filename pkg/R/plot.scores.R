@@ -179,7 +179,7 @@ namesData[namesData=="peak.shape"]   <- "Peak Shape"
 namesData[namesData=="ret.width"]     <- "Peak Width"
   namesData[namesData=="msmsQuantile"] <- "MSMS Intensities"
 namesData[namesData=="msmsEff"]   <- "Efficiency MSMS"
-namesData[namesData=="msmsCount"] <- "Fragments Counts / MSMS"
+namesData[namesData=="msmsCount"] <- "Assigned Fragments / Peptide"
 
 
 
@@ -270,7 +270,7 @@ mtext(xlab,1,line = 1)
 mtext(main,3,line = 0.3,cex = 0.7)
 
 temp.lwd <- c(4,4,5,4,4)
-temp.col <- c(4,2,1,2,4)
+temp.col <- c("grey50",2,1,2,"grey50")
 #for(i in 1:5){
 #	lines(c(1.2, 1.8),rep(temp.plot[i],2),lwd = temp.lwd[i],col = temp.col[i])
 #}
@@ -362,6 +362,17 @@ if(class(trytest) == "try-error"){
 
 
 ##
+# ET time balance
+## 
+
+#try(plot.stat(log2(data.list$sd$quanRet50ratio),thresh = c(log2(data.list$th$quanRet50ratio),-1*log2(data.list$th$quanRet50ratio)),name.val = "log2 ETime balance",main = "nLC",col = ColUse[ColUse[,2] == "quanRet50ratio",1],xlimV = c(-1,1)))
+trytest <- try(plot.stat(data.list$sc$nLCcombi, 1,name.val = "LC profile symmetry",main = "nLC",col = c(col.temp[round.spec(data.list$sc$nLCcombi)])))
+if(class(trytest) == "try-error"){
+	empty.plot()
+}
+
+
+##
 # peak shape
 ##
 trytest <- try(plot.quans(summary.data$ret.peak.shape,T,"","log2(Peak shape)",thresholds$ret.peak.shape,fg.col = col.temp[round.spec(score$peak.shape)],main = "nLC")
@@ -380,15 +391,6 @@ if(class(trytest) == "try-error"){
 	empty.plot()
 }
 
-##
-# ET time balance
-## 
-
-#try(plot.stat(log2(data.list$sd$quanRet50ratio),thresh = c(log2(data.list$th$quanRet50ratio),-1*log2(data.list$th$quanRet50ratio)),name.val = "log2 ETime balance",main = "nLC",col = ColUse[ColUse[,2] == "quanRet50ratio",1],xlimV = c(-1,1)))
-trytest <- try(plot.stat(data.list$sc$nLCcombi, 1,name.val = "Elution Performance",main = "nLC",col = c(col.temp[round.spec(data.list$sc$nLCcombi)])))
-if(class(trytest) == "try-error"){
-	empty.plot()
-}
 
 
 
@@ -407,8 +409,13 @@ if(class(trytest) == "try-error"){
 #if(any(summary.data$msmsQuantile != 0)){
 threshDat <- as.numeric(unlist(strsplit(as.character(thresholds$msmsQuantile)," ")))
 
-trytest <- try(plot.quans(as.numeric(log10(summary.data$msmsQuantile)),F,ref.data = c(threshDat[1]*0.7,threshDat[1]*0.9,threshDat, threshDat[2] * 1.2),main = "MSMS",xlab = "",ylab = "MSMS log10(Intensities)",fg.col = col.temp[round.spec(score$msmsQuantile)]))
+trytest <- try(plot.quans(as.numeric(log10(summary.data$msmsQuantile)),F,ref.data = c(threshDat[1]*0.7,threshDat[1]*0.9,threshDat, threshDat[2] * 1.2),main = "MSMS",xlab = "",ylab = "",fg.col = col.temp[round.spec(score$msmsQuantile)]))
 #}
+mtext("Peptide Fragments",2,line = 3,cex = 0.65)
+mtext("log10(Intensities)",2,line = 2,cex = 0.65)
+
+
+
 if(class(trytest) == "try-error"){
 	empty.plot()
 }
@@ -416,13 +423,27 @@ if(class(trytest) == "try-error"){
 #if(any(summary.data$msmsMassCount != 0)){
 threshDat <- as.numeric(unlist(strsplit(as.character(thresholds$msmsCount)," ")))
 
-trytest <- try(plot.quans(as.numeric(summary.data$msmsMassCount),F,ref.data = c(0,threshDat[1]-diff(threshDat),threshDat[1], threshDat[2],threshDat[2]*2),main = "MSMS",xlab = "",ylab = "Fragment Counts / MSMS",fg.col = col.temp[round.spec(score$msmsCount)]))
+trytest <- try(plot.quans(as.numeric(summary.data$msmsMassCount),F,ref.data = c(0,threshDat[1]-diff(threshDat),threshDat[1], threshDat[2],threshDat[2]*2),main = "MSMS",xlab = "",ylab = "",fg.col = col.temp[round.spec(score$msmsCount)]))
+mtext("Assigned Fragments",2,line = 3,cex = 0.65)
+mtext(" / MSMS",2,line = 2,cex = 0.65)
+
 #}
 if(class(trytest) == "try-error"){
 	empty.plot()
 }
 
 
+
+
+##
+# Duplicates
+##
+trytest <- try(plot.stat(summary.data$quan.duplicates.msms*100, thresholds$quan.duplicates.msms*100, name.val = "Duplicates/Peptide IDs in %",rev = T,main = "Misc",col.dir = col.temp[round.spec(score$quan.duplicates.msms)]))
+
+
+if(class(trytest) == "try-error"){
+	empty.plot()
+}
 
 ###
 # score
@@ -432,17 +453,6 @@ trytest <- try(plot.quans(summary.data$score,F,"","Andromeda score",c(0,50,100,1
 if(class(trytest) == "try-error"){
 	empty.plot()
 }
-##
-# Duplicates
-##
-trytest <- try(plot.stat(summary.data$quan.duplicates.msms, thresholds$quan.duplicates.msms, name.val = "Duplicates/Peptide IDs in %",rev = T,main = "Misc",col.dir = col.temp[round.spec(score$quan.duplicates.msms)]))
-
-
-if(class(trytest) == "try-error"){
-	empty.plot()
-}
-
-
 
 empty.plot()
 
@@ -464,10 +474,13 @@ mtext("Score Color Code",2,cex = 0.7,xpd = NA,line = 1.3)
 
 
 empty.plot(ylimVec = c(1,5))
-abline(h = c(1,2,3,4,5),col = c(4,2,1,2,4),lwd = 3,lty = c(rep("11",2),rep("solid",3)))
+abline(h = c(1,2,3,4,5),col = c("grey50",2,1,2,"grey50"),lwd = 3,lty = c(rep("11",2),rep("solid",3)))
+boxplot(c(1,2,3,4,5),add = T,col = "white",frame = F,axes = F,border = "grey")
+box(lwd = 4,fg = "white")
 
 text(rep(1,5),c(1,2,3,4,5),c("0%","25%","50%","75%","100%"),pos = 3,xpd = NA)##
 mtext("Quantile Color Code",2,cex = 0.7,line = 0.5) 
+mtext("Boxplot",2,cex = 0.7,line = 1.5) 
 
 
 # if(BSACheck){
@@ -508,10 +521,4 @@ try(ASCIIprofileplot(plotData))
 
 return(list(TotalScore = SCVecs,TotalScoreColor = ColScore,plotData = plotData))
 }
-#tryError2 <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = T,pdfOut = T)))
-
-#tryError <- class(try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = F,pdfOut = pdfOut)))
-
-#temp <- start.qc(data)
-#try(TotalScoreRes  <- plot.scores(temp.DataEvidence,qc.prepare.data,i, open.doc = T,pdfOut = pdfOut))
-#system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))
+tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))

@@ -37,9 +37,7 @@ if(file.exists(collectListPath)){
 		
 		tempListOne <- collectList[iList,]
 		if(it == 1){
-			
-			try(plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC))
-
+			try(plottingTimeLineFunction(AllData = tempListOne,finalMQQC = finalMQQC),silent = T)
 		}
 		
 		collectListSorted <- c()
@@ -60,10 +58,10 @@ if(file.exists(collectListPath)){
 				tempList$msms.count[1]
 			HotLink[iNames==Machines] <- tempList$msms.count[1]
 			HotLinkCol[iNames==Machines] <- tempList$TotalScoreColor[1]
-						file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(htmloutPath,"ECstd",paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
+						file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC,"ECstd",paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
 
 			}else{
-				file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(htmloutPath,"all",paste(iNames,".pdf",sep = ""),sep = "/"),overwrite = T)
+				file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC,"all",paste(iNames,".pdf",sep = ""),sep = "/"),overwrite = T)
 
 			}
 			
@@ -119,15 +117,15 @@ pathMsMsPdf <- gsub("raw.pdf$","pdf", pathMsMsPdf)
 ###
 htmlPdfFold <- "files"
 # move all Files:
-ActualFile <- list.files(paste(htmloutPath,htmlPdfFold,sep = "/"))
+ActualFile <- list.files(paste(finalMQQC,htmlPdfFold,sep = "/"))
 ToMove <- setdiff(basename(pathPdf),ActualFile)
 if(length(ToMove) > 0){
 ToMove <- merge.control(basename(unique(pathPdf)),ToMove)
 ToMove <- unique(pathPdf)[ToMove]
-file.copy(ToMove,paste(htmloutPath,htmlPdfFold,basename(ToMove),sep = "/"))
+file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
 ToMove <- paste(dirname(ToMove),paste("MSMS_Dens_",basename(ToMove),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
-file.copy(ToMove,paste(htmloutPath,htmlPdfFold,basename(ToMove),sep = "/"))
+file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
 }
 #if(length(pathPdf) > 0){}
 tempPaths 				<- paste(".",htmlPdfFold,basename(pathPdf),sep = "/")
@@ -188,9 +186,15 @@ if(it ==3){
 #####
 
 paste(finalMQQC,"all",paste(Machines,".pdf",sep = ""),sep = "/")
+insertText <- list.files(finalMQQC,pattern = "insertText.txt",full.name = T)
+if(length(insertText) > 0){
+	insertText <- paste(readLines(insertText),collapse = "\n")
+}else{
+	insertText = ""
+}
 
 writeToHtml(inputVec = sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),
-inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3)
+inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText)
 
 
 try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))
@@ -198,7 +202,8 @@ try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts =
 cat("\rfinished FUNFINAL function")
 }
 
-		#try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder))
+		#try(	FUNFINAL(finalMQQC=finalMQQC,folder =folder,sucFolder = sucFolder))
 
-#finalMQQC <- htmloutPath
+#finalMQQC <- finalMQQC
 #sucFolder="_RmqqcFile_Processed"
+

@@ -1,5 +1,5 @@
 ThreadControl <- 
-function(folder,maxHours = 3,tableTC =  "_RmqqcFile_ThreadControl"){
+function(folder,maxHours = 2,tableTC =  "_RmqqcFile_ThreadControl"){
 TL1 <- system("tasklist",intern = T)
 wd <- getwd()	
 setwd(folder)

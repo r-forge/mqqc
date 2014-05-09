@@ -133,7 +133,7 @@ successDelete <-
     files <- list.files(hotFolder,full.name = T)
     files <- files[grep("^_RmqqcFile",basename(files),value = F,invert = T)]
     fileDelete <- list.files(files,pattern = "^DeleteTag$",recursive = T,full.name = T)
-    DelFun <- 	function(fileDelete,time.thresh = 86400,move = T, destDelete = F,hotFolder){
+    DelFun <- 	function(fileDelete,time.thresh = 8640,move = T, destDelete = F,hotFolder){
       time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(fileDelete)$ctime)
       #  fileDelete <- fileDelete[time.vec > 86400]
       if(time.vec >time.thresh){

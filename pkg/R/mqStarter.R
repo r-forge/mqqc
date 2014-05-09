@@ -18,8 +18,9 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 	
 	dir.create(folder.name)
   setwd(folder)
-	try(file.rename(basename(temp.batch.n),path.file <-   paste(getwd(),folder.name,temp.batch.n,sep = "/")))
+	tryError <- class(try(file.rename(basename(temp.batch.n),path.file <-   paste(getwd(),folder.name,temp.batch.n,sep = "/")),silent = T))
 	Sys.sleep(0.1)
+	if(tryError != "try-error"){
 	vec <- c(path.file,0,0,0,0)
 	if(length(list.files(pattern = paste(InfoString,"Info.txt",sep = "")))== 0){
 		write.table(t(as.matrix(vec)),file = 	paste(InfoString,"Info.txt",sep = ""),quote = F,sep = "\t",row.names = F,col.names = F)
@@ -28,7 +29,7 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 	}
 	# MQ function plus XML stuff
 	mq.fun(filePath = path.file ,folder,cores, SpeciesTable,templateFasta,placeholder)
-	
+	}
 	return(path.file)	
 }
 

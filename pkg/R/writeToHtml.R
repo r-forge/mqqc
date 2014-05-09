@@ -1,9 +1,11 @@
 writeToHtml <- 
-function(inputVec="test", inputVec2 = "test",path = "index.html",width = 1080,height = 540,Table = NULL,Table2 = NULL,Table3 = NULL,Machines = c("Bibo","Kermit","Bert","Tiffy","Grobi")){
-	if(!exists("mqqcRunningMQ")){mqqcRunningMQ <- " no info available"}
+function(inputVec="test", inputVec2 = "test",path = "index.html",width = 1080,height = 540,Table = NULL,Table2 = NULL,Table3 = NULL,Machines = c("Bibo","Kermit","Bert","Tiffy","Grobi"), insertText = ""){
+	if(!exists("mqqcRunningMQ")){mqqcRunningMQ <- "no info available"}
 	#PB <- "<img src=\"./green/PB.gif\"  /><br>"
 	
-	
+if(!file.exists(paste(dirname(path),"insertText.txt",sep = "/"))){
+	write("",paste(dirname(path),"insertText.txt",sep = "/"))
+}	
 initHtml <- paste("
 <!-- $Id: example.html,v 1.4 2006/03/27 02:44:36 pat Exp $ -->
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
@@ -59,14 +61,14 @@ $(function() {
 <h1 style=\"margin-bottom:0;color:#ffffff\">MQQC - MaxQuant Quality Control ",packageVersion("mqqc"),"</h1></div>
 
 <div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> Last update: ",Sys.time(), "<br>MQ Threads:",mqqcRunningMQ,"
-<form><input type=button value=\"Refresh\" onClick=\"history.go()\"></form>
+<form><input type=button value=\"Refresh\" onClick=\"history.go(0)\"></form>
 <p>
 <a href = \"./CheckListFormular.docx\">Check List Formular</a><br>
 </p>
 </div>
 
 <div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> 
-<embed src=\"./insertText.txt\" width = \"1080\" height = \"540\">
+",insertText,"
 </div>
 
 <div id=\"content\" style=\"height:100px;width:20%;float:left;\">
@@ -283,6 +285,8 @@ finalHtml <- paste(initHtml,paste(tab4,collapse = ""),paste(tab5,collapse = ""),
 write(finalHtml,file = path)
 #system("open test.html")
 }
+#writeToHtml(inputVec = sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),sep = "/")),
+#inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText)
 #test <- matrix(1:100,10,10)
 #colnames(test) <- 1:10
 #writeToHtml(path = "/Users/html/index.html", inputVec = "c(1,2,3)",inputVec2 = c("a"),Table = 1,Table2 = 2)

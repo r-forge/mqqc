@@ -2,11 +2,15 @@ folder.observe <-
 function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F){
   .GlobalEnv$MQQCRestartNow <- "no"
   try(tkControl(htmloutPath = htmloutPath))
+ 
   if(length(grep("txtplot",library())) == 0){
 	install.packages("txtplot")
 	}
 		require("txtplot")
-
+    require("tcltk")
+ 
+ 
+  
   ###???
   # Check MailList
   ###
@@ -49,21 +53,20 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   	if(!Debug){
   		options(warn = -1,show.error.messages = F, showWarnCalls = F)
   	}else{
-  		options(warn = 1,show.error.messages = T, showWarnCalls = T)
+  		options(warn = -1,show.error.messages = T, showWarnCalls = T)
   		}
   }
 
 }
 	 print("Preparing MQQC")
 
-    try(writeToHtml(path = htmloutPath))
+    try(writeToHtml(path = htmloutPath),silent = T)
     dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 
   if(!file.exists(fastaFile)){fastaFile <- NULL}
   if(.Platform$OS.type == "windows"){
 		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
-  
- 		###
+		###
 		# REG QUery HKEY_CLASSES_ROOT\MSFileReader.XRawfile
 		###
 		Registry <- system("REG QUery HKEY_CLASSES_ROOT",intern = T)
@@ -72,9 +75,18 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 		  if(CheckVal == "no"){
         stop("Abort by user. Missing MSFileReader installation.")
 		  } 
-		} 	
-  
+		} 
+		if(length(grep("Perl",Registry,ignore.case=T,value = T)) == 0){
+		  CheckVal <- tclvalue(tkmessageBox(message = "Warning!\nPerl seems not to be installed. email alerts will be switched off.",type = "ok",title = "MQQC Warning",icon = "warning"))
+		  if(CheckVal == "no"){
+		    stop("Abort by user. Missing MSFileReader installation.")
+		  } 
+		}else{
+			try(system("ppm install Net::SMTP"),silent = T)
+			try(system("ppm install Authen::SASL"),silent = T)
+		} 
   }
+
   print("Checking Species Table")
  
   if(SpeciesTable){
@@ -132,7 +144,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	####
 	if(funlastLoop %% 2 == 0){
 		
-		try(ThreadControl(folder))
+		try(ThreadControl(folder),silent = T)
 	#evidenceToProcess <- checkMqqcInfo(folder)
  	 
   	evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
@@ -244,6 +256,5 @@ setwd(folder)
 	
 return(folder = folder)	
 }
-
 
 #folder.observe("/users/testmqqc2")
