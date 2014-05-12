@@ -521,4 +521,4 @@ try(ASCIIprofileplot(plotData))
 
 return(list(TotalScore = SCVecs,TotalScoreColor = ColScore,plotData = plotData))
 }
-tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
+#tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
