@@ -397,7 +397,7 @@ if(class(trytest) == "try-error"){
 ##
 # Iden efficiency
 ##
-trytest <- try(plot.stat(summary.data$msmsEff,60,name.val = "Identification efficiency in %",main = "MSMS",col = col.temp[round.spec(score$msmsEff)]))
+trytest <- try(plot.stat(summary.data$msmsEff,thresholds$msmsEff,name.val = "Identification efficiency in %",main = "MSMS",col = col.temp[round.spec(score$msmsEff)]))
 if(class(trytest) == "try-error"){
 	empty.plot()
 }

@@ -250,7 +250,7 @@ score$nLCcombi <- mean(nLCvec)
 
 
 msmsEff <- NA
- msmsEff <- sumDat()
+#msmsEff <- sumDat() # gets msms effecency info from summary table
 
 if(is.na(msmsEff)){
 	try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)

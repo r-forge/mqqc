@@ -1,5 +1,5 @@
 FUNFINAL <-
-function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy")){
+function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy"), dayThresh = 5){
 
 dir.create(finalMQQC, showWarnings = F)
 dir.create(allPath <- paste(finalMQQC,"all",sep = "/"), showWarnings = F)
@@ -58,6 +58,12 @@ if(file.exists(collectListPath)){
 				tempList$msms.count[1]
 			HotLink[iNames==Machines] <- tempList$msms.count[1]
 			HotLinkCol[iNames==Machines] <- tempList$TotalScoreColor[1]
+			days <- abs(as.numeric(tempList$System.Time.s)-as.numeric(Sys.time()))/(60*60*24)
+			if(days > dayThresh){
+					HotLinkCol[iNames==Machines] <- "#797979"
+			}
+
+			
 						file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC,"ECstd",paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
 
 			}else{
@@ -197,7 +203,7 @@ writeToHtml(inputVec = sort(paste(".","ECstd",paste(Machines,".pdf",sep = ""),se
 inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText)
 
 
-try(htmlMod(paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))
+try(htmlMod(pathHtml = paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))
 }
 cat("\rfinished FUNFINAL function")
 }
