@@ -1,10 +1,10 @@
 Package: mqqc
 Type: Package
 Title: Quality control of LCMS derived proteomic data
-Version: 1.17
+Version: 2.1
 Date: 2013-09-27
 Author: Henrik Zauber
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Maintainer: Henrik Zauber <henrik.zauber@mdc-berlin.net>
 Description: quality control of evidence data derived from maxquant analysis
 License: GNU something
-Depends: tcltk,gplots,tools
+Depends: tcltk,tools

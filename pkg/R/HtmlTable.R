@@ -1,5 +1,5 @@
 HtmlTable <- 
-function(x ,tableDesign = "table-design",align = NULL){
+function(x ,tableDesign = "table-design",align = NULL,cellpadding = 4,rules = "cols"){
 if(length(align) == 0|length(align)!= dim(x)[2]){
 	align <- rep("center",dim(x)[2])
 }		
@@ -7,7 +7,7 @@ if(length(align) == 0|length(align)!= dim(x)[2]){
 .cols <- colnames(x)
 x 		<- apply(x,2,as.character) 
 if(is.vector(x)){x <- t(as.matrix(x))}
-htmlTableString <-paste( "<table rules = \"cols\"  id=\"",tableDesign,"\" class=\"tablesorter\">",sep = "")
+htmlTableString <-paste( "<table rules = \"",rules,"\"  id=\"",tableDesign,"\" class=\"tablesorter\" cellpadding = ",cellpadding,">",sep = "")
 
 collapse	<- function(...,sep = "\n"){x <- paste(unlist(list(...)),collapse = sep) ;return(x)}
 htmlRow <- function(x,start ="<thead>" ,end = "</thead>",stringTag = "th",align ){

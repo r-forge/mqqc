@@ -1,12 +1,20 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F){
+function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org"){
   .GlobalEnv$MQQCRestartNow <- "no"
   try(tkControl(htmloutPath = htmloutPath))
  
   if(length(grep("txtplot",library())) == 0){
-	install.packages("txtplot")
+	install.packages("txtplot", repos = source)
 	}
-		require("txtplot")
+
+	
+  if(length(grep("widgetTools",library())) == 0){
+	try(source("http://bioconductor.org/biocLite.R"))
+	try(biocLite("widgetTools",ask ="n"))	
+	}
+	
+	require("widgetTools")	
+	require("txtplot")
     require("tcltk")
  
  
@@ -36,8 +44,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 }else{
   
  	if(gui){
-  		Param <- mqqcGUI()
-	if(.GlobalEnv$MQQCRestartNow == "yes"){
+	Param <- mqqcGUI()
+	while(.GlobalEnv$MQQCRestartNow == "yes"){
   		Param <- mqqcGUI()
 	}
       print("Settings received")
@@ -46,6 +54,14 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   	for(i in 1:length(Param)){
 		  assign(names(Param)[i],Param[[i]])
 	  }
+	  
+	  if(exists("REpar")){
+	  		  			  	RESettings <- Param[grep("^RE",names(Param))]
+
+	  	if(length(grep(placeholder,REmac)) >0){
+	  	}
+	  }else{print("Could't find input for regular expression Rules.")}
+	  
       print("Settings loaded")
 	  
 	cores <- as.numeric(cores)
@@ -58,14 +74,16 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   }
 
 }
+StandardIDs = c(Param$StdIDhigh,Param$StdIDlow)
+
 	 print("Preparing MQQC")
 
-    try(writeToHtml(path = htmloutPath),silent = T)
+    try(writeToHtml(path =paste(htmloutPath,"index.html",sep = "/"),Machines = Param$Machines),silent = T)
     dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 
   if(!file.exists(fastaFile)){fastaFile <- NULL}
   if(.Platform$OS.type == "windows"){
-		hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable)  
+		try(hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable))  
 		###
 		# REG QUery HKEY_CLASSES_ROOT\MSFileReader.XRawfile
 		###
@@ -129,48 +147,54 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	print("Starting Loop")
 	print("")
 
-	loop <- T
-	funlastLoop <- 0
-	while(loop){
+	loop <<- T
+	funlastLoop <<- 0
+while(loop){
 		
 	####
 	# Check if there is any evidence to process...
 	####
 	setwd(folder)
-	funlastLoop  <- funlastLoop +1
+	funlastLoop  <<- funlastLoop +1
 	
 	#####
 	# Initiation of MQ runs, if new Raw File in Folder was detected
 	####
 	if(funlastLoop %% 2 == 0){
-		
+		cat("\r Searching for MQ Results")
 		try(ThreadControl(folder),silent = T)
 	#evidenceToProcess <- checkMqqcInfo(folder)
  	 
   	evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
 	if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
-      if(checkSize(evidenceToProcess[i])==0){
+			try(SizeChecked <- checkSize(evidenceToProcess[i])==0)
+			if(!exists("SizeChecked")){SizeChecked <- F}
+      if(SizeChecked){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...", htmloutPath = htmloutPath)
 			  tempI 				<- evidenceToProcess[i]
-			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,templateFasta=templateFasta,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/")))
+			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID))
       }
 		}
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
 		# update export folder   
 
 	} # evidence loop
+			cat("\r Searching for MQ Results done")
+
 	} # funlastLoop
 
 if(funlastLoop %% 2 == 0){
 #		hi<- file.info(list.files())
 #	hu<- 	order(hi[,4])
-    
+ 	cat("\r Cleaning Folder")
+   
     htmloutPath <<- htmloutPath
   	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 	sucFolder <<- sucFolder
 
-					try(	FUNLAST(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder))
+ 	cat("\r Updating Table")
+					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs))
 		
 
 	}
@@ -178,12 +202,13 @@ setwd(folder)
 		
 		catFun(paste(Sys.time(),"Status: Observing", folder))
 		#Sys.sleep(5)
-		tempTime <- sapply(1:10,function(x){
-			Sys.sleep(1)
-			cat("\rSleeping",x,"s")
-			
-		})
-		
+    for(xSleepTime in 1:10){
+      xSleepTime <<- xSleepTime
+      Sys.sleep(1)
+      cat("\rSleeping",xSleepTime,"s")
+      
+    }
+
 		# exclude _RmqqcFile_ and use exclusively raw txt
 		obs.files			  <- list.files(folder,full.name = T)
    		obs.files      		 <- obs.files[!file.info(obs.files)[,2]]
@@ -194,8 +219,10 @@ setwd(folder)
 		obs.files 			<- grep("raw$|txt$",obs.files,value = T, ignore.case = T)
 		obs.files.diff 		<- setdiff(obs.files,files) 
 		obs.files.minus 	<- setdiff(files,obs.files) 
-    obs.files <- obs.files[grep("^_RmqqcFile_",basename(obs.files),invert = T)]
+    	obs.files <- obs.files[grep("^_RmqqcFile_",basename(obs.files),invert = T)]
+		
 		if(length(obs.files) > 0){
+		 	cat("\r Starting MQ run for", obs.files)	
 			#cat(paste("\rfound.something",obs.files.diff))
 			files <- c(files, obs.files.diff)
 			write(files,file = temp.name)
@@ -206,7 +233,7 @@ setwd(folder)
 			  temp.batch.n 	<- names(temp.batch)[temp.batch == 0][1]
 			  if(!is.na(temp.batch.n)){
 			    # starting Maxquant stuff
-			    tryError <- class(try(fun(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, templateFasta = templateFasta, placeholder = placeholder,InfoString = "_RmqqcFile_")))
+			    tryError <- class(try(fun(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, templateFasta = RESettings, placeholder = placeholder,InfoString = "_RmqqcFile_", StandardIDs = StandardIDs)))
 			    if(tryError == "try-error"){
 			      #	return(temp.batch.n)
 			      catFun(paste("error in file", temp.batch.n))
@@ -223,12 +250,13 @@ setwd(folder)
 		#	cat SpeciesTable"Closed Loop")
 
 		}else{
-      		
+		 	cat("\r Checking MQ Queue", obs.files)	      		
       		if(.Platform$OS.type == "windows"){
 		  		MQmanager(NULL,folder,cores =cores)
 		  	}else{
 		  		tkControl(paste(Sys.time(),"Status: Observing", folder),"", htmloutPath = htmloutPath)
 		  	}
+		 	cat("\r Checking MQ Queue DONE", obs.files)	      		
 		  
 		}
 		 

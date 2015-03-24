@@ -1,5 +1,5 @@
 qc.prepare <- 
-function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL){
+function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769"){
 score <- list()
 
 sumDat <- function(){
@@ -46,7 +46,6 @@ thresholds$msmsQuantile	 <-  c(4.5,5) # log10 Int
 thresholds$msmsCounts 	<- c(30,40)
 thresholds$Intensities 			<- c(50000000,1000000000)
 
-
 if(SpeciesTable){
 		colnames(Data) <- tolower(colnames(Data))
 
@@ -92,7 +91,7 @@ raw.files <- grep.col("raw.file",Data)
 
 Data.i <- Data[unique(Data[,raw.files])[1] == Data[,raw.files],]
 
-Data.i <<- Data.i
+#Data.i <<- Data.i
 RawFilesUsed <- unique(Data.i$raw.file)
 
 # MSMS
@@ -120,13 +119,14 @@ ls.null()
 ret.peak.ratio 	<- (reten.stop-reten.mid)/(reten.mid-reten.start)
 ret.total		<- reten.stop - reten.start
 
-summary.Data$ret.peak.shape <- quantile(ret.peak.ratio,na.rm = T)
-summary.Data$ret.width 		<- quantile(ret.total,na.rm = T)
-summary.Data$ret.max		<- max(reten.ident,na.rm = T)
 quant.range <- quantile(reten.mid,na.rm = T)[2:4]
-
 ident.peps 	<- reten.mid > min(quant.range,na.rm = T) & reten.mid < max(quant.range,na.rm = T)
-Data.i.quant <- Data.i[ident.peps,] # subset with innerquantile range
+
+summary.Data$ret.peak.shape <- quantile(ret.peak.ratio[ident.peps],na.rm = T) # filtered for inner elution time quantile
+summary.Data$ret.width 		<- quantile(ret.total[ident.peps],na.rm = T)#filtered for inner elution time quantile
+summary.Data$ret.max		<- max(reten.mid[ident.peps],na.rm = T)#filtered for inner elution time quantile
+
+Data.i.quant <- Data.i[ident.peps,] # subset with innerj range
 
 # MSMS
 summary.Data$total.msms.min <-  summary.Data$msms.count/summary.Data$ret.max
@@ -134,7 +134,7 @@ summary.Data$quan.msms.min 	<-  length(grep("MSMS",Data.i.quant$type))/(max(quan
 
 # mass error 
 
-mass.error 		<- Data.i[,grep.col("mass.error",Data.i)]
+mass.error 		<- Data.i[,grep.col("mass.error..ppm",Data.i)]
 mass.error.uncal 	<- mass.error[,grep.col("uncalibrated",mass.error)]
 mass.error 		<- mass.error[,-grep.col("uncalibrated",mass.error)]
 summary.Data$mass.error.cal 	<- quantile(as.numeric(mass.error),na.rm = T)
@@ -147,8 +147,8 @@ summary.Data$quan.duplicates.msms 	<- double/length(grep("MSMS",Data.i.quant$typ
 summary.Data$score<- quantile(Data.i$score,na.rm = T)
 # sd interquantile
 
-temp 		<- density(Data$calibrated.retention.time)
-tempQuan 	<- quantile(Data$calibrated.retention.time) 
+temp 		<- density(Data.i$calibrated.retention.time)
+tempQuan 	<- quantile(Data.i$calibrated.retention.time) 
 
 
 x <- temp$x
@@ -163,7 +163,11 @@ try(slope <- coefficients(lm(scale(y)~x))[2])
 rSDquanRet				<- sd(ySel)/median(ySel)
 summary.Data$quanRetRSD <- rSDquanRet
 summary.Data$quanRetSlope <- slope
-summary.Data$quanRet50ratio <- diff(tempQuan[c(1,3)])/diff(tempQuan[c(3,5)])
+tempQuan <<- tempQuan
+
+RatioIQuan <- diff(tempQuan[c(2,4)])/diff(tempQuan[c(1,5)]) # Ratio between inner and outer quantile distance of retention time, the bigger the better
+summary.Data$RatioIQuan <- RatioIQuan 
+summary.Data$quanRet50ratio <- diff(tempQuan[c(2,3)])/diff(tempQuan[c(3,4)])
 score$quanRetRSD 		<- 	thresholds$quanRetRSD/summary.Data$quanRetRSD
 score$quanRetSlope 		<-	thresholds$quanRetSlope /abs(summary.Data$quanRetSlope)
 if(abs(summary.Data$quanRet50ratio) > 1){
@@ -182,11 +186,35 @@ Int <- as.vector(Int)
 Int <- Int[Int != 0]
 IntQuan <- quantile(Int,na.rm = T)
 summary.Data$Intensity <- IntQuan
-tempScoreInt <- log10(IntQuan[3])/log10(thresholds$Intensities)[1]
+
+IntQuan <<- IntQuan 
+thresholds <<- thresholds
+
+sig <- log10(signif(IntQuan[3]))
+ref <- log10(thresholds$Intensities)
+
+ diff <- abs(diff(ref))
+ lo <- ref[1]-diff
+
+tempScoreInt <- (sig - lo)/(ref[1]-lo)
 score$Intensity <- tempScoreInt
 
 # check MSMS
-try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
+if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))){
+	tempPep <- read.csv(peppath,sep = "\t")
+	tempPep$Missed.cleavages[tempPep$Missed.cleavages > 0] <- 1
+	TempMis <- aggregate(tempPep$Missed.cleavages,list(tempPep$Missed.cleavages),length)
+	val1 <- TempMis[TempMis[,1] == 0,2]
+	val2 <- TempMis[TempMis[,1] > 0,2]
+	if(length(val1) == 0){val1 = 0}
+	if(length(val2) == 0){val2 = 0}
+	rat = val2 /(val1+ val2)*100
+	
+}else{rat = "not available"}
+
+summary.Data$missed.cleavages.percent =as.character(rat)
+
+try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed,quant.range = range(quant.range)))
 if(!exists("msmsInfo")){
 	msmsInfo <- rep(0,5)
 	msmsInfo <-	list(MSMSint = "nodata",MSMSn = "nodata")
@@ -195,7 +223,7 @@ if(!exists("msmsInfo")){
 			msmsInfo <-	list(MSMSint = "nodata",MSMSn = "nodata")
 	}
 }
-
+msmsInfo$MSMSint[is.na(msmsInfo$MSMSint)] <- 0
 if(all(msmsInfo$MSMSint == 0)|all(is.character(unlist(msmsInfo)))){
 	
 	summary.Data$msmsQuantile  <- c(0,0,NA,0,0)
@@ -205,23 +233,29 @@ if(all(msmsInfo$MSMSint == 0)|all(is.character(unlist(msmsInfo)))){
 }else{
 summary.Data$msmsQuantile <- msmsInfo$MSMSint
 summary.Data$msmsMassCount <- msmsInfo$MSMSn
+sig <- log10(msmsInfo$MSMSint[3])
+ref <-	thresholds$msmsQuantile
+ lo <- ref[1]-diff
+ diff <- abs(diff(ref))
 
-score$msmsQuantile <- 	(log10(msmsInfo$MSMSint[3])/thresholds$msmsQuantile[1]*0.3)^1.25 + 
-										(log10(msmsInfo$MSMSint[4])/thresholds$msmsQuantile[2]*0.3)^1.25 + 
-										(log10(msmsInfo$MSMSint[5])/(thresholds$msmsQuantile[2]*1.2)*0.1)^1.25+ 
-										(log10(msmsInfo$MSMSint[1])/(thresholds$msmsQuantile[1]*0.7)*0.1)^1.25 + 
-										(log10(msmsInfo$MSMSint[2])/(thresholds$msmsQuantile[1]*0.9)*0.2)^1.25
+score$msmsQuantile <- 	(sig - lo)/(ref[1]-lo)
 
-score$msmsCount 	<-  msmsInfo$MSMSn[3]/thresholds$msmsCount[1]*0.5 + msmsInfo$MSMSn[2]/(thresholds$msmsCount[2] - diff(thresholds$msmsCount))*0.25 + msmsInfo$MSMSn[4]/(thresholds$msmsCount[2])*0.25
 
+###
+sig <- 	msmsInfo$MSMSn[3]
+ref <-	thresholds$msmsCount			
+
+ diff <- abs(diff(ref))
+ lo <- ref[1]-diff
+
+score$msmsCount 	<-  (sig - lo)/(ref[1]-lo)
 
 }
-
 # Check Summary 
 summaryPath <- list.files(path,pattern = "proteinGroups.txt",full.name = T)
 if(length(summaryPath) > 0){
 	summaryFile <- read.csv(summaryPath,sep = "\t")
-	BSA <- summaryFile[grep("P02769",summaryFile$Majority.protein.IDs),]
+	BSA <- summaryFile[grep(BSAID,summaryFile$Majority.protein.IDs),]
 	if(is.data.frame(BSA)){
 		Coverage 	<- 	BSA$Sequence.coverage....
 	}else{
@@ -249,22 +283,23 @@ score$nLCcombi <- mean(nLCvec)
 
 
 
-msmsEff <- NA
+msmsEff <- msmsInfo$MSMSEff*100
 #msmsEff <- sumDat() # gets msms effecency info from summary table
 
-if(is.na(msmsEff)){
-	try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
-}else{
-	if(dim(msmsEff)[1] == 2){
-		msmsEff <- msmsEff[1,2]
-	}else{
-		if(dim(msmsEff)[1] == 2& filename != 0){
-			msmsEff <- msmsEff[msmsEff[,1] == gsub(".raw$","",filename),2]
-		}else{msmsEff <- 0}
-
-	}
-
-}
+ if(length(msmsEff) == 0){
+   
+ 	try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
+ }#else{
+# 	if(dim(msmsEff)[1] == 2){
+# 		msmsEff <- msmsEff[1,2]
+# 	}else{
+# 		if(dim(msmsEff)[1] == 2& filename != 0){
+# 			msmsEff <- msmsEff[msmsEff[,1] == gsub(".raw$","",filename),2]
+# 		}else{msmsEff <- 0}
+# 
+# 	}
+# 
+# }
 msmsEff <- as.numeric(msmsEff)
 
 # }else{msmsEff <- 0}
@@ -279,7 +314,8 @@ summary.Data <<- summary.Data
 thresholds <<- thresholds
 # scores 
 score$msms 			<-  summary.Data$quan.msms.min/thresholds$quan.msms.min 
-score$mass.error 	<-  thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.cal[c(2,4)]))*0.5+ thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.cal[c(3)]))*0.5
+score$mass.error 	<-  abs(thresholds$mass.error.cal[1]/summary.Data$mass.error.uncal[3] )
+#thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.uncal[c(2,4)]))*0.5+ thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.uncal[c(3)]))*0.5
 score$score <- summary.Data$score[3]/thresholds$score
 # score nlc
 score$peak.shape 	<- thresholds$ret.peak.shape[1]/max(abs(log2((summary.Data$ret.peak.shape[c(2,4)]))))
@@ -294,7 +330,7 @@ MSvec <- c(score$Intensity,score$mass.error,score$msms)
 MSvec[MSvec > 1] <- 1
 score$combiMS <- mean(MSvec)
 # 3. MSMS combi score
-MSvec <- c(score$msmsCount,score$msmsQuantile,score$msms)
+MSvec <- c(score$msmsCount,score$msmsQuantile,score$msmsEff)
 MSvec[MSvec > 1] <- 1
 score$combiMSMS <- mean(MSvec)
 # 4. nLC combi score
@@ -310,5 +346,6 @@ score$LCcombi <- mean(nLCvec)
 
 return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant))
 }
-#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path,filename = i)))
-#tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
+#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
+
+

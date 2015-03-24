@@ -12,10 +12,8 @@ if(ASK){
 	}
 }else{
 	PathName  <- paste(path,paste("MQQC-BackupSettings098fwoeifo2i3f09uc09ausdßv09p3oijrqp2hfßa98vuß0a9s8dvß09wuer",".Rdata"),sep = "/")	
-
 }
 
-	
 if(action == "b"){
 FileToLoad <- c("MailSettings","MQQCspecies.csv","Param.Rdata","MailList.txt")
 MQQCSettings <- list()

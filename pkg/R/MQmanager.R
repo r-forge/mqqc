@@ -1,5 +1,5 @@
 MQmanager <- 
-function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1){
+function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1, StandardIDs = c("ECstd","BSA")){
   
   # Checking cores, if cores is NULL
   if(length(cores) == 0 & .Platform$OS.type == "windows"){
@@ -48,7 +48,7 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1){
     for(i in 1:TL){
       try(tempi <- readLines(File))
       tempi <<- tempi
-      first <- grep("ECstd",tempi)
+      first <- grep(paste(StandardIDs,collapse = "|"),tempi)
       if(length(first) > 0){
       	last <- tempi[-first]
       	first <- tempi[first]
@@ -63,6 +63,12 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1){
         Sys.sleep(1)
         tempSys <- paste(tempi[1])
         catFun(tempSys)
+        tempPath <- unlist(strsplit(unlist(strsplit(tempSys,"\" \""))[2],"\" "))[1]
+        if(file.exists(tempPath)){
+        	    try(   	write.csv("",paste(dirname(tempPath),"MQStartTag",sep = "/")))
+
+        	
+        }
         system(tempSys, wait = F)
         tempi <- tempi[-1]
         

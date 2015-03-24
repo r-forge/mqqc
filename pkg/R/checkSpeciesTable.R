@@ -1,9 +1,8 @@
 checkSpeciesTable <-
-  function(){
-    checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
+  function(checkMQ){
     if(length(checkMQ)> 0){
       
-      dbLib <- list.files(readLines(checkMQ),recursive = T,pattern = "databases.xml",full.name = T)[1]
+      dbLib <- list.files(checkMQ,recursive = T,pattern = "databases.xml",full.name = T)[1]
       dbLib <- readLines(dbLib)
       species.path <- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv",full.name = T,recursive = T)
       file.rename(species.path,species.path2 <- paste(dirname(species.path),"MQQCspecies.csv",sep = "/"))

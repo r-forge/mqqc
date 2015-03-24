@@ -1,5 +1,5 @@
 mqStarter <-
-function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,templateFasta,placeholder){
+function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,templateFasta,placeholder, StandardIDs = StandardIDs){
   
  
   
@@ -23,12 +23,12 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 	if(tryError != "try-error"){
 	vec <- c(path.file,0,0,0,0)
 	if(length(list.files(pattern = paste(InfoString,"Info.txt",sep = "")))== 0){
-		write.table(t(as.matrix(vec)),file = 	paste(InfoString,"Info.txt",sep = ""),quote = F,sep = "\t",row.names = F,col.names = F)
+		try(write.table(t(as.matrix(vec)),file = 	paste(InfoString,"Info.txt",sep = ""),quote = F,sep = "\t",row.names = F,col.names = F),silent =T) 
 	}else{
-		write.table(t(as.matrix(vec)),file = paste(InfoString,"Info.txt",sep = ""),append = T,quote = F,sep = "\t",row.names = F,col.names = F)
+		try(write.table(t(as.matrix(vec)),file = paste(folder,paste(InfoString,"Info.txt",sep = ""),sep = "/"),append = T,quote = F,sep = "\t",row.names = F,col.names = F),silent = T)
 	}
 	# MQ function plus XML stuff
-	mq.fun(filePath = path.file ,folder,cores, SpeciesTable,templateFasta,placeholder)
+	mq.fun(filePath = path.file ,folder,cores, SpeciesTable,templateFasta,placeholder, StandardIDs = StandardIDs)
 	}
 	return(path.file)	
 }

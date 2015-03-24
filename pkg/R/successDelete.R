@@ -5,6 +5,9 @@ successDelete <-
     folders <- listFolders(hotFolder)
     folders <- folders[grep("^_RmqqcFile",basename(folders),invert = T)]
     collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
+ 
+ try(ProgressTracker(folders) )  
+    
     # Search only in folders which have not been processed, reduces search space
     if( file.exists(collectListPath)){
       collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
@@ -63,28 +66,32 @@ successDelete <-
                   write(temp,file = writeName)
                 }else{
                   checkListCol <- readLines(checkList,n = 1)
+                  #checkListCol <- gsub(";",",",checkListCol)
                   if(checkListCol!= temp[1]){
-                   			 ImprCheckListCol 	<- unlist(strsplit(checkListCol,","))
+                   			ImprCheckListCol 	<- unlist(strsplit(checkListCol,","))
                     		ImprCheckListCol  <- gsub("\"","", ImprCheckListCol)
                     		ImprTempCol 			<- unlist(strsplit(temp[1],","))
                     
                    			tempCheckList <- read.csv(checkList,quote = "")
-                            NewData <- read.csv(ba,quote = "")
-                    			new <- unique(c(colnames(tempCheckList),colnames(NewData)))
-                    			newOrder <- merge.control(new,colnames(tempCheckList))
-                    			NewOrderNew <- setdiff(1:length(new), newOrder)
+                          NewData     <- read.csv(ba,quote = "")
+                    			newT        <- unique(c(colnames(tempCheckList),colnames(NewData)))
+                    			newOrder <- merge.control(newT,colnames(tempCheckList))
+                   			  #newOrder <- merge.control(colnames(NewData),colnames(tempCheckList))
+                   			
+                    			NewOrderNew <- setdiff(1:length(newT), newOrder)
                     			if(length(NewOrderNew) > 0){
                     				newOrder <- c(newOrder, NewOrderNew)
                     			}
-                     		newOrderList <- merge.control(colnames(tempCheckList),new[newOrder])
+                    newOrderList <- merge.control(colnames(tempCheckList),newT[newOrder])
         						tempCheckListNew <- t(tempCheckList)[ newOrderList,]
         						tempCheckListNew <-  t(tempCheckListNew)
-        						colnames(tempCheckListNew) <- new[newOrder]
-        						NewDataSort <- merge.control(colnames(NewData),new)
+        						colnames(tempCheckListNew) <- newT[newOrder]
+        						NewDataSort <- merge.control(colnames(NewData),newT)
         						attachVec <-t(NewData)[NewDataSort,]
                     		tempCheckListNew <- rbind(tempCheckListNew,attachVec)
                     			write.csv(tempCheckListNew, writeName,row.names = F,quote = F)
-
+        						#write.csv(tempCheckList, writeName,row.names = F,quote = F)
+        						
                     #tempCheckList<- cbind(tempCheckList,"")
                     #updateCheckList[is.na(updateCheckList)] <- dim(tempCheckList)[2] 
                     #tempCheckList <- tempCheckList[, updateCheckList]
@@ -133,7 +140,7 @@ successDelete <-
     files <- list.files(hotFolder,full.name = T)
     files <- files[grep("^_RmqqcFile",basename(files),value = F,invert = T)]
     fileDelete <- list.files(files,pattern = "^DeleteTag$",recursive = T,full.name = T)
-    DelFun <- 	function(fileDelete,time.thresh = 8640,move = T, destDelete = F,hotFolder){
+    DelFun <- 	function(fileDelete,time.thresh = 86400,move = T, destDelete = F,hotFolder){
       time.vec 	<- as.numeric(Sys.time()) - as.numeric(file.info(fileDelete)$ctime)
       #  fileDelete <- fileDelete[time.vec > 86400]
       if(time.vec >time.thresh){
@@ -160,3 +167,5 @@ successDelete <-
     
     return(mqqcInfo)
   }
+
+

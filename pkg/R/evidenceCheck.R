@@ -18,8 +18,14 @@ function(hotFolder, match = "evimsms", sucFolder)
 
   if(match == "evimsms"& length(tempI) > 0){
    		msms <- list.files(dirname(tempI),pattern = "msms.txt",full.name = T,recursive = T)	
-   		tempI <- intersect(dirname(tempI),dirname(msms))
-   		tempI <- paste(tempI,"evidence.txt",sep = "/")
+   		if(length(msms != 0)){
+    		tempIt <- intersect(dirname(tempI),dirname(msms))  			
+   			if(length(tempIt) > 0){
+ 	  		tempI <- paste(tempIt,"evidence.txt",sep = "/")
+   			}   		
+   		}
+   		   			
+   		
    }
       
   mqqcInfo <- NULL
@@ -27,11 +33,11 @@ function(hotFolder, match = "evimsms", sucFolder)
     # Check if evidence was already processed if yes, no output of evidence path
     mqqcInfo <- c()
     for(i in 1:length(tempI)){
-        tempmqqcInfo  <- list.files(dirname(tempI[i]),pattern = "mqqc")
+    	tempI <<- tempI
+        tempmqqcInfo  <- list.files(dirname(tempI[i]),pattern = "mqqc",full.name = T)
         if(length(tempmqqcInfo)==0){
           mqqcInfo    <- c(mqqcInfo,tempI[i])
         }
-      
     }
    # mqqcInfo 	<- mqqcInfo[file.info(mqqcInfo)$isdir]
 

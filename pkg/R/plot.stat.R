@@ -16,7 +16,7 @@ function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2"){
 
 	}
 	max(c(x,thresh))
-	barplot2(x,las = 2,col = col.temp[col.sel*100],ylab = name.val,ylim = x.range,bg = bg)
+	barplot(x,las = 2,col = col.temp[col.sel*100],ylab = name.val,ylim = x.range,bg = bg)
 	abline(h=thresh,lty = "dashed",lwd = 2)
 	mtext(main,3,cex =0.7,line = 0.3)
 	

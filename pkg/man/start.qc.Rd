@@ -62,8 +62,8 @@ start.qc(DataEvidence = NULL, RawBased = T, n = NA, show.path = F, open.doc = F)
 }
 \examples{
   # before run, resize Output window or set pdfOut to T (will create a folder and a pdf in your working directory)
-	data(DataEvidence)
-	start.qc(DataEvidence,pdfOut = F)
+	#data(DataEvidence)
+	#start.qc(DataEvidence,pdfOut = F)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

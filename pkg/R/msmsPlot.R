@@ -1,15 +1,15 @@
 msmsPlot <- 
-function(pdfOut = T,path = "./", RawFilesUsed = NULL){
+function(pdfOut = T,path = "./", RawFilesUsed = NULL, quant.range = NULL){
 msmsPath <- list.files(path, pattern="msms.txt",full.name = T)
 if(length(msmsPath) > 0){
 	
 
 	
-	MSMS.Import <- read.table(msmsPath,colClasses = "character",sep = "\t",comment.char = "")
-	
-	
-	colnames(MSMS.Import) <- tolower(make.names(MSMS.Import[1,]))
-		MSMS.Import <- MSMS.Import[-1,]
+	MSMS.Import <- read.table(msmsPath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+	Header <- colnames(MSMS.Import)
+	colnames(MSMS.Import) <- tolower(make.names(colnames(MSMS.Import)))
+	#colnames(MSMS.Import) <- tolower(make.names(MSMS.Import[1,]))
+	#	MSMS.Import <- MSMS.Import[-1,]
 
 	if(length(RawFilesUsed) > 0){
 		mergeTemp <- merge.control(MSMS.Import$raw.file,RawFilesUsed)
@@ -26,6 +26,11 @@ if(length(msmsPath) > 0){
 	}else{
 		.name <- "MSMS_Dis.pdf"
 	}
+	# Checking MSMS ID in quantrange:
+	if(length(quant.range) > 0){
+		#Hu <- subset(MSMS.Import,select = "")
+	}
+	
 	
 		if(pdfOut){
 		pdf(.name,pointsize = 20,width = 10)
@@ -44,9 +49,15 @@ if(length(msmsPath) > 0){
 	 
 	 
 	 #hist(log10(temp),breaks = 100)
+windows = 5
+MinuteWindow <- ceiling(max(as.numeric(MSMS.Import$retention.time)) /windows)
+init = as.numeric(MSMS.Import$retention.time)
+for(i in windows:1){
+	init[as.numeric(MSMS.Import$retention.time) <= MinuteWindow*i ] <- as.character(paste((i-1)*MinuteWindow,"to",i*MinuteWindow,"min"))
+}
 
 
-legInfo <- aggregate(MSMS.Import$intensities,list(round(as.numeric(MSMS.Import$retention.time),-1)+10),function(x){
+legInfo <- aggregate(MSMS.Import$intensities,list(init),function(x){
 
 	temp <- as.numeric(unlist(strsplit(as.character(x),";")))
 	
@@ -64,9 +75,9 @@ a <- 1
 maxv <- 0
 maxx <- 2
 orderMax <- c()
-Data2$all <-  as.numeric(unlist(strsplit(as.character(MSMS.Import$intensities),";")))
+#Data2$all <-  as.numeric(unlist(strsplit(as.character(MSMS.Import$intensities),";")))
 DataL <- c(DataL,length(Data2$all))
-names(DataL)[length(DataL)] <- "all"
+#names(DataL)[length(DataL)] <- "all"
 
 
 colsVec <- lapply(Data2,function(x){
@@ -89,10 +100,10 @@ maxx <- maxx+ maxx*c(0,0.2)
 plot(1,type = "n",ylim = c(0, maxv),ylab = "Density",xlab = "log10(Intensity)",frame = F,xlim = maxx,main = "Fragment Ions Density Plot",sub = .name,mgp = c(2.3,1,0))
 grid(lwd = 4)
 a <- 1
-colsVec <- colsVec[order(orderMax,decreasing = T)]
-cols <- cols[order(orderMax,decreasing = T)]
-DataL <- DataL[merge.control(names(DataL),names(colsVec))]
-DataRel <- DataL/max(DataL)
+colsVec 	<- colsVec[order(orderMax,decreasing = T)]
+cols 		<- cols[order(orderMax,decreasing = T)]
+DataL 		<- DataL[merge.control(names(DataL),names(colsVec))]
+DataRel 	<- DataL/max(DataL)
 lapply(colsVec,function(x){
 		
 	x$y <- x$y * DataRel[a]
@@ -102,14 +113,15 @@ lapply(colsVec,function(x){
 	a <<- a+1
 })
 
-legend("topright",legend = paste(names(colsVec),"n:",DataL[merge.control(names(DataL),names(colsVec))])[order(names(colsVec))],col = cols[order(names(colsVec))],lwd = 10,bty = "n",cex = 1,xpd = NA, xjust = 0.5)
+legend("topright",legend = paste(names(colsVec),"n:",DataL[merge.control(names(DataL),names(colsVec))])[order(names(colsVec))],col = cols[order(names(colsVec))],lwd = 10,bty = "n",cex = 1,xpd = NA, xjust = 0.5,title = paste(MinuteWindow,"min windows"))
 
 if(pdfOut){
 graphics.off()	
 }
-return(list(MSMSint = quantile(Data2$all,na.rm = T),MSMSn = quantile(MSMS.N[MSMS.N != 0],na.rm = T)))
+return(list(MSMSint = quantile(unlist(Data2),na.rm = T),MSMSn = quantile(MSMS.N[MSMS.N != 0],na.rm = T)))
 
 }else{return(rep(0,5))}
 }
 #try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed))
 #hz.show.path(getwd())
+#msmsPlot(.path,pdfOut = T)

@@ -24,7 +24,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaI
     }
     
     require(tcltk)
-    while(MQloop){
+    while(MQloop|0){
       
       checkMQ <- tk_choose.dir( caption = "Please select folder containing MQ.")  
       checkMQ.bin <- list.files(paste(checkMQ,"bin",sep = "/"),pattern = "MaxQuantCmd.exe",full.name = T)
@@ -44,7 +44,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaI
   }
   
   if(SpeciesTable){
-  	checkSpeciesTable()
+  	try(checkSpeciesTable(checkMQ.bin))
   }
   # check fasta:
   
@@ -58,7 +58,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaI
   }
   
   if(length(mqpar.name)== 0&newFasta){
-    mqpar.name  <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar",full.name = T)
+    mqpar.name  <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar_lf.xml",full.name = T)
     if(length(fastaInput) != 0){
       if(file.exists(fastaInput)){
         OwnXML <- T
@@ -93,7 +93,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaI
           }
   
           
-        }
+        }else{print("Found Database")}
        	####
           # Xml
           ####
@@ -105,12 +105,12 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaI
           
           
           test.grep <- grep(paste("filename=\"",basename(i),"\"",sep  =""),dbLib,fixed = T)
-          if(length(test.grep)== 0){
-                   warnings2 <- "yes" #<- tkmessageBox(message = paste(i,"is not existent.\nDo you like to choose a new fasta file?"),type = "yesno")
-            if((warnings2) == "yes"){
-              db <- db[!db== i]
-            }
-          }
+#           if(length(test.grep)== 0){
+#                    warnings2 <- "yes" #<- tkmessageBox(message = paste(i,"is not existent.\nDo you like to choose a new fasta file?"),type = "yesno")
+#             if((warnings2) == "yes"){
+#               db <- db[!db== i]
+#             }
+#           }
         warning.col <- c((warnings1),(warnings2))  
       }
       if(any(warning.col=="yes")){

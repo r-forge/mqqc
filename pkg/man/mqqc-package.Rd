@@ -13,7 +13,7 @@ As input for the quality control serves the evidence.txt from MQ calculations. T
 \tabular{ll}{
 Package: \tab mqqc\cr
 Type: \tab Package\cr
-Version: \tab 1.17\cr
+Version: \tab 2.1\cr
 Date: \tab 2013-12-4\cr
 License: \tab This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,8 +42,8 @@ Cox, J. and M. Mann (2008). "MaxQuant enables high peptide identification rates,
 \examples{
 # Windows
 # Requires a working MQ version on your system
-folder.observe()
+#folder.observe()
 
 # for evidence analysis:
-start.qc()
+#start.qc()
 }

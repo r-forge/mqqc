@@ -1,5 +1,5 @@
 start.qc <-
-function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER",templateFasta="PLACEHOLDER",SendMail = T, exitPath = NULL)
+function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769")
 {
 #DataEvidence <- NULL
 require(tcltk)	
@@ -13,6 +13,7 @@ if(!is.null(DataEvidence)){
 		SourceTime <- file.info(DataEvidence)$ctime
 		.path <- dirname(DataEvidence)
 		.name <- basename(DataEvidence)
+		evidence.path <- DataEvidence
 		tryError <- class(try(DataEvidence <- read.csv(DataEvidence,sep = "\t",stringsAsFactors = F)))
 	}else{
 		.path <- getwd()
@@ -30,9 +31,26 @@ library(tcltk)
 }
 cat("\rData loaded",rep(" ",100))
 
+setwd(.path)
+dir.create(.folder <- paste("mqqc",Sys.Date(),sep = "_"))
+setwd(.folder)
+
 if(tryError == "try-error"){
-	  	          write("",paste(.path,"mqqcProcessed",sep = "/"))
+                Export <- "Name,System.Time.s,System.Time,msms.count,uniPepCount,ret.peak.shape.0%,ret.peak.shape.25%,ret.peak.shape.50%,ret.peak.shape.75%,ret.peak.shape.100%,ret.width.0%,ret.width.25%,ret.width.50%,ret.width.75%,ret.width.100%,ret.max,total.msms.min,quan.msms.min,mass.error.cal.0%,mass.error.cal.25%,mass.error.cal.50%,mass.error.cal.75%,mass.error.cal.100%,mass.error.uncal.0%,mass.error.uncal.25%,mass.error.uncal.50%,mass.error.uncal.75%,mass.error.uncal.100%,quan.duplicates,quan.duplicates.msms,score.0%,score.25%,score.50%,score.75%,score.100%,quanRetRSD,quanRetSlope.x,RatioIQuan.75%,quanRet50ratio.50%,Intensity.0%,Intensity.25%,Intensity.50%,Intensity.75%,Intensity.100%,missed.cleavages.percent,msmsQuantile.0%,msmsQuantile.25%,msmsQuantile.50%,msmsQuantile.75%,msmsQuantile.100%,msmsMassCount.0%,msmsMassCount.25%,msmsMassCount.50%,msmsMassCount.75%,msmsMassCount.100%,Coverage,msmsEff,TotalScore.MS,TotalScore.MSMS,TotalScore.LC,TotalScore.Total,TotalScoreColor.MS,TotalScoreColor.MSMS,TotalScoreColor.LC,TotalScoreColor.Total,exitPath,SourceTime,Status"
+                Export <- unlist(strsplit(Export,","))
+                TempInfo <- t(as.matrix(rep(NA,length(Export))))
+                colnames(TempInfo) <- Export
+                TempInfo[1,grep("exitPath",colnames(TempInfo))] <- paste(unlist(dirname(dirname(.path))),.name,sep = "/",collapse = "/")
+                TempInfo[1,grep("^Name$",colnames(TempInfo))] <- basename(dirname(dirname(.path)))
+                TempInfo[1,grep("^SourceTime$",colnames(TempInfo))] <- as.numeric(Sys.time())
+                TempInfo[1,grep("^System.Time.s$",colnames(TempInfo))] <- as.numeric(Sys.time())
+                TempInfo[1,grep("^System.Time$",colnames(TempInfo))] <- as.numeric(Sys.time())
+                
+                try(write.csv(TempInfo,paste(basename(dirname(dirname(.path))),".csv",sep = ""),quote = F,row.names = F))
+                return(NULL)
+                
 }
+
 
 	
 raw.files 		<- grep("raw.file",tolower(colnames(DataEvidence)),)
@@ -49,11 +67,10 @@ if(!is.na(n)){
 	}
 }
 
-setwd(.path)
-dir.create(.folder <- paste("mqqc",Sys.Date(),sep = "_"))
-setwd(.folder)
+
 
 list.collect <- list(length=length(rep.v))
+
 a <- 1
 
 for(i in rep.v){
@@ -67,7 +84,7 @@ cat("\rstarting qc.prepare",rep(" ",100))
 # Calculation of Scores
 ####
 
-tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta =templateFasta,path = .path,filename = i)))
+tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
 export 	<- unlist(qc.prepare.data$sd)
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
@@ -77,17 +94,17 @@ export <- t(as.matrix(c(add.vec ,export)))
 ####
 # BSACheck
 ####
-BSACheck <- gsub(placeholder,"BSA", templateFasta,fixed = T)
+BSACheck <- gsub(placeholder,"BSA", RESettings$REpar,fixed = T)
 if(length(grep(BSACheck,i)) > 0){
 	
 	BSACheck <- T
 }else{BSACheck <- F}
 
 
-####
+####  
 # Plotting
 ####
-tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
+tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
 TotalScoreRes <<- TotalScoreRes
 ASCIIplot <- NULL
 try(ASCIIplot <- readLines(list.files(pattern = "ASCIIplot.txt",full.name = T)))
@@ -150,17 +167,23 @@ if(any(c(tryError2, tryError1) == "try-error")){
 	
 }
 
-test 		<- HtmlTable(t(export))
+#test 		<- HtmlTable(t(export))
 export 	<- data.frame(export)
 
 MailList <- list.files(path.package("mqqc"),pattern = "MailList.txt",recursive=T,full.name = T)
 if(length(MailList) > 0&SendMail){
 	MailList  <- read.table(MailList,sep = "\t",colClasses = "character",stringsAsFactors = F)
 	MailList 	<- apply(MailList,2,as.character)
-	
-	Mail <- MailList[MailList[,1] == unlist(strsplit(as.character(export$Name),"_"))[3],2]
-	Mail <- Mail[1]
+	MailPatterns <- sapply(MailList[,1],function(x){gsub(placeholder,x,RESettings$REmail)})
+
+	MailID <- sapply(MailPatterns ,function(x){
+		x	<- grep(x,as.character(export$Name),value = F)
+		return(length(x) > 0)
+	})
+	MailID <- MailList[MailID,2]
+	for(Mail in MailID){
 	PrepareMail(Title = paste("MQQC",data.frame(export)$Name,data.frame(export)$msms.count,"Peptides"),Message = flatFile,recipient=gsub("@","\\@",as.character(Mail),fixed = T))
+	}
 }
 list.collect[a]     <- qc.prepare.data
 a <- a+1

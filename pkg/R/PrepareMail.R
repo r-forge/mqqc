@@ -14,10 +14,8 @@ MailList$message <- Message
 MailSettings <- list.files(paste(path.package("mqqc"),"data",sep = "/"),pattern = "MailSettings$",full.name = T)
 
 if(length(MailSettings) > 0){	
-		#print("hu")
 
 	MailSettings <- readLines(MailSettings[1])
-		#print("hu")
 
 	if(length(MailSettings) ==4){
 		MailList[c(1,2,3,5)] <- MailSettings	

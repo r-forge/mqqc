@@ -45,6 +45,7 @@ if(length(TC) == 0){
 }
 
 ControlTC <- 	read.csv(tableTC)	
+if(all(dim(ControlTC) == c(3,1))){ControlTC <- t(ControlTC)}
 Delete 	<- setdiff(ControlTC[,2], Table.Dat[,2])
 Add 		<- setdiff(Table.Dat[,2],ControlTC[,2] )
 if(length(Add) > 0){
@@ -54,6 +55,8 @@ if(length(Add) > 0){
 
 }
 ControlTC <- 	read.csv(tableTC)	
+if(all(dim(ControlTC) == c(3,1))){ControlTC <- t(ControlTC)}
+
 if(length(Delete) > 0){
 	for(i in Delete){
 		ControlTC <- ControlTC[ControlTC[,2] !=i ,]
@@ -62,6 +65,7 @@ if(length(Delete) > 0){
 	
 }
 ControlTC <- 	read.csv(tableTC)	
+if(all(dim(ControlTC) == c(3,1))){ControlTC <- t(ControlTC)}
 
 ######
 # Force Quit if Program runs longer than 3 hours

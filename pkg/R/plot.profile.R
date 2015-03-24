@@ -1,5 +1,5 @@
 plot.profile <-
-function(data.i,layout = T,linePlot =F,BSACheck = F){	
+function(data.i,layout = T,linePlot =F,BSACheck = F, plot.legend = T){	
 AllDensCol <- colors()[235]
 IntQuanDensCol <- colors()[57]	#632
 plotData <- list()
@@ -60,16 +60,19 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	axis(4,xpd = NA,labels = F,padj = 0.5)
 	uniqueSeq 	<- length(unique(data.i$sequence))
 	intens 		<- quantile(data.i$intensity[!is.na(data.i$intensity)])
-	intens 		<- paste("Top 50%:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
+	intens 		<- paste("Q 0.5-1 Intensities:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
 	
   if(BSACheck){
     name.file <- c(as.character(name.file), paste("BSA peptides:",length(grep("MSMS",BSAEVI$type)),", all peptides:",length(grep("MSMS",data.i$type))),intens)
     
   }else{
-    name.file <- c(as.character(name.file), paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
+    name.file <- c(as.character(name.file), paste("proteins:",length(unique(data.i$proteins))),paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
   }
 	grid(col = "darkgrey",lwd = 1.5)
+	
+	if(plot.legend){
 	legend("topleft",legend = name.file,bg = "white",box.col = "transparent")
+	}
 	tempBorder <- densCols(data.i$retention.time,data.i$m.z,colramp = colorRampPalette(c("white","darkgrey")))
 	
 		for(i in 1:length(unique(Ramp.col))){
@@ -199,7 +202,7 @@ Inner <- temp$x <= quantiles[4] & temp$x >= quantiles[2]
 		legend("topright",legend = c("all","BSA"),col = c(AllDensCol,"orange"),lwd = 3,bty = "n")
 	}
 		plot(1,type = "n",frame = F,axes = F)
-
+	plotData$name.file <- name.file
 	return(plotData)
 	
 }

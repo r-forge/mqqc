@@ -8,7 +8,7 @@ function(){
 			print(is.matrix(tempRead))
 			if(is.data.frame(tempRead)){
 				if(dim(tempRead)[2] == 2){
-					file.copy(temp,tempPAth<- paste(path.package("mqqc"),"data","MailList.txt",sep = "/"))
+					file.copy(temp,tempPAth<- paste(path.package("mqqc"),"data","MailList.txt",sep = "/"),overwrite = T)
 					print(tempPAth)
 					print("copied MailList...")
 				}else{tkmessageBox(icon = "warning",message = "Import failed. MailList.txt requires a tab delimited table with two columns (template,address)....")}
