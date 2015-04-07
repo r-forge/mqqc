@@ -7,8 +7,14 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 	install.packages("txtplot", repos = source)
 	}
 
-	
+  ## Fox SpeciesTable
+#   Spec <-list.files(paste(path.package("mqqc"),"/data",sep = ""),full.name = T)
+# 	if(length(grep("MQQCspecies.csv",Spec)) == 0)
   if(length(grep("widgetTools",library())) == 0){
+#     if(length(grep("MQQCspecies.csv.gz")) > 0){
+#       
+#     }
+#   }
 	try(source("http://bioconductor.org/biocLite.R"))
 	try(biocLite("widgetTools",ask ="n"))	
 	}
