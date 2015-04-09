@@ -6,22 +6,35 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(length(grep("txtplot",library())) == 0){
 	install.packages("txtplot", repos = source)
 	}
+  if(length(grep("tcltk2",library())) == 0){
+    install.packages("tcltk2", repos = source)
+  }
 
   ## Fox SpeciesTable
-#   Spec <-list.files(paste(path.package("mqqc"),"/data",sep = ""),full.name = T)
-# 	if(length(grep("MQQCspecies.csv",Spec)) == 0)
-  if(length(grep("widgetTools",library())) == 0){
+  Spec <-list.files(paste(path.package("mqqc"),"/data",sep = ""),full.name = T) 
+  if(length(grep("MQQCspecies.csv$",Spec)) == 0){
+    if(length(grep("MQQCspecies.csv.gz",Spec))> 0){
+      MQQCspectab <- grep("MQQCspecies.csv.gz",Spec,value = T)[1]
+      suc <- file.rename(MQQCspectab,to = gsub(".gz$","",MQQCspectab))
+      if(suc){
+      file.remove(MQQCspectab)
+      }
+    }
+  }
 #     if(length(grep("MQQCspecies.csv.gz")) > 0){
 #       
 #     }
 #   }
-	try(source("http://bioconductor.org/biocLite.R"))
+  
+	if(length(grep("widgetTools",library()))== 0){
+	  try(source("http://bioconductor.org/biocLite.R"))
+	  
 	try(biocLite("widgetTools",ask ="n"))	
 	}
 	
 	require("widgetTools")	
 	require("txtplot")
-    require("tcltk")
+  require("tcltk")
  
  
   
@@ -83,7 +96,10 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 StandardIDs = c(Param$StdIDhigh,Param$StdIDlow)
 
 	 print("Preparing MQQC")
-
+    if(!file.exists("htmloutPath")){
+      htmloutPath <- paste(folder,paste("_RmqqcFile_html"),sep = "/")
+      dir.create(htmloutPath)
+    }
     try(writeToHtml(path =paste(htmloutPath,"index.html",sep = "/"),Machines = Param$Machines),silent = T)
     dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 

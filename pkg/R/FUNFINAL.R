@@ -301,9 +301,9 @@ try(htmlMod(pathHtml = paste(finalMQQC,"index.html",sep = "/"),Machines = Machin
 }
 cat("\rfinished FUNFINAL function")
 }
-#finalMQQC <- htmloutPath
-#Param <- mqqcGUI()
-#RESettings <- Param[grep("^RE",names(Param))]
+# finalMQQC <- htmloutPath
+# Param <- mqqcGUI()
+# RESettings <- Param[grep("^RE",names(Param))]
 
 #try(	FUNFINAL(finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 #system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))
