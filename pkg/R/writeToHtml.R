@@ -101,18 +101,6 @@ $(function() {
 
 	,"</TR>
 
-	<TR>
-	<TD ALIGN=center VALIGN=CENTER bgcolor=	 #000000 >
-	  <font color=#fffffff> - </font><br>
-	<TD ALIGN=center VALIGN=CENTER bgcolor=	 #000000 >
-	  <font color=#fffffff> - </font><br>
-	<TD ALIGN=center VALIGN=CENTER bgcolor=	 #000000 >
-	  <font color=#fffffff> - </font><br>
-	<TD ALIGN=center VALIGN=CENTER bgcolor=	 #000000 >
-	  <font color=#fffffff> - </font><br>
-	<TD ALIGN=center VALIGN=CENTER bgcolor=	 #000000 >
-	  <font color=#fffffff> - </font><br>
-	</TR>
 	<!-- dropzone -->
 
 	<TR>
@@ -284,8 +272,16 @@ for(i in Machines){
 	tempI <- i
 	header 		<- paste("<h1>",basename(i),"</h1>")
 	
-	i <- paste("./","TimeLines/",i,"-TimeLine.pdf",sep = "")
-	
+  if(StandardIDs[1] != ""){
+	i <- paste("./","TimeLines/",i,"-TimeLine-high.pdf",sep = "")
+  }else{
+    if(StandardIDs[2] != ""){
+      i <- paste("./","TimeLines/",i,"-TimeLine-low.pdf",sep = "")
+    }else{
+      i <- paste("./","TimeLines/",i,"-TimeLine-All.pdf",sep = "")
+      
+    }
+  }
 
 	#jpgPath 	<- paste("<embed src=\"",i,"\" width = \"",width,"\" height = \"",height*0.55 , "\">",sep = "")
 	
@@ -314,7 +310,8 @@ Order <- sapply(c("^Complex","^LowComplex","^Normal"),grep, ComparisonFiles)
 ComparisonFiles <- paste(".","TimeLines", ComparisonFiles,sep = "/")
 collVecParCo <- c()
 for(i in 1:length(Order)){
-	tempI 			<- ComparisonFiles[Order[i]]
+  if(length(unlist(Order[i])) > 0){
+	tempI 			<- ComparisonFiles[unlist(Order[i])]
 	nameComp 	<- "Platzhalter"
 	if(i == 1){nameComp <- "High complex standard"}
 	if(i == 2){nameComp <- "Low complex standard"}
@@ -328,6 +325,7 @@ for(i in 1:length(Order)){
 	
 	hui 				<- paste(header, PdfLink ,sep = "\n")
 	collVecParCo 	<- paste(collVecParCo,hui,sep = "\n")
+  }
 }
 }else{
 	collVecParCo <- "NO DATA"
@@ -342,15 +340,18 @@ tabParCo <- paste(tabTopParCo, collVecParCo,"</div>",sep = "\n")
 #====================================================================================
 if(StandardIDs[1] == ""){
 	tab4 = ""
-	tabTL = ""
+	#tabTL = ""
 	tab1 = tab2
 }
 if(StandardIDs[2]== ""){
 	tab5 = ""
-	
+	tab2 = tab1 # Not Sure if that works
 }
-
+tab4 <<- tab4
+tab5 <<- tab5
+tab3 <<- tab3
 finalHtml <- 	paste(initHtml,
+
 				paste(tab4,collapse = ""), # ECstd
 				paste(tab5,collapse = ""), # BSA
 				paste(tab3,collapse = ""), # All
@@ -391,6 +392,8 @@ write(disclaimer,file =paste(dirname(path),"disclaimer.html",sep = "/"))
 print(path)
 #system(paste("open",path))
 }
+#try(  FUNFINAL(StandardIDs = c("",""),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
+
 #try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText,Machines = Machines, StandardIDs = StandardIDs))
 #path = paste(finalMQQC,"index.html",sep = "/")
 #system(paste("open",path ))

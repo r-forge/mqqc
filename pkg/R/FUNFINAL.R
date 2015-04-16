@@ -1,6 +1,9 @@
 FUNFINAL <-
 function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy"), dayThresh = 5, RESettings = NULL, RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" ){
 #StandardIDs[1] = ""
+  # ToDo Table is not rpeorted # html Path is not set 
+  
+  
 htmlPdfFold <- "files"
   
 dir.create(finalMQQC, showWarnings = F)
@@ -51,41 +54,87 @@ if(file.exists(collectListPath)){
 	BSA <- BSA[TempNames == StandardIDsRE[2]]	
 	
 	}
-		
-	Normal 		<- setdiff(1:dim(collectList)[1],unique(c(ECstd,BSA)))
+
 	
+  if(all(StandardIDs != "")){
+	  Normal 		<- setdiff(1:dim(collectList)[1],unique(c(ECstd,BSA)))
+    AnalysisType <- "both"
+	  InitList <- list(ECstd,Normal, BSA)
+	  itType = 1
+	  itTypeCov <- F
+	  
+  }
+	
+	if(StandardIDs[1] != "" & StandardIDs[2] == ""  ){
+	  Normal 		<- setdiff(1:dim(collectList)[1],unique(c(ECstd)))
+	  AnalysisType <- "high"
+	  InitList <- list(ECstd,Normal,0)
+	  itType = 1
+	  itTypeCov <- F
+	  
+	}
+	
+	if(all(StandardIDs[2] != "") & StandardIDs[1] == ""){
+	  Normal 		    <- setdiff(1:dim(collectList)[1],unique(c(BSA)))
+	  AnalysisType  <- "low"
+	  InitList      <- list(0,Normal,BSA)
+	  itType = 3
+	  itTypeCov <- T
+	  
+	  
+	}
+	if(all(StandardIDs == "")){
+	  Normal 		<-1:dim(collectList)[1]
+	  AnalysisType <- "none"
+	  InitList <- list(0,Normal,0)
+	  itType = 2
+	  itTypeCov <- F
+	  
+	  
+	}  
+	InitList <<- InitList
 	collectListAll <- list()
 	collectListLife <- list()	
+  
+	if(Machines == "NA"){
+	  Names <- grepRE(as.character(collectList$Name),RESettings$REmac)
+	  Machines = unique(Names)
+	  
+	}else{Machines = Machines}
+  
+  
 	if(!exists("funlastLoop", envir = .GlobalEnv)){funlastLoop <<- 2}
 	if(funlastLoop %% 10 == 0| funlastLoop == 2){
 		BSA <<- BSA
 		ECstd <<- ECstd
 		Normal <<- Normal
-	try(CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = "ECstd",PDF = T, Machines = Machines,StandardIDs = StandardIDs))
-
-	try(CompareComplexStdFromTable(collectList[BSA,],RESettings,F,finalMQQC, PDFname = "LowComplexStandardComparison.pdf", TargetVec = "BSA",PDF = T, Machines = Machines))
-
-	try(CompareComplexStdFromTable(collectList[Normal,],RESettings,F,finalMQQC, PDFname = "NormalSampleComparison.pdf",main = "MQQC Normal Samples Parameter Comparison", TargetVec = "",PDF = T, Machines = Machines))
-
-	try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings),silent = F)
-	
-	try(plottingTimeLineFunction(AllData = collectList[BSA,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-BSA"),silent = F)
-	try(plottingTimeLineFunction(AllData = collectList[Normal,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings, TLname= "-AllSamples"),silent = F)
-	try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings),silent = F)
-	
-	try(plottingTimeLineFunction(AllData = collectList[BSA,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-BSA"),silent = F)
-	try(plottingTimeLineFunction(AllData = collectList[Normal,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings, TLname= "-AllSamples"),silent = F)
-	
-		try(CompareComplexStdFromTable(collectList[ECstd,],RESettings,F,finalMQQC, PDFname = "ComplexStandardComparison.jpg", TargetVec = "ECstd",PDF = F, Machines = Machines))
-
+    print("huha")
+  if(AnalysisType == "both"|AnalysisType =="high"){
+	try(CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs))
+	try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high"),silent = F)
+	try(CompareComplexStdFromTable(collectList[ECstd,],RESettings,F,finalMQQC, PDFname = "ComplexStandardComparison.jpg", TargetVec = "high",PDF = F, Machines = Machines))
+	try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-high"),silent = F)
+  }
+  if(AnalysisType == "both"|AnalysisType =="low"){
+    
+	try(CompareComplexStdFromTable(collectList[BSA,],RESettings,F,finalMQQC, PDFname = "LowComplexStandardComparison.pdf", TargetVec = StandardIDs[2],PDF = T, Machines = Machines))
+	try(plottingTimeLineFunction(AllData = collectList[BSA,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-Low"),silent = F)
+	try(plottingTimeLineFunction(AllData = collectList[BSA,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-Low"),silent = F)
 	try(CompareComplexStdFromTable(collectList[BSA,],RESettings,F,finalMQQC, PDFname = "LowComplexStandardComparison.jpg", TargetVec = "BSA",PDF = F, Machines = Machines))
-
+  }
+  
+  if(length(Normal) > 0){
+	try(CompareComplexStdFromTable(collectList[Normal,],RESettings,F,finalMQQC, PDFname = "NormalSampleComparison.pdf",main = "MQQC Normal Samples Parameter Comparison", TargetVec = "",PDF = T, Machines = Machines))
 	try(CompareComplexStdFromTable(collectList[Normal,],RESettings,F,finalMQQC, PDFname = "NormalSampleComparison.jpg",main = "MQQC Normal Samples Parameter Comparison", TargetVec = "",PDF = F, Machines = Machines))
-
+  try(plottingTimeLineFunction(AllData = collectList[Normal,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings, TLname= "-All"),silent = F)	
+	try(plottingTimeLineFunction(AllData = collectList[Normal,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings, TLname= "-All"),silent = F)
+  }
 	}
+	print("huha2")
 	
 	it <<- 1
-	for(iList in list(ECstd,Normal, BSA)){
+	
+	for(iList in InitList){
 		tempListOne <- collectList[iList,]
 		collectListSorted <- c()
 		collectListSortedLife <- c()
@@ -95,28 +144,25 @@ if(file.exists(collectListPath)){
 		if(dim(tempListOne)[1] != 0){
 		Names <- grepRE(as.character(tempListOne$Name),RESettings$REmac)
 	for(iNames in unique(Names)){
+    
+	  
+    
+    
 		tempList <- tempListOne[Names == iNames,]
-		try(		tempList <- tempList[order(tempList$SourceTime,decreasing = T),]
-)
+		try(		tempList <- tempList[order(tempList$SourceTime,decreasing = T),])
 		if(dim(tempList)[1] > 10){
 			tempList <- tempList[1:10,]
 		}
 		if(any(iNames==Machines)
 		#&!all(is.na(tempList[1,]))
 		){
-			collectListSortedLife <- rbind(collectListSortedLife,tempList[1,])
+		collectListSortedLife <- rbind(collectListSortedLife,tempList[1,])
 			
-		itType = 1	
-		if(StandardIDs[1]=="" & StandardIDs[2] != ""){
-			itType = 3
-		}
-		if(all(StandardIDs == "")){
-			itType = 2
-		}
+
 		
 			if(it == itType){
 				
-			if(itType == 3){
+			if(itTypeCov){
 				linkInput <- tempList$Coverage[1]
 				HotLinkType = "Coverage"
 			}else{
@@ -125,16 +171,20 @@ if(file.exists(collectListPath)){
 
 			}
 				
-				
+			
+      
+      
 			HotLink[iNames==Machines] <- linkInput
 			HotLinkPath[iNames == Machines] <- paste(".",htmlPdfFold,basename(gsub(".csv$",".pdf", tempList $exitPath)),sep = "/")
 			
 			HotLinkCol[iNames==Machines] <- tempList$TotalScoreColor.Total[1]
 			days <- abs(as.numeric(tempList$System.Time.s)-as.numeric(Sys.time()))/(60*60*24)
+			tempList <<- tempList
+      if(!is.na(days)){
 			if(days > dayThresh){
 					HotLinkCol[iNames==Machines] <- "#797979"
 			}
-
+      }
 			
 						file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC, StandardIDs[1],paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
 
@@ -253,18 +303,22 @@ if(length(collectListSorted) == 0){collectListSorted <- matrix(c(rep("NO DATA",l
 if(it ==1){
 	 try(tableHtml2 <-HtmlTable(collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design2"))
 	if(!exists("tableHtml2")){tableHtml2 <- NULL}
+  print(dim(collectListSorted))
 }
 if(it ==2){
 		 try(tableHtml <- HtmlTable(collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})],  tableDesign = "table-design"))
 		 if(!exists("tableHtml")){tableHtml <- NULL}
+		 print(dim(collectListSorted))
 		 
 	}
 if(it ==3){
 	 try(tableHtml3 <-HtmlTable(collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design3"))
 	if(!exists("tableHtml3")){tableHtml3 <- NULL}
+	print(dim(collectListSorted))
+	
 }
-	
-	
+	print(it)
+
 }else{	
 	if(it == 1){
 	tableHtml2 <- ""
@@ -272,11 +326,11 @@ if(it ==3){
 	if(it == 3){
 		tableHtml3 <- ""
 	}
+	print(it)
 }
 		
-	it <- it+1
 
-	}
+}
 #####
 
 paste(finalMQQC,"all",paste(Machines,".pdf",sep = ""),sep = "/")
@@ -286,26 +340,35 @@ if(length(insertText) > 0){
 }else{
 	insertText = ""
 }
+it <- it+1
+
 }
 
 	if(!exists("tableHtml")){tableHtml 	<- "NO DATA"}  
 	if(!exists("tableHtml2")){tableHtml2 <- "NO DATA"}  
 	if(!exists("tableHtml3")){tableHtml3 <- "NO DATA"}  
-	
-try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),
-inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText,Machines = Machines, StandardIDs = StandardIDs))
+#tableHtml <<- tableHtml # EC
+#tableHtml2 <<- tableHtml2 # sample data
+#tableHtml3 <<- tableHtml3 # BSA
+if(Machines == "NA"){
+  MachinesUsed = unique(collectListSorted$MS)
+}else{MachinesUsed = Machines}
+try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText,Machines = MachinesUsed, StandardIDs = StandardIDs))
 
 
-try(htmlMod(pathHtml = paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol),pdfPaths = HotLinkPath,Type = HotLinkType))
+try(htmlMod(pathHtml = paste(finalMQQC,"index.html",sep = "/"),Machines = MachinesUsed,Counts = HotLink,BGcolor =as.character(HotLinkCol),pdfPaths = HotLinkPath,Type = HotLinkType))
 
 }
 cat("\rfinished FUNFINAL function")
 }
-# finalMQQC <- htmloutPath
+
+ #finalMQQC <- htmloutPath
 # Param <- mqqcGUI()
 # RESettings <- Param[grep("^RE",names(Param))]
-
-#try(	FUNFINAL(finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
+# StandardIDs = c("","");placeholder = "PLACEHOLDER"
+# LoadSettings(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines)
+# LoadSettings(RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" )
+#try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 #system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))
 #finalMQQC <- finalMQQC
 #sucFolder="_RmqqcFile_Processed"

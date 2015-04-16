@@ -51,7 +51,7 @@ par(mai = c(0.7,0.7,0.2,0.1),lwd = 3,cex =3)
 # Score Dependecne
 #PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","score.50.","MS Intensity","MQ Score")
 
-if(TargetVec == StandardIDs[2]){
+if(TargetVec == StandardIDs[2]&TargetVec!= ""){
   try(PlotTwoFun(tempListOne = tempListOne,"msmsQuantile.50.","score.50.","MSMS Median Intensity","Andromeda Median Score",logPlot = "x",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))
    try(PlotTwoFun(tempListOne = tempListOne,"msmsMassCount.50.","score.50.","MSMS Median Fragment Counts","Andromeda Median Score",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))
 

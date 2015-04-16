@@ -102,7 +102,7 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
     a <<- a
     b <<- b
     Exclude <<- Exclude
-    error <- try(temp <- lowess(a[! Exclude],b[! Exclude]))
+    error <- try(temp <- lowess(a[! Exclude],b[! Exclude]),silent = T)
     if(class(error) == "try-error"){temp <- list(x = 0,y = 0)}
     TempSel <- tempListOneMac$SourceTime[!Exclude]
     TempSel  <- TempSel == max(TempSel,na.rm = T)
@@ -174,15 +174,16 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
     #try(DensVec <<- density(hua <-inputShift,na.rm = T))
     #DensVec$y <- DensVec$y/max(DensVec$y)*shifti
     xir <<- xrange
-    try(plot(1,col = "#44444460",xlab = "",ylab = "",main = "",axes = F,xlim =  xrange,ylim = c(0,1),type = "n"))
+    try(plot(1,col = "#44444460",xlab = "",ylab = "",main = "",axes = F,xlim =  xrange,ylim = c(0,1),type = "n"),silent = T)
     for(m in UniMachines){
-      dm <- density(hua <-inputShift[UM == m],na.rm = T)
+      hm <- try(dm <- density(hua <-inputShift[UM == m],na.rm = T),silent = T)
+      if(class(hm) != "try-error"){
       dm$y <- dm$y/max(dm$y)*shifti*0.8
       Col <- rainbowColFull[UniMachines == m]
       Col <- gsub("FF$","FF",Col)
       dm$y[dm$x < xline] <- NA
       try(points(dm,col = Col,type = "l",lty = (1:Mac)[UniMachines == m],lwd = 2))
-      
+      }
     }
     if(PDF){
       axis(4,at = c(0,shifti*0.8),labels = c("",""),col = "grey")
@@ -207,15 +208,16 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
     inputShift <- bi[!Exclude]
     #try(DensVec <- density(hua <-inputShift,na.rm = T))
     #DensVec$y <- DensVec$y/max(DensVec$y)*shifti
-    try(plot(1,col = "#44444460",xlab = "",ylab = "",main = "",axes = F,ylim =  yrange,xlim = c(0,1),type = "n"))
+    try(plot(1,col = "#44444460",xlab = "",ylab = "",main = "",axes = F,ylim =  yrange,xlim = c(0,1),type = "n"),silent = T)
     for(m in UniMachines){
-      dm <- density(hua <-inputShift[UM == m],na.rm = T)
+      hm <- try(dm <- density(hua <-inputShift[UM == m],na.rm = T),silent = T)
+      if(class(hm) != "try-error"){
       dm$y <- dm$y/max(dm$y)*shifti*0.8
       Col <- rainbowColFull[UniMachines == m]
       Col <- gsub("FF$","FF",Col)
       dm$y[dm$x < yline] <- NA
-      try(points(dm$y,dm$x,col = Col,type = "l",lty = (1:Mac)[UniMachines == m],lwd = 2))
-      
+      try(points(dm$y,dm$x,col = Col,type = "l",lty = (1:Mac)[UniMachines == m],lwd = 2),silent = T)
+      }
     }
     axis(3,at = c(0,shifti*0.8),labels = c("",""),col = "grey")
     if(PDF){

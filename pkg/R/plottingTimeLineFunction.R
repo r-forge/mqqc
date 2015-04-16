@@ -111,7 +111,10 @@ for(a in Vec.Test){
 	
 
 	y <- as.numeric(as.character(Count))
+  
 	x <- as.numeric(as.character(tempI$System.Time.s))
+
+  if(!any(all(is.na(x))|all(is.na(y)))){
 	NameTemp <- Names[it.a]
   if(log2Fun[it.a]){
     y <- log10(y)
@@ -189,6 +192,7 @@ polygon(c(x, rev(x)), c(CountUp[xYear], rev(CountLo[xYear])),
 
 if(it.a == 2){legend("bottomleft",legend = c("All",i),col = c("tomato","cadetblue"),box.col = "transparent",title = "Best value",lty = "dashed",bg = "#FFFFFF70")}
 
+}
 }
 }
 	graphics.off()

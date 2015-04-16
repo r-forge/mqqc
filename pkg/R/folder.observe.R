@@ -96,7 +96,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 StandardIDs = c(Param$StdIDhigh,Param$StdIDlow)
 
 	 print("Preparing MQQC")
-    if(!file.exists("htmloutPath")){
+    if(!file.exists(htmloutPath)){
       htmloutPath <- paste(folder,paste("_RmqqcFile_html"),sep = "/")
       dir.create(htmloutPath)
     }
