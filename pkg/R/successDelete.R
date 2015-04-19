@@ -89,7 +89,7 @@ successDelete <-
         						NewDataSort <- merge.control(colnames(NewData),newT)
         						attachVec <-t(NewData)[NewDataSort,]
                     		tempCheckListNew <- rbind(tempCheckListNew,attachVec)
-                    			write.csv(tempCheckListNew, writeName,row.names = F,quote = F)
+                    		write.csv(tempCheckListNew, writeName,row.names = F,quote = F)
         						#write.csv(tempCheckList, writeName,row.names = F,quote = F)
         						
                     #tempCheckList<- cbind(tempCheckList,"")

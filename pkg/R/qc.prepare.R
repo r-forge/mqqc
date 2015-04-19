@@ -1,5 +1,5 @@
 qc.prepare <- 
-function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769"){
+function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769",selectedFile = 1,RESettings = RESettings){
 score <- list()
 
 sumDat <- function(){
@@ -50,11 +50,14 @@ if(SpeciesTable){
 		colnames(Data) <- tolower(colnames(Data))
 
 	      species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+        if(length(species) == 1){
+        species 	<- read.csv2(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+        }
 	      RawFile <- unique(Data$raw.file)[1]
-	      regEx 	<- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})	
-	      temp   	<-as.logical(sapply(regEx,grep, x = RawFile))
-		temp[is.na(temp)] <- FALSE
-
+	      regEx 	<- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})			
+	      temp   	<- as.logical(sapply(regEx,grep, x = RawFile))
+		    temp[is.na(temp)] <- FALSE
+        
 		if(any(temp)){
 		speciesUsed <- species[temp,]
 		thresholds	<- as.list(speciesUsed[1,])
@@ -71,7 +74,8 @@ if(SpeciesTable){
 #Data <- apply(Data,2,function(x){as.numeric(as.character(x))})
 #colnames(Data) <- .cols
 Data <- as.data.frame(Data)
-grep.col <- function(string,Data){x <- grep(string,colnames(Data),fixed = T)
+grep.col <- function(string,Data,fixed = T){
+  x <- grep(string,colnames(Data),fixed = fixed)
 if(length(x) == 0){
 	 x <- 0
 }
@@ -79,28 +83,65 @@ if(length(x) > 1){
 	 cat("\rwarning, more than one match found",rep(" ",100))
 }
 return(x)	
-	}
 
+}
+
+
+# Initiate output list
 summary.Data <- list()
 # read.Data
 #Data <- temp.i
 colnames(Data) <- tolower(colnames(Data))
 
 
+
 raw.files <- grep.col("raw.file",Data)
 
-Data.i <- Data[unique(Data[,raw.files])[1] == Data[,raw.files],]
+# to make sure that only one file is processed
+Data.i <- Data[unique(Data[,raw.files])[selectedFile] == Data[,raw.files],]
 
 #Data.i <<- Data.i
 RawFilesUsed <- unique(Data.i$raw.file)
+
+
+# include Dependent Peptides Module
+summary.Data$DependentPeptides <- NULL
+if(speciesUsed$DependentPeptides){
+  #print("Dependent")
+  if(file.exists(DPfile<- paste(path,"allPeptides.txt",sep = "/"))){
+DepPepFun<- function(x){    DPlines     <- read.csv(x,sep = "\t",stringsAsFactors = F)
+                DPlinesSig  <- DPlines[as.numeric(DPlines$"DP.PEP") < 0.01,]
+                DPlinesSig$DP.Modification[DPlinesSig$DP.Modification == ""] <- "unknown"
+                Val <- aggregate(DPlinesSig$DP.Mass.Difference,list(DPlinesSig$DP.Modification),function(x){c(length(x),median(x,na.rm = T))})
+                ValR <- Val[[2]]
+                rownames(ValR) <- Val[,1] 
+                ValR <- ValR[rownames(ValR) != "unknown",]
+                ValRrest <- ValR[ ExVec<- ValR[,1]/sum(ValR[,1]) < 0.01,]
+                ValRrest <- sum(ValRrest[,1])
+                ValR <- ValR[!ExVec,]
+                ValR <- rbind(ValR,c(ValRrest,NA))
+                rownames(ValR)[dim(ValR)[1]] <- "Other"
+                cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","tomato3")
+                ValR <- ValR[order(ValR[,1],decreasing = T),]
+                pdf(paste(paste("DepPepPie",filename,sep = "_"),".pdf",sep = ""),width =10)
+                pie(ValR[,1],labels = paste(rownames(ValR),"n:",round(ValR[,1],2)),border = "transparent",col = colorRampPalette((cbPalette))(dim(ValR)[1]),main = "Dependent Peptides")
+                dev.off()
+                #system("open DepPepPie.pdf")
+                if(dim(ValR)[1] > 5){
+                  ValR <- ValR[1:5,]
+                }
+               return( paste(apply(cbind(rownames(ValR),ValR),1,paste,collapse = "##"),sep = " ",collapse = "_#_")) 
+            }
+summary.Data$DependentPeptides <-  DepPepFun(DPfile)
+  }
+}
+
 
 # MSMS
 
 type.ident 	<- Data.i[,grep.col("type", Data.i)]
 msms.count <- length(grep("MSMS", type.ident))
 summary.Data$msms.count <- msms.count
- 
-
 seq 					<- Data.i$sequence[grep("MSMS",type.ident)]
 uniPepCount 	<- length(unique(seq))
 summary.Data$uniPepCount <- uniPepCount
@@ -125,6 +166,7 @@ ident.peps 	<- reten.mid > min(quant.range,na.rm = T) & reten.mid < max(quant.ra
 summary.Data$ret.peak.shape <- quantile(ret.peak.ratio[ident.peps],na.rm = T) # filtered for inner elution time quantile
 summary.Data$ret.width 		<- quantile(ret.total[ident.peps],na.rm = T)#filtered for inner elution time quantile
 summary.Data$ret.max		<- max(reten.mid[ident.peps],na.rm = T)#filtered for inner elution time quantile
+summary.Data$mz <- quantile(Data.i[,grep.col("^m.z$", Data.i,FALSE)],na.rm = T) # filtered for inner elution time quantile
 
 Data.i.quant <- Data.i[ident.peps,] # subset with innerj range
 
@@ -140,14 +182,14 @@ mass.error 		<- mass.error[,-grep.col("uncalibrated",mass.error)]
 summary.Data$mass.error.cal 	<- quantile(as.numeric(mass.error),na.rm = T)
 summary.Data$mass.error.uncal 	<- quantile(as.numeric(mass.error.uncal),na.rm = T)
 # duplicates
-pep.identifier 			<- paste(round(Data.i.quant$m.z),round(Data.i.quant$charge), Data.i.quant$modified.sequence)
-double 					<- length(pep.identifier)-length(unique(pep.identifier))
+pep.identifier 			        <- paste(round(Data.i.quant$m.z),round(Data.i.quant$charge), Data.i.quant$modified.sequence)
+double 					            <- length(pep.identifier)-length(unique(pep.identifier))
 summary.Data$quan.duplicates 		<- double
 summary.Data$quan.duplicates.msms 	<- double/length(grep("MSMS",Data.i.quant$type))
 summary.Data$score<- quantile(Data.i$score,na.rm = T)
 # sd interquantile
 
-temp 		<- density(Data.i$calibrated.retention.time)
+temp 		  <- density(Data.i$calibrated.retention.time)
 tempQuan 	<- quantile(Data.i$calibrated.retention.time) 
 
 
@@ -168,12 +210,17 @@ tempQuan <<- tempQuan
 RatioIQuan <- diff(tempQuan[c(2,4)])/diff(tempQuan[c(1,5)]) # Ratio between inner and outer quantile distance of retention time, the bigger the better
 summary.Data$RatioIQuan <- RatioIQuan 
 summary.Data$quanRet50ratio <- diff(tempQuan[c(2,3)])/diff(tempQuan[c(3,4)])
-score$quanRetRSD 		<- 	thresholds$quanRetRSD/summary.Data$quanRetRSD
-score$quanRetSlope 		<-	thresholds$quanRetSlope /abs(summary.Data$quanRetSlope)
+
+
+
+print("hui")
+score$quanRetRSD 		  <- 	ThreshCompare(summary.Data$quanRetRSD,thresholds$quanRetRSD,type = "single")
+s <<- summary.Data$quanRetRSD
+r <<- thresholds$quanRetRSD
+score$quanRetSlope 		<-	ThreshCompare(abs(summary.Data$quanRetSlope),thresholds$quanRetSlope,type = "single")
 if(abs(summary.Data$quanRet50ratio) > 1){
-score$quanRet50ratio 	<- 	thresholds$quanRet50ratio/abs(summary.Data$quanRet50ratio)}else{
-score$quanRet50ratio 	<- 	abs(summary.Data$quanRet50ratio)	/thresholds$quanRet50ratio
-	
+score$quanRet50ratio 	<- 	ThreshCompare(abs(summary.Data$quanRet50ratio),thresholds$quanRet50ratio)}else{
+score$quanRet50ratio 	<- 	ThreshCompare(thresholds$quanRet50ratio,abs(summary.Data$quanRet50ratio))#?
 }
 # Intensity Value
 vals <- grep("^intensity",colnames(Data),ignore.case = T)
@@ -190,14 +237,7 @@ summary.Data$Intensity <- IntQuan
 IntQuan <<- IntQuan 
 thresholds <<- thresholds
 
-sig <- log10(signif(IntQuan[3]))
-ref <- log10(thresholds$Intensities)
-
- diff <- abs(diff(ref))
- lo <- ref[1]-diff
-
-tempScoreInt <- (sig - lo)/(ref[1]-lo)
-score$Intensity <- tempScoreInt
+score$Intensity <- ThreshCompare(log10(signif(IntQuan[3])),thresholds$Intensities,type = "quantile",cat = "high")
 
 # check MSMS
 if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))){
@@ -233,22 +273,9 @@ if(all(msmsInfo$MSMSint == 0)|all(is.character(unlist(msmsInfo)))){
 }else{
 summary.Data$msmsQuantile <- msmsInfo$MSMSint
 summary.Data$msmsMassCount <- msmsInfo$MSMSn
-sig <- log10(msmsInfo$MSMSint[3])
-ref <-	thresholds$msmsQuantile
- lo <- ref[1]-diff
- diff <- abs(diff(ref))
-
-score$msmsQuantile <- 	(sig - lo)/(ref[1]-lo)
-
-
+score$msmsQuantile <-  ThreshCompare(log10(summary.Data$msmsQuantile)[3],thresholds$msmsQuantile,type = "quantile",cat = "high")
 ###
-sig <- 	msmsInfo$MSMSn[3]
-ref <-	thresholds$msmsCount			
-
- diff <- abs(diff(ref))
- lo <- ref[1]-diff
-
-score$msmsCount 	<-  (sig - lo)/(ref[1]-lo)
+score$msmsCount 	<-  ThreshCompare((summary.Data$msmsMassCount)[3],thresholds$msmsCount,type = "quantile",cat = "high")#ThreshCompare(msmsInfo$MSMSn[3], thresholds$msmsCount) #(sig - lo)/(ref[1]-lo)
 
 }
 # Check Summary 
@@ -270,7 +297,7 @@ if(length(summaryPath) > 0){
 
 summary.Data$Coverage <- Coverage
 if(length(thresholds$ProteinCoverage) == 0){thresholds$ProteinCoverage <- 50}
-score$ProteinCoverage <- summary.Data$Coverage/thresholds$ProteinCoverage
+score$ProteinCoverage <- ThreshCompare(summary.Data$Coverage,thresholds$ProteinCoverage)
 
 #####
 #Combined Scores
@@ -309,20 +336,20 @@ msmsEff <- as.numeric(msmsEff)
 # }
 summary.Data$msmsEff 	<- msmsEff
 # if(is.vector(msmsEff)){msmsEff <- as.matrix(msmsEff)}
-score$msmsEff 			<- msmsEff/thresholds$msmsEff
+score$msmsEff 			<- ThreshCompare(msmsEff,thresholds$msmsEff)
 summary.Data <<- summary.Data
 thresholds <<- thresholds
 # scores 
-score$msms 			<-  summary.Data$quan.msms.min/thresholds$quan.msms.min 
-score$mass.error 	<-  abs(thresholds$mass.error.cal[1]/summary.Data$mass.error.uncal[3] )
+score$msms 			  <-  ThreshCompare(summary.Data$quan.msms.min,thresholds$quan.msms.min )
+score$mass.error 	<-  ThreshCompare(abs(summary.Data$mass.error.uncal[3]),(thresholds$mass.error.cal),type = "quantile",cat = "fixed")
 #thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.uncal[c(2,4)]))*0.5+ thresholds$mass.error.cal[1]/max(abs(summary.Data$mass.error.uncal[c(3)]))*0.5
-score$score <- summary.Data$score[3]/thresholds$score
+score$score <- ThreshCompare(summary.Data$score[3],thresholds$score)
 # score nlc
-score$peak.shape 	<- thresholds$ret.peak.shape[1]/max(abs(log2((summary.Data$ret.peak.shape[c(2,4)]))))
+score$peak.shape 	<- ThreshCompare(log2(summary.Data$ret.peak.shape[3]),thresholds$ret.peak.shape,type = "quantile",cat = "fixed")
 
-score$ret.width 	<- thresholds$ret.width[1]/(summary.Data$ret.width[c(3)])
+score$ret.width 	<- ThreshCompare((summary.Data$ret.width[c(3)]),thresholds$ret.width[1])
 
-score$quan.duplicates.msms 	<- thresholds$quan.duplicates.msms[1]/((((summary.Data$quan.duplicates.msms))))
+score$quan.duplicates.msms 	<- ThreshCompare(summary.Data$quan.duplicates.msms,thresholds$quan.duplicates.msms)
 
 
 # 2. MS combi score

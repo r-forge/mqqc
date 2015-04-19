@@ -12,6 +12,7 @@ if(exists("db")){
   db <- list.files(paste(path.package("mqqc"),"data",sep ="/"),"fasta$",full.name = T)
 }
 
+
 # creating string for system call of MQ
 	#check MQ path
 	checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
@@ -117,7 +118,17 @@ if(length(CheckDB) == 0){
   }
   if(length(mqpar.name)!=0){
     mqpar   			<- 	readLines(as.character(mqpar.name))
-    xmlNEW   	<- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
+    xmlNEW   	    <- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
+    xmlNEW         <- xml.replace(c("filePaths"),path.convert(filePath),mqpar)
+    if(length(speciesUsed$DependentPeptides) > 0){
+      if(speciesUsed$DependentPeptides){
+        mqparDP <- grep("<dependentPeptides>",xmlNEW)
+        xmlNEW[mqparDP] <- gsub(">false<",">true<",xmlNEW[mqparDP])
+        mqparDP <- grep("allPeptides",xmlNEW,ignore.case = T) 
+        xmlNEW[mqparDP] <- gsub("writeAllPeptidesTable=\"false\"","writeAllPeptidesTable=\"true\"",xmlNEW[mqparDP])
+      }
+    }
+    
     MQVER <- gsub("[^0-9,.]", "",grep("maxQuantVersion",mqpar,value = T))
     MQVER <- as.numeric(paste(unlist(strsplit(MQVER,".",fixed = T))[1:2],collapse = "."))
     if(MQVER <1.4){

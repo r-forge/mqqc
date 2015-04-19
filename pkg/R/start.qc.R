@@ -70,8 +70,8 @@ if(!is.na(n)){
 
 
 list.collect <- list(length=length(rep.v))
-
 a <- 1
+
 
 for(i in rep.v){
 ####
@@ -84,7 +84,7 @@ cat("\rstarting qc.prepare",rep(" ",100))
 # Calculation of Scores
 ####
 
-tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
+tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings)))
 export 	<- unlist(qc.prepare.data$sd)
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
@@ -153,11 +153,13 @@ flatFile <- paste("################\n# MQQC Message #\n################\nYour MQ
                   "Coverage (median): ",data.frame(export)$Coverage,"\n",
                   "Score (median): ",data.frame(export)$score.50.,"\n",
                   "Median Fragments/identified MSMS: ",data.frame(export)$msmsMassCount.50.,"\n",
-                  "MSMS log10 Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))), ASCIIplot,
-                  "\n\n##########\n#  List  #\n##########\n"
-                  
-                  
-                  ,flatFile,sep = "")
+                  "Dependent Peptides:",data.frame(export)$DependentPeptides,"\n",
+                  "MSMS log10 Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))), ASCIIplot#,
+#                   "\n\n##########\n#  List  #\n##########\n"
+#                   
+#                   
+#                   ,flatFile
+                  ,sep = "")
 
 if(!exists("export")){
 	export <- "No Info"
@@ -175,15 +177,18 @@ if(length(MailList) > 0&SendMail){
 	MailList  <- read.table(MailList,sep = "\t",colClasses = "character",stringsAsFactors = F)
 	MailList 	<- apply(MailList,2,as.character)
 	MailPatterns <- sapply(MailList[,1],function(x){gsub(placeholder,x,RESettings$REmail)})
-
-	MailID <- sapply(MailPatterns ,function(x){
-		x	<- grep(x,as.character(export$Name),value = F)
+  if(!all(sapply(MailPatterns,length) == 0)){
+  MailID <- sapply(MailPatterns ,function(x){
+    x <<- x 
+    xn <<- as.character(export$Name)
+		try(x  <- grep(x,as.character(export$Name),value = F))
 		return(length(x) > 0)
 	})
 	MailID <- MailList[MailID,2]
 	for(Mail in MailID){
 	PrepareMail(Title = paste("MQQC",data.frame(export)$Name,data.frame(export)$msms.count,"Peptides"),Message = flatFile,recipient=gsub("@","\\@",as.character(Mail),fixed = T))
 	}
+  }
 }
 list.collect[a]     <- qc.prepare.data
 a <- a+1

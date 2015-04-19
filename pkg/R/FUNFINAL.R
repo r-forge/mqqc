@@ -13,7 +13,6 @@ dir.create(ECstdPath <- paste(finalMQQC,"files",sep = "/"), showWarnings = F)
 
 if(length(list.files(finalMQQC,pattern = "example.css",recursive = T))== 0){
 unzip(list.files(paste(path.package("mqqc"),"data/",sep = "/"),full.name = T,pattern = "zip"),exdir = finalMQQC)	
-
 # from <- 	list.files(path.package("mqqc"),recursive = T,full.name = T,pattern = "example.css")
 # to		 <- 	paste(finalMQQC,"example.css",sep = "/")
 # try(file.copy(from,to))
@@ -235,9 +234,9 @@ TotalScore <- paste(TotalScoreAdd ,TotalScore,sep = "")
 colorCode <- paste(TotalScore,colorCode)
 
 pathPdf  			<- gsub(".csv$",".pdf",collectListSorted$exitPath)
-pathMsMsPdf <- gsub(".csv$",".pdf",collectListSorted$exitPath)
-pathMsMsPdf <- paste(dirname(pathMsMsPdf),paste("MSMS_Dens_",basename(pathMsMsPdf),sep = ""),sep = "/")
-pathMsMsPdf <- gsub("raw.pdf$","pdf", pathMsMsPdf)
+pathDepPepPie <- gsub(".csv$",".pdf",collectListSorted$exitPath)
+pathDepPepPie <- paste(dirname(pathDepPepPie),paste("DepPepPie_",basename(pathDepPepPie),sep = ""),sep = "/")
+pathDepPepPie <- gsub("raw.pdf$","pdf", pathDepPepPie)
 
 		pathPdf <-		gsub(".RAW_folder/","RAW_folder/",pathPdf) # !!!! Temporal Solution, folder is written without ".", should be better fixed while folder is written
 
@@ -247,9 +246,19 @@ pathMsMsPdf <- gsub("raw.pdf$","pdf", pathMsMsPdf)
 # move all Files:
 ActualFile <- list.files(paste(finalMQQC,htmlPdfFold,sep = "/"))
 ToMove <- setdiff(basename(pathPdf),ActualFile)
+
+
 if(length(ToMove) > 0){
 ToMove <- merge.control(basename(unique(pathPdf)),ToMove)
 ToMove <- unique(pathPdf)[ToMove]
+if(any(!file.exists(dirname(ToMove)))){
+  FixedPath <- sapply(strsplit(ToMove,paste(sucFolder,"/",sep = ""),fixed = T),function(x){
+    x <<- x
+    return(paste(folder,sucFolder,x[2],sep = "/"))
+  }) 
+  ToMove <- FixedPath
+}
+
 FileExists <- file.exists(ToMove)
 if(any(FileExists)){
 file.copy(ToMove[FileExists],paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
@@ -261,24 +270,31 @@ if(any(!FileExists) ){
   
 }
 
+### Move PDFs Types
 
 file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
 
-
-ToMove <- paste(dirname(ToMove),paste("MSMS_Dens_",basename(ToMove),sep = ""),sep = "/")
+ToMoveInit <- ToMove
+ToMove <- paste(dirname(ToMoveInit),paste("MSMS_Dens_",basename(ToMoveInit),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
 file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
+
+ToMove <- paste(dirname(ToMoveInit),paste("DepPepPie_",basename(ToMoveInit),sep = ""),sep = "/")
+ToMove <- gsub("raw.pdf$","pdf", ToMove)
+SucDP <- file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T)
+
+
 }
 #if(length(pathPdf) > 0){}
 tempPaths 				<- paste(".",htmlPdfFold,basename(pathPdf),sep = "/")
-tempPathsMsMs2 	<- paste(".", htmlPdfFold,basename(pathMsMsPdf),sep = "/")
+tempPathsDepPepPie2 	<- paste(".", htmlPdfFold,basename(pathDepPepPie),sep = "/")
 collectListSorted$System.Time <- substr(collectListSorted$System.Time,2,nchar(as.character(collectListSorted$System.Time)))
 substr(collectListSorted$System.Time , 11, 12) <- " "
 if(length(pathPdf) >0){
 #tempPathsMsMs <-as.vector(as.matrix(tempPaths)[2,])
 tempPaths <- paste("<a href ='", tempPaths,"' target ='_blank' >MQQC</a>",sep = "")
-tempPathsMsMs2 <- paste("<a href ='", tempPathsMsMs2,"'  target ='_blank' >MsMs</a>",sep = "")
-#tempPathsMsMs2[tempPathsMsMs == ""] <- ""
+tempPathsDepPepPie2 <- paste("<a href ='", tempPathsDepPepPie2,"'  target ='_blank' >DP</a>",sep = "")
+tempPathsDepPepPie2[!SucDP] <- ""
 
 collectListSorted <- as.data.frame(collectListSorted)
 
@@ -292,9 +308,9 @@ try(collectListSorted <- cbind(	colorCode ,
 													collectListSorted$uniPepCount,
 													round(as.numeric(collectListSorted$quan.msms.min),2) ,
 													round(as.numeric(collectListSorted$mass.error.uncal.50.),2), 
-													collectListSorted$score.50., CoverageVec, tempPaths))
+													collectListSorted$score.50., CoverageVec, tempPaths,tempPathsDepPepPie2))
 
-try(colnames(collectListSorted) <- c("",colsTemp,"Time","Peptides","Unique_Peptides","MSMS/min","mass_error_[ppm]","Score_M","Coverage","pdf"))
+try(colnames(collectListSorted) <- c("",colsTemp,"Time","Peptides","Unique_Peptides","MSMS/min","mass_error_[ppm]","Score_M","Coverage","QC","DP"))
 alignVec <<- c("center","left",rep("center",(dim(collectListSorted)[2]-2)))
 
 #collectListSorted  <- collectListSorted[order(collectListSorted[,7]),]
@@ -350,7 +366,7 @@ it <- it+1
 #tableHtml <<- tableHtml # EC
 #tableHtml2 <<- tableHtml2 # sample data
 #tableHtml3 <<- tableHtml3 # BSA
-if(Machines == "NA"){
+if(all(Machines == "NA")){
   MachinesUsed = unique(collectListSorted$MS)
 }else{MachinesUsed = Machines}
 try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText,Machines = MachinesUsed, StandardIDs = StandardIDs))
@@ -363,10 +379,10 @@ cat("\rfinished FUNFINAL function")
 }
 
  #finalMQQC <- htmloutPath
-# Param <- mqqcGUI()
-# RESettings <- Param[grep("^RE",names(Param))]
-# StandardIDs = c("","");placeholder = "PLACEHOLDER"
-# LoadSettings(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines)
+#Param <- mqqcGUI()
+#RESettings <- Param[grep("^RE",names(Param))]
+#StandardIDs = c("","");placeholder = "PLACEHOLDER"
+#LoadSettings(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_")
 # LoadSettings(RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" )
 #try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 #system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))
