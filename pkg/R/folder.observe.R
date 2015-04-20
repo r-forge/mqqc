@@ -21,6 +21,9 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
       }
     }
   }
+  
+  
+
 #     if(length(grep("MQQCspecies.csv.gz")) > 0){
 #       
 #     }
@@ -100,6 +103,7 @@ StandardIDs = c(Param$StdIDhigh,Param$StdIDlow)
       htmloutPath <- paste(folder,paste("_RmqqcFile_html"),sep = "/")
       dir.create(htmloutPath)
     }
+    try(PIDhtmltable(htmloutPath))
     try(writeToHtml(path =paste(htmloutPath,"index.html",sep = "/"),Machines = Param$Machines),silent = T)
     dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 
@@ -211,15 +215,18 @@ if(funlastLoop %% 2 == 0){
 #	hu<- 	order(hi[,4])
  	cat("\r Cleaning Folder")
    
-    htmloutPath <<- htmloutPath
+  htmloutPath <<- htmloutPath
   	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
 	sucFolder <<- sucFolder
 
  	cat("\r Updating Table")
 					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs))
 		
-
+  
 	}
+if(funlastLoop %% 20 == 0){
+  try(PIDhtmltable(htmloutPath))
+}
 setwd(folder)		
 		
 		catFun(paste(Sys.time(),"Status: Observing", folder))

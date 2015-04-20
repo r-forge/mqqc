@@ -13,7 +13,10 @@ but1 <- "
 <a href = \"./CheckListFormular.docx\" style=\"color:grey;text-decoration: none;\" target=\"_blank\" >Check List Formular</a>
 "
 but2 <- "
-    <a href = \"./html/MQQC-Documentation.pdf\" style=\"color:grey;text-decoration: none;\" target=\"_blank\">MQQC Documentation</a>
+    <a href = \"./html/MQQC-Documentation.pdf\" style=\"color:grey;text-decoration: none;\" target=\"_blank\">MQQC Documentation; </a>
+"
+but3 <- "
+    <a href = \"./MQQC_PID.html\" style=\"color:grey;text-decoration: none;\" target=\"_blank\">ParameterIDs</a>
 "
 if(!file.exists(paste(dirname(path),"insertText.txt",sep = "/"))){
 	write("",paste(dirname(path),"insertText.txt",sep = "/"))
@@ -82,7 +85,8 @@ $(function() {
 <div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> Last update: ",Sys.time(), "<br>MQ Threads: <a href = \"./MqqcRunningFileInfo.html\" target ='_blank'  >",mqqcRunningMQ,"
 
   <form NAME=\"spaceform\" STYLE=\"margin: 0px; padding: 0px;\"><input type=button value=\"Refresh\" onClick=\"history.go(0)\"></form>
-",but1,but2,"
+
+",but1,but2,but3,"
 
 
 </div>
@@ -389,12 +393,14 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 					 ", endHtml,"</html>")
 write(disclaimer,file =paste(dirname(path),"disclaimer.html",sep = "/"))
 
-print(path)
+#print(path)
 #system(paste("open",path))
 }
 #try(  FUNFINAL(StandardIDs = c("",""),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
-
-#try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = tableHtml,Table2 = tableHtml2 ,Table3 = tableHtml3, insertText = insertText,Machines = Machines, StandardIDs = StandardIDs))
+#finalMQQC = htmloutPath
+#StandardIDs <- c("","")
+#Machines = "hui"
+#try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = "tableHtml",Table2 = "tableHtml2" ,Table3 = "tableHtml3", insertText = "insertText",Machines = "Machines", StandardIDs=c("","")))
 #path = paste(finalMQQC,"index.html",sep = "/")
 #system(paste("open",path ))
 # try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),
