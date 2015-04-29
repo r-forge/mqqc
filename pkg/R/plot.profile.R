@@ -126,8 +126,12 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 		
 	par(mai=c(0.6,1,0,0))
 	
-	dens.crt <- class(try(temp <- density(data.i$retention.time)))
-	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
+	dens.crt <- class(try(temp <- density(DAT <- data.i$retention.time[data.i$potential.contaminant != "+"])))
+  dens.con <- class(try(tempCON <- density(CON <- data.i$retention.time[data.i$potential.contaminant == "+"])))
+ConFAC <- length(CON)/length(DAT)
+tempCON$y <- tempCON$y * ConFAC
+  
+if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
 	plotData$retentionTime <- cbind(temp$x,temp$y)
 		plot(temp$x,temp$y,main = "",axes = F,frame = F,xlim = range(data.i$retention.time,na.rm = T),type = "n",xlab = "",ylab = "",lwd = 1)
 		grid(col = "darkgrey",lwd = 1.5)
@@ -163,6 +167,15 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 		mtext("time in min",1,line = 1.9,cex = 0.6)
 				legend("topright",legend = c("all","BSA"),col = c(AllDensCol,"orange"),lwd = 3,bty = "n")
 
+	}else{
+    print(ConFAC)
+    ConFAC <<- ConFAC
+    if(log2(ConFAC) > -4){
+	  points(tempCON$x,tempCON$y,type = "l",col = "white",lwd = 4,lty = "dotted")
+	  
+	  #points(tempCON$x,tempCON$y,main = "",axes = F,frame = F,na.rm = T,type = "l",xlab = "",ylab = "Density",col = "darkorange",lwd = 3)
+	  legend("topright",legend = c("contaminants"),col = c("grey"),lty = "dotted",lwd = 3,bty = "n")
+    }
 	}
 	dens.crt <- class(try(	temp <-density(data.i$m.z)))
 	
@@ -206,6 +219,7 @@ Inner <- temp$x <= quantiles[4] & temp$x >= quantiles[2]
 	return(plotData)
 	
 }
+#plot.profile(temp.DataEvidence)
 #tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 #par(mfrow = c(2,2))
 #try(plotData<- plot.profile(data.i,F,F,BSACheck= T))

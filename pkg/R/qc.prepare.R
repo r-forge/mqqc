@@ -109,42 +109,54 @@ summary.Data$DependentPeptides <- NULL
 if(all(1)){
   #print("Dependent")
   if(file.exists(DPfile<<- paste(path,"allPeptides.txt",sep = "/"))){
-DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T){   
+DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette = rainbow(10)){   
                 DPlines     <- read.csv(x,sep = "\t",stringsAsFactors = F)
                 DPlinesSig  <- DPlines[as.numeric(DPlines$"DP.PEP") < 0.01,]
                 DPlinesSig$DP.Modification[DPlinesSig$DP.Modification == ""] <- "unknown"
                 Val <- aggregate(DPlinesSig$DP.Mass.Difference,list(DPlinesSig$DP.Modification),function(x){c(length(x),median(x,na.rm = T))})
+                if(dim(Val)[1] > 0){
                 ValR <- Val[[2]]
                 rownames(ValR) <- Val[,1] 
                 if(!unknowns){
                 ValR <- ValR[rownames(ValR) != "unknown",]
                 }
-                ValRsum <- sum(ValR[,1],na.rm = T)
-                ValRrest <- ValR[ ExVec<- ValR[,1]/sum(ValR[,1]) < 0.01,]
+                ValRsum   <- sum(ValR[,1],na.rm = T)
+                ValRrest  <- ValR[ ExVec<- ValR[,1]/sum(ValR[,1]) < 0.01,]
                 ValRrest <- sum(ValRrest[,1])
                 ValR <- ValR[!ExVec,]
                 ValR <- rbind(ValR,c(ValRrest,NA))
                 rownames(ValR)[dim(ValR)[1]] <- "Other"
                 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","tomato3")
                 ValR <- ValR[order(ValR[,1],decreasing = T),]
+                }else{
+                  ValRsum = 0
+                  ValR = matrix(0)
+                  rownames(ValR) <- "NA"
+                }
                 if(length(NormPep) > 0){
                 width = 18  
                 }else{width = 8}
+                if(dim(ValR)[1] > 5){
+                  ValR <- ValR[1:5,]
+                }
                 pdf(paste(paste("DepPepPie",filename,sep = "_"),".pdf",sep = ""),width =width)
                 if(length(NormPep) > 0){
                   par(mfrow = c(1,2))
                   pie(c(NormPep,ValRsum),labels = c("Identified","Dependent Peptides"),border = "transparent",col = c("red","grey"),main = "All Peptides",angle = 30,density = c(NA,20))
                 }
+                if(ValRsum == 0){
+                empty.plot()
+                legend("top",legend = "No dependent peptides detected.",xpd = NA,bty = "n")
+                }else{
                 pie(ValR[,1],labels = paste(rownames(ValR),"n:",round(ValR[,1],2)),border = "transparent",col = colorRampPalette((cbPalette))(dim(ValR)[1]),main = "Dependent Peptides")    
-                
+                }
                 
                 dev.off()
-                if(dim(ValR)[1] > 5){
-                  ValR <- ValR[1:5,]
-                }
+
                return( paste(apply(cbind(rownames(ValR),ValR),1,paste,collapse = "##"),sep = " ",collapse = "_#_")) 
             }
-summary.Data$DependentPeptides <-  DepPepFun(DPfile,NormPep = dim(Data.i)[1])
+summary.Data$DependentPeptides  <- "No DP Peptides found."
+try(summary.Data$DependentPeptides <-  DepPepFun(DPfile,NormPep = dim(Data.i)[1],cbPalette = cbPalette))
   }
 }
 
