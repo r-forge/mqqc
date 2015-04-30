@@ -1,5 +1,5 @@
 qc.prepare <- 
-function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769",selectedFile = 1,RESettings = RESettings){
+function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769",selectedFile = 1,RESettings = RESettings,Peptides = NULL,AllPeptides = NULL,MSMS = NULL){
 score <- list()
 
 sumDat <- function(){
@@ -108,9 +108,10 @@ RawFilesUsed <- unique(Data.i$raw.file)
 summary.Data$DependentPeptides <- NULL
 if(all(1)){
   #print("Dependent")
-  if(file.exists(DPfile<<- paste(path,"allPeptides.txt",sep = "/"))){
-DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette = rainbow(10)){   
-                DPlines     <- read.csv(x,sep = "\t",stringsAsFactors = F)
+  if(file.exists(DPfile<<- paste(path,"allPeptides.txt",sep = "/"))|length(AllPeptides) > 0){
+DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette = rainbow(10)){ 
+                if(!is.matrix(x)){
+                DPlines     <- read.csv(x,sep = "\t",stringsAsFactors = F)}
                 DPlinesSig  <- DPlines[as.numeric(DPlines$"DP.PEP") < 0.01,]
                 DPlinesSig$DP.Modification[DPlinesSig$DP.Modification == ""] <- "unknown"
                 Val <- aggregate(DPlinesSig$DP.Mass.Difference,list(DPlinesSig$DP.Modification),function(x){c(length(x),median(x,na.rm = T))})
@@ -156,6 +157,11 @@ DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette 
                return( paste(apply(cbind(rownames(ValR),ValR),1,paste,collapse = "##"),sep = " ",collapse = "_#_")) 
             }
 summary.Data$DependentPeptides  <- "No DP Peptides found."
+if(length(AllPeptides) > 0){
+  if(is.matrix(AllPeptides)){
+    DPfile <- AllPeptides
+  }
+}
 try(summary.Data$DependentPeptides <-  DepPepFun(DPfile,NormPep = dim(Data.i)[1],cbPalette = cbPalette))
   }
 }
@@ -264,8 +270,16 @@ thresholds <<- thresholds
 score$Intensity <- ThreshCompare(log10(signif(IntQuan[3])),thresholds$Intensities,type = "quantile",cat = "high")
 
 # check MSMS
-if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))){
-	tempPep <- read.csv(peppath,sep = "\t")
+if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))|length(Peptides) > 0){
+  if(length(Peptides) > 0){
+    if(is.matrix(Peptides)){
+      tempPep <- Peptides
+    }else{    
+      tempPep <- read.csv(peppath,sep = "\t")
+    }
+  }else{
+	  tempPep <- read.csv(peppath,sep = "\t")
+  }
 	tempPep$Missed.cleavages[tempPep$Missed.cleavages > 0] <- 1
 	TempMis <- aggregate(tempPep$Missed.cleavages,list(tempPep$Missed.cleavages),length)
 	val1 <- TempMis[TempMis[,1] == 0,2]
@@ -278,7 +292,7 @@ if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))){
 
 summary.Data$missed.cleavages.percent =as.character(rat)
 
-try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed,quant.range = range(quant.range)))
+try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed,quant.range = range(quant.range),MSMS.Import = MSMS))
 if(!exists("msmsInfo")){
 	msmsInfo <- rep(0,5)
 	msmsInfo <-	list(MSMSint = "nodata",MSMSn = "nodata")

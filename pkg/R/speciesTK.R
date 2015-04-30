@@ -48,10 +48,10 @@ FunChange <- function(Species){
 }
 CDes <- tk2button(tt2,text = "ChangeAll",command = FunChange)
 BDes <- tk2button(tt2,text = "Done",command = function(){tkdestroy(tt2)})
-tkgrid(tt)
+tkgrid(CDes,BDes)
 tkgrid(ttbox,scr)
-tkgrid(CDes)
-tkgrid(BDes)
+tkgrid(tt,columnspan = 5)
+
 tkgrid.configure(scr,sticky="ns")
 tkwait.window(tt2)
 }

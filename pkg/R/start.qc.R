@@ -5,7 +5,10 @@ function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOu
 require(tcltk)	
 #tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))50  
  
- 
+ #reading data 
+# Peptides
+
+
 cat("\rLoading data",rep(" ",100))
 
 if(!is.null(DataEvidence)){
@@ -71,6 +74,28 @@ if(!is.na(n)){
 
 list.collect <- list(length=length(rep.v))
 a <- 1
+#### Test Preread Tables, should fasten readout
+print(.path)
+
+check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
+if(check){
+  cat("\rLoading peptides",rep(" ",100))
+  Peptides <- read.csv(peppath,sep = "\t")
+}else{Peptides <- NULL}
+# AllPeptides 
+check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
+if(check){    
+  cat("\rLoading AllPeptides",rep(" ",100))
+  AllPeptides <- read.csv(peppath,sep = "\t",stringsAsFactors = F)
+}else{AllPeptides = NULL}
+# MSMS 
+check <- file.exists(peppath<- paste(.path,"msms.txt",sep = "/"))
+if(check){
+  cat("\rLoading MSMS",rep(" ",100))  
+  MSMS <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+}else{
+  MSMS <- NULL
+}
 
 
 for(i in rep.v){
@@ -84,7 +109,7 @@ cat("\rstarting qc.prepare",rep(" ",100))
 # Calculation of Scores
 ####
 
-tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings)))
+tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
 export 	<- unlist(qc.prepare.data$sd)
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))

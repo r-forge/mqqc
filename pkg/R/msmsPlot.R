@@ -1,11 +1,12 @@
 msmsPlot <- 
-function(pdfOut = T,path = "./", RawFilesUsed = NULL, quant.range = NULL){
+function(pdfOut = T,path = "./", RawFilesUsed = NULL, quant.range = NULL,MSMS.Import= NULL){
 msmsPath <- list.files(path, pattern="msms.txt",full.name = T)
 if(length(msmsPath) > 0){
 	
 
-	
+	if(length(MSMS)== 0){
 	MSMS.Import <- read.table(msmsPath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+	}
 	Header <- colnames(MSMS.Import)
 	colnames(MSMS.Import) <- tolower(make.names(colnames(MSMS.Import)))
 	#colnames(MSMS.Import) <- tolower(make.names(MSMS.Import[1,]))
