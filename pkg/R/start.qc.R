@@ -2,101 +2,142 @@ start.qc <-
 function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769")
 {
 #DataEvidence <- NULL
-require(tcltk)	
-#tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))50  
- 
- #reading data 
-# Peptides
+  require(tcltk)	
+  #tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))50  
+   
+   #reading data 
+  # Peptides
+  
+  
+  cat("\rLoading data",rep(" ",100))
+  
+  if(!is.null(DataEvidence)){
+  	if(is.vector(DataEvidence)){
+  		SourceTime <- file.info(DataEvidence)$ctime
+  		.path <- dirname(DataEvidence)
+  		.name <- basename(DataEvidence)
+  		evidence.path <- DataEvidence
+  		tryError <- class(try(DataEvidence <- read.csv(DataEvidence,sep = "\t",stringsAsFactors = F)))
+  	}else{
+  		.path <- getwd()
+  		.name <- "unknown"
+  	}	
+  	}else{
+  
+  library(tcltk)
+  	evidence.path <- file.choose()
+  	SourceTime <- file.info(evidence.path)$ctime
+  
+  	tryError <- class(try(DataEvidence <- read.csv(evidence.path,sep = "\t",stringsAsFactors = F)))
+  	.path <- dirname(evidence.path)
+  	.name <- basename(evidence.path)
+  }
+  cat("\rData loaded",rep(" ",100))
+  
+  setwd(.path)
+  dir.create(.folder <- paste("mqqc",Sys.Date(),sep = "_"))
+  setwd(.folder)
+  
+  if(tryError == "try-error"){
+                  Export <- "Name,System.Time.s,System.Time,msms.count,uniPepCount,ret.peak.shape.0%,ret.peak.shape.25%,ret.peak.shape.50%,ret.peak.shape.75%,ret.peak.shape.100%,ret.width.0%,ret.width.25%,ret.width.50%,ret.width.75%,ret.width.100%,ret.max,total.msms.min,quan.msms.min,mass.error.cal.0%,mass.error.cal.25%,mass.error.cal.50%,mass.error.cal.75%,mass.error.cal.100%,mass.error.uncal.0%,mass.error.uncal.25%,mass.error.uncal.50%,mass.error.uncal.75%,mass.error.uncal.100%,quan.duplicates,quan.duplicates.msms,score.0%,score.25%,score.50%,score.75%,score.100%,quanRetRSD,quanRetSlope.x,RatioIQuan.75%,quanRet50ratio.50%,Intensity.0%,Intensity.25%,Intensity.50%,Intensity.75%,Intensity.100%,missed.cleavages.percent,msmsQuantile.0%,msmsQuantile.25%,msmsQuantile.50%,msmsQuantile.75%,msmsQuantile.100%,msmsMassCount.0%,msmsMassCount.25%,msmsMassCount.50%,msmsMassCount.75%,msmsMassCount.100%,Coverage,msmsEff,TotalScore.MS,TotalScore.MSMS,TotalScore.LC,TotalScore.Total,TotalScoreColor.MS,TotalScoreColor.MSMS,TotalScoreColor.LC,TotalScoreColor.Total,exitPath,SourceTime,Status"
+                  Export <- unlist(strsplit(Export,","))
+                  TempInfo <- t(as.matrix(rep(NA,length(Export))))
+                  colnames(TempInfo) <- Export
+                  TempInfo[1,grep("exitPath",colnames(TempInfo))] <- paste(unlist(dirname(dirname(.path))),.name,sep = "/",collapse = "/")
+                  TempInfo[1,grep("^Name$",colnames(TempInfo))] <- basename(dirname(dirname(.path)))
+                  TempInfo[1,grep("^SourceTime$",colnames(TempInfo))] <- as.numeric(Sys.time())
+                  TempInfo[1,grep("^System.Time.s$",colnames(TempInfo))] <- as.numeric(Sys.time())
+                  TempInfo[1,grep("^System.Time$",colnames(TempInfo))] <- as.numeric(Sys.time())
+                  
+                  try(write.csv(TempInfo,paste(basename(dirname(dirname(.path))),".csv",sep = ""),quote = F,row.names = F))
+                  return(NULL)
+                  
+  }
+  
+  
+  	
+  raw.files 		<- grep("raw.file",tolower(colnames(DataEvidence)),)
+  raw.files.str 	<- unique(DataEvidence[,raw.files])
+  rep.v <- raw.files.str
+  
+  
+  if(!is.na(n)){
+  	if(is.numeric(n)){
+  		rep.v <- raw.files.str[n]
+  	}
+  	if(is.character(n)){
+  		rep.v <- n
+  	}
+  }
+  
+  
+  
+  list.collect <- list(length=length(rep.v))
+  a <- 1
+  #### Test Preread Tables, should fasten readout
+  print(.path)
+  
+  check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
+  if(check){
+    cat("\rLoading peptides",rep(" ",100))
+    Peptides <- read.csv(peppath,sep = "\t")
+  }else{Peptides <- NULL}
+  # AllPeptides 
+  check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
+  if(check){    
+    cat("\rLoading AllPeptides",rep(" ",100))
+    AllPeptides <- read.csv(peppath,sep = "\t",stringsAsFactors = F)
+  }else{AllPeptides = NULL}
+  # MSMS 
+  check <- file.exists(peppath<- paste(.path,"msms.txt",sep = "/"))
+  if(check){
+    
+#     ReadBigSubset <- function(x,select = NULL){
+#     
+#     ##read in data one line at a time
+#     
+#     source <- file(x, "r")
+#       
+#     header = readLines(x,n = 1)
+#     header = unlist(strsplit(header,"\t"))
+#     header = make.names(header)
+#     if(length(select > 0)){
+#      headerGrep <- sapply(select,function(x){grep(paste("^",x,"$",sep = ""),header)})
+#     }else{headerGrep <- 1:length(header)}
+#     #when reading from a connection, readLines jumps to a second line/block after each execution
+#     readOut <- c()
+#     while (length(line <- readLines(source, n=1, warn=FALSE)) > 0){
+#       line<- unlist(strsplit(line,"\t"))[headerGrep]
+#       readOut <- rbind2(readOut,line)
+#     }
+#     close(source)
+#     return(readOut)
+#     }
+#     
+#     ReadBigSubset <- function(x,select = NULL){
+#       temp <- readLines(x)
+#       header = unlist(strsplit(temp[1],"\t"))
+#       header = make.names(header)
+#       if(length(select > 0)){
+#         headerGrep <- sapply(select,function(x){grep(paste("^",x,"$",sep = ""),header)})
+#       }else{headerGrep <- 1:length(header)}
+#       retVal <- lapply(temp,function(x){
+#         unlist(strsplit(x,"\t"))[headerGrep]
+#       })
+#       
+#     }
+    MSMS <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+    # subset
+    #raw.file intensities
+    MSMS <- subset(MSMS,select = c("Raw.file","Intensities"))
+    
+  }else{
+    MSMS <- NULL
+  }
 
-
-cat("\rLoading data",rep(" ",100))
-
-if(!is.null(DataEvidence)){
-	if(is.vector(DataEvidence)){
-		SourceTime <- file.info(DataEvidence)$ctime
-		.path <- dirname(DataEvidence)
-		.name <- basename(DataEvidence)
-		evidence.path <- DataEvidence
-		tryError <- class(try(DataEvidence <- read.csv(DataEvidence,sep = "\t",stringsAsFactors = F)))
-	}else{
-		.path <- getwd()
-		.name <- "unknown"
-	}	
-	}else{
-
-library(tcltk)
-	evidence.path <- file.choose()
-	SourceTime <- file.info(evidence.path)$ctime
-
-	tryError <- class(try(DataEvidence <- read.csv(evidence.path,sep = "\t",stringsAsFactors = F)))
-	.path <- dirname(evidence.path)
-	.name <- basename(evidence.path)
-}
-cat("\rData loaded",rep(" ",100))
-
-setwd(.path)
-dir.create(.folder <- paste("mqqc",Sys.Date(),sep = "_"))
-setwd(.folder)
-
-if(tryError == "try-error"){
-                Export <- "Name,System.Time.s,System.Time,msms.count,uniPepCount,ret.peak.shape.0%,ret.peak.shape.25%,ret.peak.shape.50%,ret.peak.shape.75%,ret.peak.shape.100%,ret.width.0%,ret.width.25%,ret.width.50%,ret.width.75%,ret.width.100%,ret.max,total.msms.min,quan.msms.min,mass.error.cal.0%,mass.error.cal.25%,mass.error.cal.50%,mass.error.cal.75%,mass.error.cal.100%,mass.error.uncal.0%,mass.error.uncal.25%,mass.error.uncal.50%,mass.error.uncal.75%,mass.error.uncal.100%,quan.duplicates,quan.duplicates.msms,score.0%,score.25%,score.50%,score.75%,score.100%,quanRetRSD,quanRetSlope.x,RatioIQuan.75%,quanRet50ratio.50%,Intensity.0%,Intensity.25%,Intensity.50%,Intensity.75%,Intensity.100%,missed.cleavages.percent,msmsQuantile.0%,msmsQuantile.25%,msmsQuantile.50%,msmsQuantile.75%,msmsQuantile.100%,msmsMassCount.0%,msmsMassCount.25%,msmsMassCount.50%,msmsMassCount.75%,msmsMassCount.100%,Coverage,msmsEff,TotalScore.MS,TotalScore.MSMS,TotalScore.LC,TotalScore.Total,TotalScoreColor.MS,TotalScoreColor.MSMS,TotalScoreColor.LC,TotalScoreColor.Total,exitPath,SourceTime,Status"
-                Export <- unlist(strsplit(Export,","))
-                TempInfo <- t(as.matrix(rep(NA,length(Export))))
-                colnames(TempInfo) <- Export
-                TempInfo[1,grep("exitPath",colnames(TempInfo))] <- paste(unlist(dirname(dirname(.path))),.name,sep = "/",collapse = "/")
-                TempInfo[1,grep("^Name$",colnames(TempInfo))] <- basename(dirname(dirname(.path)))
-                TempInfo[1,grep("^SourceTime$",colnames(TempInfo))] <- as.numeric(Sys.time())
-                TempInfo[1,grep("^System.Time.s$",colnames(TempInfo))] <- as.numeric(Sys.time())
-                TempInfo[1,grep("^System.Time$",colnames(TempInfo))] <- as.numeric(Sys.time())
-                
-                try(write.csv(TempInfo,paste(basename(dirname(dirname(.path))),".csv",sep = ""),quote = F,row.names = F))
-                return(NULL)
-                
-}
-
-
-	
-raw.files 		<- grep("raw.file",tolower(colnames(DataEvidence)),)
-raw.files.str 	<- unique(DataEvidence[,raw.files])
-rep.v <- raw.files.str
-
-
-if(!is.na(n)){
-	if(is.numeric(n)){
-		rep.v <- raw.files.str[n]
-	}
-	if(is.character(n)){
-		rep.v <- n
-	}
-}
-
-
-
-list.collect <- list(length=length(rep.v))
-a <- 1
-#### Test Preread Tables, should fasten readout
-print(.path)
-
-check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
-if(check){
-  cat("\rLoading peptides",rep(" ",100))
-  Peptides <- read.csv(peppath,sep = "\t")
-}else{Peptides <- NULL}
-# AllPeptides 
-check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
-if(check){    
-  cat("\rLoading AllPeptides",rep(" ",100))
-  AllPeptides <- read.csv(peppath,sep = "\t",stringsAsFactors = F)
-}else{AllPeptides = NULL}
-# MSMS 
-check <- file.exists(peppath<- paste(.path,"msms.txt",sep = "/"))
-if(check){
-  cat("\rLoading MSMS",rep(" ",100))  
-  MSMS <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
-}else{
-  MSMS <- NULL
-}
-
+  
+  
+  
 
 for(i in rep.v){
 ####

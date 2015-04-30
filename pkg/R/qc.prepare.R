@@ -385,7 +385,7 @@ score$score <- ThreshCompare(summary.Data$score[3],thresholds$score)
 # score nlc
 score$peak.shape 	<- ThreshCompare(log2(summary.Data$ret.peak.shape[3]),thresholds$ret.peak.shape,type = "quantile",cat = "fixed")
 
-score$ret.width 	<- ThreshCompare((summary.Data$ret.width[c(3)]),thresholds$ret.width[1])
+score$ret.width 	<- ThreshCompare((summary.Data$ret.width[c(3)]),thresholds$ret.width,type = "quantile",cat = "low")
 
 score$quan.duplicates.msms 	<- ThreshCompare(summary.Data$quan.duplicates.msms,thresholds$quan.duplicates.msms)
 

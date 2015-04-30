@@ -75,3 +75,4 @@ write(c(HtmlHeader,Tables, endHtml),paste(htmloutPath,"MqqcRunningFileInfo.html"
 #system(paste("open ",paste(htmloutPath,"MqqcRunningFileInfo.html",sep = "/")))
 }
 #ProgressTracker(folders)
+

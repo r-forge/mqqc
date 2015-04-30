@@ -4,8 +4,9 @@ msmsPath <- list.files(path, pattern="msms.txt",full.name = T)
 if(length(msmsPath) > 0){
 	
 
-	if(length(MSMS)== 0){
+	if(length(MSMS.Import)== 0){
 	MSMS.Import <- read.table(msmsPath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+  # using raw.file intensities
 	}
 	Header <- colnames(MSMS.Import)
 	colnames(MSMS.Import) <- tolower(make.names(colnames(MSMS.Import)))

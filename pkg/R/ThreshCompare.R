@@ -19,6 +19,21 @@ function(sig,ref,cat = "high",type = "single",log = T){ # cat = "fixed"|"high"|l
     return(signorm/refnorm)
     }
   }
+if(cat == "low" & type == "quantile"){
+  if(log){
+    signorm <- sig - ref[3]
+    refnorm <- ref[1] - ref[3]
+    res <- signorm/refnorm
+    if(res < 0){return(0)}
+    return(res)
+  }
+  if(!log){
+    signorm <- sig /ref[3]
+    refnorm <- ref[1]/ref[3]
+    if(signorm < 0){return(0)}
+    return(signorm/refnorm)
+  }
+}
   if(cat == "fixed" & type == "quantile"){
     if(log){
       if(sig < ref[1]){
@@ -36,6 +51,7 @@ function(sig,ref,cat = "high",type = "single",log = T){ # cat = "fixed"|"high"|l
   return(0)
 }
 
-
+#print(ThreshCompare(1,c(0.3,0,1),type = "quantile",cat = "low",log = T)
+#)
 #print(score$peak.shape   <- ThreshCompare(log2(summary.Data$ret.peak.shape[3]),thresholds$ret.peak.shape,type = "quantile",cat = "fixed")
 #)
