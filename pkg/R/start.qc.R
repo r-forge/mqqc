@@ -129,13 +129,13 @@ function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOu
     MSMS <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
     # subset
     #raw.file intensities
-    MSMS <- subset(MSMS,select = c("Raw.file","Intensities"))
+    #MSMS <- subset(MSMS,select = c("Raw.file","Intensities"))
     
   }else{
     MSMS <- NULL
   }
 
-  
+cat("MSMS",dim(MSMS),"ALLP",dim(AllPeptides),"Peptides",dim("Peptides"))
   
   
 
@@ -275,3 +275,4 @@ setwd(.path)
 }
 #start.qc()
 #system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))
+#LoadSettings(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769")

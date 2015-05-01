@@ -15,7 +15,13 @@ function(hotFolder, match = "evimsms", sucFolder)
   	if(length(folders)> 0){
       
  	tempI <- list.files(folders,pattern = "Finish_writing_tables 11.finished",full.name = T,recursive = T)
- 	#tempI <- paste(folders, tempI,sep = "")
+ 	if(length(tempI) == 0){
+ 	  tempI <- list.files(folders,pattern = "evidence.txt",full.name = T,recursive = T)
+    tempInoproc <- file.exists(paste(dirname(dirname(tempI)),"proc",sep = "/"))
+    tempI <- tempI[!tempInoproc]
+ 	}
+  tempI <- grep(paste(folders,"_RmqqcFile_",sep = "/"),tempI,invert = T,value = T)
+  #tempI <- paste(folders, tempI,sep = "")
   #finishTables  <- list.files(paste(dirname(dirname(tempI)),"proc",sep = "/"),pattern = "Finish_writing_tables 11.finished",full.name = T)
 
   if(match == "evimsms"& length(tempI) > 0 ){
@@ -51,4 +57,4 @@ function(hotFolder, match = "evimsms", sucFolder)
   return(mqqcInfo)
 }
 
-print(evidenceCheck(hotFolder = "/Users/henno/temp/",sucFolder = "/"))
+#print(evidenceCheck(hotFolder = "/Users/henno/temp/",sucFolder = "/"))

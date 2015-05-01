@@ -108,14 +108,16 @@ RawFilesUsed <- unique(Data.i$raw.file)
 summary.Data$DependentPeptides <- NULL
 if(all(1)){
   #print("Dependent")
+
   if(file.exists(DPfile<<- paste(path,"allPeptides.txt",sep = "/"))|length(AllPeptides) > 0){
 DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette = rainbow(10)){ 
-                if(!is.matrix(x)){
-                DPlines     <- read.csv(x,sep = "\t",stringsAsFactors = F)}
+                if(!is.data.frame(x)){
+                DPlines     <- read.csv(x,sep = "\t",stringsAsFactors = F)}else{DPlines <- x}
                 DPlinesSig  <- DPlines[as.numeric(DPlines$"DP.PEP") < 0.01,]
                 DPlinesSig$DP.Modification[DPlinesSig$DP.Modification == ""] <- "unknown"
+                if(dim(DPlinesSig)[1] > 0){
+                  
                 Val <- aggregate(DPlinesSig$DP.Mass.Difference,list(DPlinesSig$DP.Modification),function(x){c(length(x),median(x,na.rm = T))})
-                if(dim(Val)[1] > 0){
                 ValR <- Val[[2]]
                 rownames(ValR) <- Val[,1] 
                 if(!unknowns){
@@ -158,11 +160,11 @@ DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette 
             }
 summary.Data$DependentPeptides  <- "No DP Peptides found."
 if(length(AllPeptides) > 0){
-  if(is.matrix(AllPeptides)){
+  if(is.matrix(AllPeptides)|is.data.frame(AllPeptides)){
     DPfile <- AllPeptides
   }
 }
-try(summary.Data$DependentPeptides <-  DepPepFun(DPfile,NormPep = dim(Data.i)[1],cbPalette = cbPalette))
+try(summary.Data$DependentPeptides <-  DepPepFun(DPfile,NormPep = dim(Data.i)[1],cbPalette = cbPalette,filename = filename))
   }
 }
 
@@ -243,7 +245,6 @@ summary.Data$quanRet50ratio <- diff(tempQuan[c(2,3)])/diff(tempQuan[c(3,4)])
 
 
 
-print("hui")
 score$quanRetRSD 		  <- 	ThreshCompare(summary.Data$quanRetRSD,thresholds$quanRetRSD,type = "single")
 s <<- summary.Data$quanRetRSD
 r <<- thresholds$quanRetRSD
@@ -272,7 +273,7 @@ score$Intensity <- ThreshCompare(log10(signif(IntQuan[3])),thresholds$Intensitie
 # check MSMS
 if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))|length(Peptides) > 0){
   if(length(Peptides) > 0){
-    if(is.matrix(Peptides)){
+    if(is.data.frame(Peptides)){
       tempPep <- Peptides
     }else{    
       tempPep <- read.csv(peppath,sep = "\t")
