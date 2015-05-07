@@ -1,5 +1,6 @@
 ThreshCompare <- 
 function(sig,ref,cat = "high",type = "single",log = T){ # cat = "fixed"|"high"|lower
+  if(is.na(sig)){return(0)}
   if(type == "single"){
 #     sig <<- sig
 #     ref <<- ref

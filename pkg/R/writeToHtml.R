@@ -337,10 +337,48 @@ for(i in 1:length(Order)){
 tabTopParCo <- paste("
 
      <div class=\"tabbertab\">
-	  <h2> Parameter Comparisons </h2>")
+	  <h2> Machine Metric Comparisons </h2>")
 	  
 tabParCo <- paste(tabTopParCo, collVecParCo,"</div>",sep = "\n")
+######
+# density comparissons
+######
 
+#####
+# All Comparisons
+#####
+ComparisonFiles <- list.files(paste(dirname(path),"TimeLines",sep = "/"),pattern = "^DensityEstimates.*.pdf$")
+if(length(ComparisonFiles) > 0){
+  Order <- sapply(c("^DensityEstimates_Complex","^DensityEstimates_LowComplex","^DensityEstimates_Normal"),grep, ComparisonFiles)
+  ComparisonFiles <- paste(".","TimeLines", ComparisonFiles,sep = "/")
+  collVecDensCo <- c()
+  for(i in 1:length(Order)){
+    if(length(unlist(Order[i])) > 0){
+      tempI 			<- ComparisonFiles[unlist(Order[i])]
+      nameComp 	<- "Platzhalter"
+      if(i == 1){nameComp <- "High complex standard"}
+      if(i == 2){nameComp <- "Low complex standard"}
+      if(i == 3){nameComp <- "Samples"}
+      
+      header 			<- paste("<h1>",nameComp,"</h1>")
+      pdfPath	<- paste("<embed src=\"", tempI,"\" width = \"",width,"\" height = \"",height , "\">",sep = "")
+      jpgPath <- paste(	"<img src=\"",gsub("pdf$","jpg", tempI),"\" width=\"", width,"\" alt=\"MQQCComparison\">",sep = "")
+      
+      PdfLink <- paste("<a href=\"", tempI,"\" target=\"_blank\">", jpgPath,"</a>",sep = "")
+      
+      hui 				<- paste(header, PdfLink ,sep = "\n")
+      collVecDensCo 	<- paste(collVecDensCo,hui,sep = "\n")
+    }
+  }
+}else{
+  collVecDensCo <- "NO DATA"
+}
+tabTopDensCo <- paste("
+
+     <div class=\"tabbertab\">
+	  <h2> Machine Metrics Readback </h2>")
+
+tabDensCo <- paste(tabTopDensCo, collVecDensCo,"</div>",sep = "\n")
 #====================================================================================
 if(StandardIDs[1] == ""){
 	tab4 = ""
@@ -359,10 +397,11 @@ finalHtml <- 	paste(initHtml,
 				paste(tab4,collapse = ""), # ECstd
 				paste(tab5,collapse = ""), # BSA
 				paste(tab3,collapse = ""), # All
-				tab1,						# LiveViewEcoli
+				#tab1,						# LiveViewEcoli
 				#tab2,						# 
 				tabTL,						# Timeline EC
 				tabParCo,					# Parameter Comparison
+				tabDensCo,
 				endHtml,
 				
 	"<div style=\"float:right\"><br><a href = \"./disclaimer.html\" target = \"_blank\"> MQQC can be used under the terms of the  GNU General Public License  </a></div> 
@@ -396,7 +435,7 @@ write(disclaimer,file =paste(dirname(path),"disclaimer.html",sep = "/"))
 #print(path)
 #system(paste("open",path))
 }
-#try(  FUNFINAL(StandardIDs = c("",""),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
+#try(  FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 #finalMQQC = htmloutPath
 #StandardIDs <- c("","")
 #Machines = "hui"

@@ -98,6 +98,7 @@ colnames(Data) <- tolower(colnames(Data))
 raw.files <- grep.col("raw.file",Data)
 
 # to make sure that only one file is processed
+Data$reverse[is.na(Data$reverse)] <- ""
 Data.i  <- Data[unique(Data[,raw.files])[selectedFile] == Data[,raw.files],]
 Data.i  <- Data.i[Data.i$reverse != "+",]
 #Data.i <<- Data.i
@@ -142,6 +143,7 @@ DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette 
                 if(dim(ValR)[1] > 5){
                   ValR <- ValR[1:5,]
                 }
+                if(ValRsum != 0){
                 pdf(paste(paste("DepPepPie",filename,sep = "_"),".pdf",sep = ""),width =width)
                 if(length(NormPep) > 0){
                   par(mfrow = c(1,2))
@@ -155,8 +157,9 @@ DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette 
                 }
                 
                 dev.off()
-
-               return( paste(apply(cbind(rownames(ValR),ValR),1,paste,collapse = "##"),sep = " ",collapse = "_#_")) 
+                return( paste(apply(cbind(rownames(ValR),ValR),1,paste,collapse = "##"),sep = " ",collapse = "_#_")) 
+                
+                }else{return("No DP Peptides found.")}
             }
 summary.Data$DependentPeptides  <- "No DP Peptides found."
 if(length(AllPeptides) > 0){
@@ -220,9 +223,13 @@ summary.Data$quan.duplicates 		<- double
 summary.Data$quan.duplicates.msms 	<- double/length(grep("MSMS",Data.i.quant$type))
 summary.Data$score<- quantile(Data.i$score,na.rm = T)
 # sd interquantile
+print("HUI")
 
-temp 		  <- density(Data.i$calibrated.retention.time)
-tempQuan 	<- quantile(Data.i$calibrated.retention.time) 
+if(length(Data.i$calibrated.retention.time[!is.na(Data.i$calibrated.retention.time)])> 1){
+  print("HUI")
+  tempQuan   <- quantile(Data.i$calibrated.retention.time,na.rm = T)
+  
+try(temp   	  <- density(Data.i$calibrated.retention.time))
 
 
 x <- temp$x
@@ -235,6 +242,10 @@ y<<- y
 x<<- x
 try(slope <- coefficients(lm(scale(y)~x))[2])
 rSDquanRet				<- sd(ySel)/median(ySel)
+}else{
+  rSDquanRet <- NA
+  slope <- NA
+}
 summary.Data$quanRetRSD <- rSDquanRet
 summary.Data$quanRetSlope <- slope
 tempQuan <<- tempQuan
@@ -403,7 +414,7 @@ score$combiMSMS <- mean(MSvec)
 nLCvec <- c(score$nLCcombi,score$peak.shape,score$ret.width)
 nLCvec[nLCvec > 1] <- 1
 score$LCcombi <- mean(nLCvec)
-
+summary.Data$LCcombiScore <- mean(nLCvec)
 
 # efficiency 
 # if(length(msmsEff) == 1){
@@ -413,5 +424,8 @@ score$LCcombi <- mean(nLCvec)
 return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant))
 }
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
+#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
 
+#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
+#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
 

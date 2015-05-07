@@ -83,7 +83,7 @@ function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOu
     Peptides <- read.csv(peppath,sep = "\t")
   }else{Peptides <- NULL}
   # AllPeptides 
-  check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
+  check <- file.exists(peppath<- paste(.path,"allPeptides.txt",sep = "/"))
   if(check){    
     cat("\rLoading AllPeptides",rep(" ",100))
     AllPeptides <- read.csv(peppath,sep = "\t",stringsAsFactors = F)
@@ -135,7 +135,7 @@ function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOu
     MSMS <- NULL
   }
 
-cat("MSMS",dim(MSMS),"ALLP",dim(AllPeptides),"Peptides",dim("Peptides"))
+cat("MSMS",dim(MSMS),"ALLP",dim(AllPeptides),"Peptides",dim(Peptides))
   
   
 
