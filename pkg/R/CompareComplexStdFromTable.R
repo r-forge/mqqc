@@ -178,16 +178,18 @@ for(i in unique(DensMatrixTemplate[,4])){
     plot(1,type = "n",ylim = c(0,1) ,xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
     
   }
+  itCompare <<- 0
   sapply(OrderFun,function(x){
-    trye <- class(try(points(temp[[2]][x,],col = LegFun$col[x],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
+    itCompare <<- itCompare+1
+    trye <- class(try(points(temp[[2]][x,],col = LegFun$col[itCompare],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
     if(trye!="try-error"){
     hui <- temp[[2]][x,]
     xl<- median(tempM[x,2],na.rm = T)
     #abline(v = xl<- median(tempM[x,2],na.rm = T),col = LegFun$col[x],lty = "dotted")
     subvec <- abs(xl -hui$x) 
     yl <- hui$y[subvec == min(subvec,na.rm = T)][1]
-    lines(c(xl,xl),c(0,yl),col = LegFun$col[x],lty = "dotted")
-    axis(1,at = xl,col = LegFun$col[x],label = "")
+    lines(c(xl,xl),c(0,yl),col = LegFun$col[itCompare],lty = "dotted")
+    axis(1,at = xl,col = LegFun$col[itCompare],label = "")
     }
   })
   
@@ -212,9 +214,11 @@ legend("left"
 dev.off()
 #system(paste("open",pdfName))
 }
-#try(CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = "ECstd",PDF = T, Machines = Machines,StandardIDs = StandardIDs))
+#try(CompareComplexStdFromTable(collectList[BSA,],RESettings,T,finalMQQC, PDFname = "LowComplexStandardComparison.pdf", TargetVec = StandardIDs[2],PDF = T, Machines = Machines))
 
 #try(CompareComplexStdFromTable(tempListOne = collectList[,],RESettings = RESettings,pdfShow = T,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = "ECstd",PDF = T, Machines = Machines,StandardIDs = StandardIDs))
 
-#try(CompareComplexStdFromTable(tempListOne = collectList[BSA,],RESettings = RESettings,pdfShow = T,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = "BSA",PDF = T, Machines = Machines))
+#try(CompareComplexStdFromTable(tempListOne = collectList,RESettings = RESettings,pdfShow = T,finalMQQC = htmloutPath, PDFname = "ComplexStandardComparison.pdf",PDF = T))
+
+
 

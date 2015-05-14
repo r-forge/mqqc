@@ -144,13 +144,20 @@ for(i in rep.v){
 # Subset evidence
 ####
 temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.character(i),]	
+
+temp.DataEvidence <- temp.DataEvidence
 cat("\rstarting qc.prepare",rep(" ",100))
 
-####
+try(tempAllPeptides <- AllPeptides[AllPeptides$Raw.file  == i,])
+try(tempMSMS <<- MSMS[MSMS$Raw.file  == i,])
+
+####funfin
 # Calculation of Scores
 ####
-
-tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
+if(length(AllPeptides) > 0){
+try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i))
+}
+tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
 export 	<- unlist(qc.prepare.data$sd)
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))

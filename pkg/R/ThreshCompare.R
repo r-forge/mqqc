@@ -1,5 +1,7 @@
 ThreshCompare <- 
 function(sig,ref,cat = "high",type = "single",log = T){ # cat = "fixed"|"high"|lower
+  sig <- sig
+  if(length(sig) == 0){return(0)}
   if(is.na(sig)){return(0)}
   if(type == "single"){
 #     sig <<- sig
@@ -51,7 +53,6 @@ if(cat == "low" & type == "quantile"){
   }
   return(0)
 }
-
 #print(ThreshCompare(1,c(0.3,0,1),type = "quantile",cat = "low",log = T)
 #)
 #print(score$peak.shape   <- ThreshCompare(log2(summary.Data$ret.peak.shape[3]),thresholds$ret.peak.shape,type = "quantile",cat = "fixed")
