@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaxQuantParams xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" aifSilWeight="4" aifIsoWeight="2" aifTopx="20" aifCorrelation="0.47" aifCorrelationFirstPass="0.8" aifMinMass="0" aifMsmsTol="10" aifSecondPass="true" aifIterative="true" aifThresholdFdr="0.01" writeMsScansTable="false" writeMsmsScansTable="false" writeMs3ScansTable="false" writeAllPeptidesTable="false" writeMzRangeTable="false">
+<MaxQuantParams xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" aifSilWeight="4" aifIsoWeight="2" aifTopx="20" aifCorrelation="0.47" aifCorrelationFirstPass="0.8" aifMinMass="0" aifMsmsTol="10" aifSecondPass="true" aifIterative="true" aifThresholdFdr="0.01" writeMsScansTable="false" writeMsmsScansTable="false" writeMs3ScansTable="false" writeAllPeptidesTable="true" writeMzRangeTable="false">
    <name>Session1</name>
    <maxQuantVersion>1.5.2.8</maxQuantVersion>
    <tempFolder />
@@ -131,8 +131,8 @@
    <matchBetweenRunsFdr>false</matchBetweenRunsFdr>
    <reQuantify>false</reQuantify>
    <dependentPeptides>false</dependentPeptides>
-   <dependentPeptideFdr>0</dependentPeptideFdr>
-   <dependentPeptideMassBin>0</dependentPeptideMassBin>
+   <dependentPeptideFdr>0.01</dependentPeptideFdr>
+   <dependentPeptideMassBin>0.0065</dependentPeptideMassBin>
    <msmsConnection>false</msmsConnection>
    <ibaq>false</ibaq>
    <useDeltaScore>false</useDeltaScore>
@@ -145,7 +145,7 @@
    <massDifferenceSearch>false</massDifferenceSearch>
    <minPepLen>7</minPepLen>
    <peptideFdr>0.01</peptideFdr>
-   <proteinFdr>0.01</proteinFdr>
+   <proteinFdr>0.0065</proteinFdr>
    <siteFdr>0.01</siteFdr>
    <minPeptideLengthForUnspecificSearch>8</minPeptideLengthForUnspecificSearch>
    <maxPeptideLengthForUnspecificSearch>25</maxPeptideLengthForUnspecificSearch>
