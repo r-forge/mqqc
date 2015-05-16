@@ -92,11 +92,11 @@ if(file.exists(collectListPath)){
 	  
 	  
 	}  
-	InitList <<- InitList
+	#InitList <<- InitList
 	collectListAll <- list()
 	collectListLife <- list()	
   
-	if(Machines == "NA"){
+	if(Machines == "NA"|all(Machines== "") ){
 	  Names <- grepRE(as.character(collectList$Name),RESettings$REmac)
 	  Machines = unique(Names)
 	  
@@ -185,13 +185,12 @@ if(file.exists(collectListPath)){
 			}
       }
 			
-						file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC, StandardIDs[1],paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
+						file.copy(FCheck <-gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC, StandardIDs[1],paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
 
 			}else{
-				file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC,"all",paste(iNames,".pdf",sep = ""),sep = "/"),overwrite = T)
+				file.copy(FCheck <-gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC,"all",paste(iNames,".pdf",sep = ""),sep = "/"),overwrite = T)
 
 			}
-			
 			
 			
 		}
@@ -283,37 +282,50 @@ if(any(!FileExists) ){
 ### Move PDFs Types
 
 #file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
-
+if(length(ToMove) > 0){
 ToMoveInit <- ToMove
 ToMove <- paste(dirname(ToMoveInit),paste("MSMS_Dens_",basename(ToMoveInit),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
-file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
-
+file.copy(ToMove,Fcheck<<- paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
+try(Fcheck <- file.exists(Fcheck))
 ToMove <- paste(dirname(ToMoveInit),paste("DepPepPie_",basename(ToMoveInit),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
-SucDP <- file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T)
-
+SucDP <- file.copy(ToMove,Dcheck<<- paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T)
+try(Dcheck <- file.exists(Dcheck))
 ToMove <- paste(dirname(ToMoveInit),paste("chromatogram_",basename(ToMoveInit),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
-Chrom <- file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T)
-
+Chrom <- file.copy(ToMove,Ccheck<<- paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T)
+try(Ccheck <- file.exists(Ccheck))
+}
 }
 #if(length(pathPdf) > 0){}
 tempPaths 				<- paste(".",htmlPdfFold,basename(pathPdf),sep = "/")
 tempPathsDepPepPie2 	<- paste(".", htmlPdfFold,basename(pathDepPepPie),sep = "/")
 pathChrom2   <- paste(".", htmlPdfFold,basename(pathChrom),sep = "/")
-
+#if(exists("Fcheck")){
+#tempPaths[!file.exists(pathPdf)] <- ""  
+#tempPathsDepPepPie2[!file.exists(pathDepPepPie)] <- ""
+#pathChrom2[!file.exists(pathChrom)] <- ""
+#}
 collectListSorted$System.Time <- substr(collectListSorted$System.Time,2,nchar(as.character(collectListSorted$System.Time)))
 substr(collectListSorted$System.Time , 11, 12) <- " "
 if(length(pathPdf) >0){
 #tempPathsMsMs <-as.vector(as.matrix(tempPaths)[2,])
-tempPaths <- paste("<a href ='", tempPaths,"' target ='_blank' >MQQC</a>",sep = "")
+  tempPaths <- tempPaths
+tempPathsLog <- file.exists(Hui <<- paste(finalMQQC,gsub("^./","",tempPaths),sep = "/"))
+tempPaths <- paste("<a href ='", tempPaths,"' target ='_blank' >QC</a>",sep = "")
+tempPaths[!tempPathsLog] <- ""
+#tempPaths[!tempPathsLog] <- ""
 # DP pie paths
+tempPathsDepPepPie2 <- tempPathsDepPepPie2
+tempPathsDepPepPie2Log <<-file.exists(paste(finalMQQC,gsub("^./","",tempPathsDepPepPie2),sep = "/"))
 tempPathsDepPepPie2 <- paste("<a href ='", tempPathsDepPepPie2,"'  target ='_blank' >DP</a>",sep = "")
-tempPathsDepPepPie2[!SucDP] <- ""
+tempPathsDepPepPie2[!tempPathsDepPepPie2Log] <- ""
 # Chromatogram Paths
-tempPathsChrom2 <- paste("<a href ='", pathChrom2,"'  target ='_blank' >Chrom</a>",sep = "")
-tempPathsChrom2[!Chrom] <- ""
+paste(finalMQQC,"files",sep = "/")
+pathChrom2Log <- file.exists(paste(finalMQQC,gsub("^./","",pathChrom2),sep = "/"))
+tempPathsChrom2 <- paste("<a href ='", pathChrom2,"'  target ='_blank' >CH</a>",sep = "")
+tempPathsChrom2[!pathChrom2Log] <- ""
 
 
 collectListSorted <- as.data.frame(collectListSorted)
@@ -339,18 +351,15 @@ if(length(collectListSorted) == 0){collectListSorted <- matrix(c(rep("NO DATA",l
 if(it ==1){
 	 try(tableHtml2 <-HtmlTable(collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design2"))
 	if(!exists("tableHtml2")){tableHtml2 <- NULL}
-  #print(dim(collectListSorted))
 }
 if(it ==2){
 		 try(tableHtml <- HtmlTable(collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})],  tableDesign = "table-design"))
 		 if(!exists("tableHtml")){tableHtml <- NULL}
-		 #print(dim(collectListSorted))
 		 
 	}
 if(it ==3){
 	 try(tableHtml3 <-HtmlTable(collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design3"))
 	if(!exists("tableHtml3")){tableHtml3 <- NULL}
-	#print(dim(collectListSorted))
 	
 }
 
@@ -396,15 +405,15 @@ try(htmlMod(pathHtml = paste(finalMQQC,"index.html",sep = "/"),Machines = Machin
 cat("\rfinished FUNFINAL function")
 }
 
-#   finalMQQC <- htmloutPath
-#  Param <- mqqcGUI()
+ # Param <- mqqcGUI()
+# folder <- Param$folder
 #  RESettings <- Param[grep("^RE",names(Param))]
-#  StandardIDs = c("","");placeholder = "PLACEHOLDER"
-#  LoadSettings(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_")
-#   LoadSettings(RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" )
-#  funlastLoop = 2
-#  try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = "Gladys"))
-# system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))
+#   StandardIDs = c("","");placeholder = "PLACEHOLDER"
+#   LoadSettings(sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_")
+#    LoadSettings(RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" )
+#   funlastLoop = 3
+#   try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = "Gladys"))
+#  system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))
 #finalMQQC <- finalMQQC
 #sucFolder="_RmqqcFile_Processed"
 

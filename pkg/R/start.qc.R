@@ -149,7 +149,7 @@ temp.DataEvidence <- temp.DataEvidence
 cat("\rstarting qc.prepare",rep(" ",100))
 
 try(tempAllPeptides <- AllPeptides[AllPeptides$Raw.file  == i,])
-try(tempMSMS <<- MSMS[MSMS$Raw.file  == i,])
+try(tempMSMS <- MSMS[MSMS$Raw.file  == i,])
 
 ####funfin
 # Calculation of Scores
@@ -157,6 +157,7 @@ try(tempMSMS <<- MSMS[MSMS$Raw.file  == i,])
 if(length(AllPeptides) > 0){
 try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i))
 }
+LoadSettings(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)
 tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
 export 	<- unlist(qc.prepare.data$sd)
 
@@ -178,7 +179,7 @@ if(length(grep(BSACheck,i)) > 0){
 # Plotting
 ####
 tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
-TotalScoreRes <<- TotalScoreRes
+TotalScoreRes <- TotalScoreRes
 ASCIIplot <- NULL
 try(ASCIIplot <- readLines(list.files(pattern = "ASCIIplot.txt",full.name = T)))
 if(length(ASCIIplot) > 0){
@@ -252,8 +253,8 @@ if(length(MailList) > 0&SendMail){
 	MailPatterns <- sapply(MailList[,1],function(x){gsub(placeholder,x,RESettings$REmail)})
   if(!all(sapply(MailPatterns,length) == 0)){
   MailID <- sapply(MailPatterns ,function(x){
-    x <<- x 
-    xn <<- as.character(export$Name)
+    x <- x 
+    xn <- as.character(export$Name)
 		try(x  <- grep(x,as.character(export$Name),value = F))
 		return(length(x) > 0)
 	})

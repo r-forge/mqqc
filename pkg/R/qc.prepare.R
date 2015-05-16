@@ -109,7 +109,7 @@ summary.Data$DependentPeptides <- NULL
 if(all(1)){
   #print("Dependent")
 
-  if(file.exists(DPfile<<- paste(path,"allPeptides.txt",sep = "/"))|length(AllPeptides) > 0){
+  if(file.exists(DPfile <- paste(path,"allPeptides.txt",sep = "/"))|length(AllPeptides) > 0){
     DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette = rainbow(10),maxShow = 20){ 
       if(!is.data.frame(x)){
         DPlines     <- read.csv(x,sep = "\t",stringsAsFactors = F)}else{DPlines <- x}
@@ -267,8 +267,8 @@ y <- temp$y
 ySel <- y[x > tempQuan[2]&x< tempQuan[4]]
 xSel <- x[x > tempQuan[2]&x< tempQuan[4]]
 slope <- NA
-y<<- y
-x<<- x
+y<- y
+x<- x
 try(slope <- coefficients(lm(scale(y)~x))[2])
 rSDquanRet				<- sd(ySel)/median(ySel)
 }else{
@@ -277,7 +277,7 @@ rSDquanRet				<- sd(ySel)/median(ySel)
 }
 summary.Data$quanRetRSD <- rSDquanRet
 summary.Data$quanRetSlope <- slope
-tempQuan <<- tempQuan
+#tempQuan <- tempQuan
 
 RatioIQuan <- diff(tempQuan[c(2,4)])/diff(tempQuan[c(1,5)]) # Ratio between inner and outer quantile distance of retention time, the bigger the better
 summary.Data$RatioIQuan <- RatioIQuan 
@@ -286,8 +286,8 @@ summary.Data$quanRet50ratio <- diff(tempQuan[c(2,3)])/diff(tempQuan[c(3,4)])
 
 
 score$quanRetRSD 		  <- 	ThreshCompare(summary.Data$quanRetRSD,thresholds$quanRetRSD,type = "single")
-s <<- summary.Data$quanRetRSD
-r <<- thresholds$quanRetRSD
+s <- summary.Data$quanRetRSD
+r <- thresholds$quanRetRSD
 score$quanRetSlope 		<-	ThreshCompare(abs(summary.Data$quanRetSlope),thresholds$quanRetSlope,type = "single")
 if(abs(summary.Data$quanRet50ratio) > 1){
 score$quanRet50ratio 	<- 	ThreshCompare(abs(summary.Data$quanRet50ratio),thresholds$quanRet50ratio)}else{
@@ -305,8 +305,8 @@ Int <- Int[Int != 0]
 IntQuan <- quantile(Int,na.rm = T)
 summary.Data$Intensity <- IntQuan
 
-IntQuan <<- IntQuan 
-thresholds <<- thresholds
+IntQuan <- IntQuan 
+thresholds <- thresholds
 
 score$Intensity <- ThreshCompare(log10(signif(IntQuan[3])),thresholds$Intensities,type = "quantile",cat = "high")
 
@@ -416,8 +416,8 @@ msmsEff <- as.numeric(msmsEff)
 summary.Data$msmsEff 	<- msmsEff
 # if(is.vector(msmsEff)){msmsEff <- as.matrix(msmsEff)}
 score$msmsEff 			<- ThreshCompare(msmsEff,thresholds$msmsEff)
-summary.Data <<- summary.Data
-thresholds <<- thresholds
+summary.Data <- summary.Data
+thresholds <- thresholds
 # scores 
 score$msms 			  <-  ThreshCompare(summary.Data$quan.msms.min,thresholds$quan.msms.min )
 score$mass.error 	<-  ThreshCompare(abs(summary.Data$mass.error.uncal[3]),(thresholds$mass.error.cal),type = "quantile",cat = "fixed")

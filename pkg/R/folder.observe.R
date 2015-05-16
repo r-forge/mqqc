@@ -198,7 +198,7 @@ while(loop){
 			if(!exists("SizeChecked")){SizeChecked <- F}
       if(SizeChecked){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...", htmloutPath = htmloutPath)
-			  tempI 				<- evidenceToProcess[i]
+			  tempI 				  <- evidenceToProcess[i]
 			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID))
       }
 		}
