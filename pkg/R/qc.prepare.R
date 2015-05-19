@@ -359,20 +359,31 @@ score$msmsCount 	<-  ThreshCompare((summary.Data$msmsMassCount)[3],thresholds$ms
 }
 # Check Summary 
 summaryPath <- list.files(path,pattern = "proteinGroups.txt",full.name = T)
-if(length(summaryPath) > 0){
-	summaryFile <- read.csv(summaryPath,sep = "\t")
-	BSA <- summaryFile[grep(BSAID,summaryFile$Majority.protein.IDs),]
+# include Protein entry, in case older sepcies table is used
+if(length(speciesUsed$Protein)==0){
+  speciesUsed$Protein <- ""
+}
+if(nchar(as.character(speciesUsed$Protein)) > 0){
+	summaryFile   <- read.csv(summaryPath,sep = "\t")
+	BSA           <- summaryFile[grep(speciesUsed$Protein,summaryFile$Majority.protein.IDs),]
 	if(is.data.frame(BSA)){
 		Coverage 	<- 	BSA$Sequence.coverage....
 	}else{
 		Coverage 	<- 	paste(quantile(summaryFile$Sequence.coverage....,na.rm = T),collapse = " # ")
+		speciesUsed$Protein <- ""
 	}
+  
+  }else{
+  if(file.exists(summaryPath)){
+  summaryFile   <- read.csv(summaryPath,sep = "\t")
+  Coverage 	<- 	median(summaryFile$Sequence.coverage....,na.rm = T)#paste(quantile(summaryFile$Sequence.coverage....,na.rm = T),collapse = " # ")  
+  }else{Coverage <- NA}
+}
 	
 	
 	
 
 	
-}else{Coverage <- NA}
 
 summary.Data$Coverage <- Coverage
 if(length(thresholds$ProteinCoverage) == 0){thresholds$ProteinCoverage <- 50}
@@ -450,7 +461,7 @@ summary.Data$LCcombiScore <- mean(nLCvec)
 # if(any(is.na(msmsEff))){
 
 
-return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant))
+return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein))
 }
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))

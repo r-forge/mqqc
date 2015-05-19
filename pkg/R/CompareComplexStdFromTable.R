@@ -148,15 +148,17 @@ LayoutM <- matrix(1:(vmax*colmax),vmax,colmax)
 LayoutM <- cbind(LayoutM,LegPlot<- max(LayoutM)+1)
 layout(LayoutM,width = c(rep(1,colmax),0.5))
 
-LegFun <<- LegFun
+LegFun <- LegFun
 for(i in unique(DensMatrixTemplate[,4])){
   tempDensMatrix <-   DensMatrixTemplate[DensMatrixTemplate[,4]== i,]
   for(a in 1:vmax){
   if(a > dim(tempDensMatrix)[1]){
     empty.plot()
   }else{  
-  tempI <- tempListOne[,colnames(tempListOne) ==  tempDensMatrix[a,1]]
-  
+
+  tempI <<- tempListOne[,tolower(colnames(tempListOne)) ==  tolower(tempDensMatrix[a,1])]
+#print(length(tempI))
+tempDensMatrix <<- tempDensMatrix
   if(length(tempI) > 0){
   if(tempDensMatrix[a,3] == "TRUE"){
     tempI <- log10(tempI)
@@ -164,13 +166,14 @@ for(i in unique(DensMatrixTemplate[,4])){
   tempM <<- aggregate(tempI,list(UniMachine),median,na.rm = T)
   temp <<- aggregate(tempI,list(UniMachine),function(x){
     
-      tempi <- class(try(tempDens <- density(x,na.rm = T)))
+      tempi <- class(try(tempDens <- density(x,na.rm = T),silent = F))
       if(tempi!="try-error"){
         tempDens$y <- tempDens$y /max(tempDens$y,na.rm = T)
-      }else{tempDens <- NA}
+      }else{tempDens <- list(x=0,y = 0)}
     
       return(tempDens)})
-  OrderFun <- merge.control(temp[[1]],LegFun$Mac)
+  
+  OrderFun <- merge.control(temp$Group.1,LegFun$Mac)
   xlim <- range(tempI[!is.infinite(tempI)],na.rm = T)
   if(!any(c(is.na(xlim),is.infinite(xlim)))){
   plot(1,type = "n",ylim = c(0,1),xlim =xlim ,xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
@@ -179,20 +182,21 @@ for(i in unique(DensMatrixTemplate[,4])){
     
   }
   itCompare <<- 0
+  #print(OrderFun)
   sapply(OrderFun,function(x){
     itCompare <<- itCompare+1
-    trye <- class(try(points(temp[[2]][x,],col = LegFun$col[itCompare],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
+    subDens <- temp$x[x,]
+    try(subDens$y <- subDens$y /max(subDens$y ))
+    trye <- class(try(points(subDens,col = LegFun$col[itCompare],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
     if(trye!="try-error"){
-    hui <- temp[[2]][x,]
-    xl<- median(tempM[x,2],na.rm = T)
+    try(xl<- median(tempM[x,2],na.rm = T))
     #abline(v = xl<- median(tempM[x,2],na.rm = T),col = LegFun$col[x],lty = "dotted")
-    subvec <- abs(xl -hui$x) 
-    yl <- hui$y[subvec == min(subvec,na.rm = T)][1]
-    lines(c(xl,xl),c(0,yl),col = LegFun$col[itCompare],lty = "dotted")
-    axis(1,at = xl,col = LegFun$col[itCompare],label = "")
+    try(subvec <- abs(xl -subDens$x) )
+    try(yl <- subDens$y[subvec == min(subvec,na.rm = T)][1])
+    try(lines(c(xl,xl),c(0,yl),col = LegFun$col[itCompare],lty = "dotted"))
+    try(axis(1,at = xl,col = LegFun$col[itCompare],label = ""))
     }
   })
-  
   
 
   
@@ -211,9 +215,13 @@ legend("left"
        ,border = "transparent",box.col = "transparent",bg = "#FFFFFF80",xpd = NA
 )
 
-dev.off()
+graphics.off()
 #system(paste("open",pdfName))
 }
+#try(CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
+
+#try(CompareComplexStdFromTable(tempListOne = input,RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = "",PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
+
 #try(CompareComplexStdFromTable(collectList[BSA,],RESettings,T,finalMQQC, PDFname = "LowComplexStandardComparison.pdf", TargetVec = StandardIDs[2],PDF = T, Machines = Machines))
 
 #try(CompareComplexStdFromTable(tempListOne = collectList[,],RESettings = RESettings,pdfShow = T,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = "ECstd",PDF = T, Machines = Machines,StandardIDs = StandardIDs))

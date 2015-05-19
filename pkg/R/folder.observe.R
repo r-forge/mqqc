@@ -15,9 +15,25 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(length(grep("MQQCspecies.csv$",Spec)) == 0){
     if(length(grep("MQQCspecies.csv.gz",Spec))> 0){
       MQQCspectab <- grep("MQQCspecies.csv.gz",Spec,value = T)[1]
-      suc <- file.rename(MQQCspectab,to = gsub(".gz$","",MQQCspectab))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".gz$","",MQQCspectab)))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".gz2$","",MQQCspectab)))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".bz$","",MQQCspectab)))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".bz2$","",MQQCspectab)))
+      
       if(suc){
       file.remove(MQQCspectab)
+      }
+    }
+  }
+  if(length(grep("contaminants.csv$",Spec)) == 0){
+    if(length(grep("contaminants.csv",Spec))> 0){
+      MQQCspectab <- grep("contaminants.csv.gz",Spec,value = T)[1]
+      try(suc <- file.rename(MQQCspectab,to = gsub(".gz$","",MQQCspectab)))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".gz2$","",MQQCspectab)))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".bz$","",MQQCspectab)))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".bz2$","",MQQCspectab)))      
+      if(suc){
+        file.remove(MQQCspectab)
       }
     }
   }

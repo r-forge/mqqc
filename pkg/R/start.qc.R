@@ -138,11 +138,12 @@ function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOu
 cat("MSMS",dim(MSMS),"ALLP",dim(AllPeptides),"Peptides",dim(Peptides))
   
   
-
+i = rep.v
 for(i in rep.v){
 ####
 # Subset evidence
 ####
+  
 temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.character(i),]	
 
 temp.DataEvidence <- temp.DataEvidence
@@ -154,12 +155,18 @@ try(tempMSMS <- MSMS[MSMS$Raw.file  == i,])
 ####funfin
 # Calculation of Scores
 ####
-if(length(AllPeptides) > 0){
-try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i))
-}
-LoadSettings(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)
+
+#LoadSettings(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)
 tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
 export 	<- unlist(qc.prepare.data$sd)
+
+if(length(qc.prepare.data$IdentifiedProteins) > 0& length(AllPeptides) > 0){
+  if(nchar(as.character(qc.prepare.data$IdentifiedProteins)) > 0){
+    try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
+  }else{
+    try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i,BSAID =NULL,jitfac = 0))
+  }
+}
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
 names(add.vec) <- c("Name","System.Time.s","System.Time")
@@ -175,10 +182,18 @@ if(length(grep(BSACheck,i)) > 0){
 }else{BSACheck <- F}
 
 
-####  
+####  AllPepsData
 # Plotting
 ####
 tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
+if(exists("ChrPath")){
+  try(ASCIIprofileplot(TotalScoreRes$plotData,AllPepsData = ChrPath$all))
+  
+}else{
+  try(ASCIIprofileplot(TotalScoreRes$plotData))
+  
+}
+
 TotalScoreRes <- TotalScoreRes
 ASCIIplot <- NULL
 try(ASCIIplot <- readLines(list.files(pattern = "ASCIIplot.txt",full.name = T)))

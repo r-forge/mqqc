@@ -593,7 +593,6 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   if(open.doc){
     try(        try(system(paste("open ", .pdf), intern = TRUE, 				ignore.stderr = TRUE)))
   }
-  try(ASCIIprofileplot(plotData))
 
 return(list(TotalScore = SCVecs,TotalScoreColor = ColScore,plotData = plotData))
 }
