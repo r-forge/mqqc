@@ -1,15 +1,15 @@
 ThreadControl <- 
 function(folder,maxHours = 2,tableTC =  "_RmqqcFile_ThreadControl"){
-TL1 <- system("tasklist",intern = T)
-wd <- getwd()	
-setwd(folder)
-
-TL <- grep("MaxQuantCmd.exe",TL1,ignore.case = T)
-#TL <- grep("cpqteam.exe",TL1,ignore.case = T)
-  if(length(TL)==0){
-    TL <- grep(pattern <- "MaxQua",TL1, ignore.case = T)
+  TL1 <- system("tasklist", intern = T)
+  wd <- getwd()
+  TL <- grep("MaxQuantCmd.exe", TL1, ignore.case = T)
+  if (length(TL) == 0) {
+    TL <- grep(pattern <- "MaxQuantTask.exe", TL1, ignore.case = T)
   }
-  
+  if (length(TL) == 0) {
+    TL <- grep(pattern <- "MAXQUA~1.EXE", TL1, ignore.case = T)
+  }
+  setwd(folder)
   
   
  if(length(TL) > 0){

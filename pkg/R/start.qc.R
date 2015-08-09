@@ -75,7 +75,7 @@ function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOu
   list.collect <- list(length=length(rep.v))
   a <- 1
   #### Test Preread Tables, should fasten readout
-  print(.path)
+  #print(.path)
   
   check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
   if(check){
@@ -172,6 +172,13 @@ add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
 names(add.vec) <- c("Name","System.Time.s","System.Time")
 export <- t(as.matrix(c(add.vec ,export)))
  
+
+IntensityPercentages <- round(ChrPath$IntPerc,1)[-1]
+IntensityPercentagesN <- c("Identified",        "Non Peptide Contaminants","Peptide Contaminants","Dependent")
+IntensityPercentages <- IntensityPercentages[merge.control(names(IntensityPercentages),IntensityPercentagesN)]
+names(IntensityPercentages) <- paste("RelCumulativeIntensity",IntensityPercentagesN)
+export <- cbind(export,t(as.matrix(IntensityPercentages[-1])))
+
 ####
 # BSACheck
 ####
@@ -291,11 +298,11 @@ if(show.path){
 
 }
 setwd(.path)
-
 	#try(return(list(qc = qc.prepare.data)))
 	#try(system("open ."))
-
 }
+#start.qc("/Users/henno/temp/test/TiffyEC/txt/evidence.txt")
+#LoadSettings(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769")
 #start.qc()
 #system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))
 #LoadSettings(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769")

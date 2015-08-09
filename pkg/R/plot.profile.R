@@ -102,8 +102,8 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 			apply(tempM,1,function(x){
 				xPoly <- c(x[1],x[3],x[2],x[3],x[1] )
 yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
-				polygon(xPoly,yPoly,col = .cols,border = .border[itm],lwd = 0.3)
-							itm <<- itm+1
+  try(	polygon(xPoly,yPoly,col = .cols,border = .border[itm],lwd = 0.3))
+        itm <<- itm+1
  
 				
 			})
@@ -125,12 +125,14 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 		}
 		
 	par(mai=c(0.6,1,0,0))
-	
-	dens.crt <- class(try(temp <- density(DAT <- data.i$retention.time[data.i$potential.contaminant != "+"])))
-  dens.con <- class(try(tempCON <- density(CON <- data.i$retention.time[data.i$potential.contaminant == "+"])))
-ConFAC <- length(CON)/length(DAT)
-tempCON$y <- tempCON$y * ConFAC
-  
+  data.i$potential.contaminant[is.na(data.i$potential.contaminant)] <- ""
+
+	dens.crt <- class(try(temp <- density(DAT <<- data.i$retention.time[data.i$potential.contaminant != "+"],na.rm = T)))
+  dens.con <- class(try(tempCON <- density(CON <<- data.i$retention.time[data.i$potential.contaminant == "+"],na.rm = T)))
+
+try(ConFAC <- length(CON)/length(DAT))
+try(tempCON$y <- tempCON$y * ConFAC)
+
 if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
 	plotData$retentionTime <- cbind(temp$x,temp$y)
 		plot(temp$x,temp$y,main = "",axes = F,frame = F,xlim = range(data.i$retention.time,na.rm = T),type = "n",xlab = "",ylab = "",lwd = 1)
@@ -171,14 +173,14 @@ if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
     print(ConFAC)
     ConFAC <<- ConFAC
     if(log2(ConFAC) > -4){
-	  points(tempCON$x,tempCON$y,type = "l",col = "white",lwd = 4,lty = "dotted")
+	  try(points(tempCON$x,tempCON$y,type = "l",col = "white",lwd = 4,lty = "dotted"))
 	  
 	  #points(tempCON$x,tempCON$y,main = "",axes = F,frame = F,na.rm = T,type = "l",xlab = "",ylab = "Density",col = "darkorange",lwd = 3)
-	  legend("topright",legend = c("contaminants"),col = c("grey"),lty = "dotted",lwd = 3,bty = "n")
+	  try(legend("topright",legend = c("contaminants"),col = c("grey"),lty = "dotted",lwd = 3,bty = "n"))
     }
 	}
 	dens.crt <- class(try(	temp <-density(data.i$m.z)))
-	
+
 	if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}	
 
 
@@ -198,27 +200,28 @@ if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
 Inner <- temp$x <= quantiles[4] & temp$x >= quantiles[2]
 	pX <- temp$x[Inner]
 	pY <- temp$y[Inner]
-	polygon(c(0,pY,0),c(min(pX),pX,max(pX)),col = IntQuanDensCol,border = IntQuanDensCol)
+	try(polygon(c(0,pY,0),c(min(pX),pX,max(pX)),col = IntQuanDensCol,border = IntQuanDensCol))
 	abline(h=median(data.i$m.z),col = "white",lwd = 2)
 
 		#axis(1,xpd = NA,las = 2)
 		#mtext("Density",1,line = 4,cex = 0.6)
-	
+
 	if(BSACheck){
 	dens.crt <- class(try(	temp <-density(data.i$m.z[BSAgrep])))
 		if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}	
 	par(mai=c(0,0,0.1,0.1))
-	points(temp$y*BSAdensFactor,temp$x,type = "l",axes = F,frame = F,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "",col = "white",lwd = 4)
-
-	points(temp$y*BSAdensFactor,temp$x,type = "l",axes = F,frame = F,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "",col = "orange",lwd = 3)
-
-		legend("topright",legend = c("all","BSA"),col = c(AllDensCol,"orange"),lwd = 3,bty = "n")
+  try(  points(temp$y*BSAdensFactor,temp$x,type = "l",axes = F,frame = F,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "",col = "white",lwd = 4))
+  try(  points(temp$y*BSAdensFactor,temp$x,type = "l",axes = F,frame = F,ylim = range(data.i$m.z,na.rm = T),xlab = "Density",ylab = "",col = "orange",lwd = 3))
+		try(legend("topright",legend = c("all","BSA"),col = c(AllDensCol,"orange"),lwd = 3,bty = "n"))
 	}
 		plot(1,type = "n",frame = F,axes = F)
 	plotData$name.file <- name.file
-	return(plotData)
+
+return(plotData)
 	
 }
+#try(plotData<- plot.profile(data.i,T,dots,BSACheck= BSACheck,plot.legend = F))
+
 #plot.profile(temp.DataEvidence)
 #tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 #par(mfrow = c(2,2))

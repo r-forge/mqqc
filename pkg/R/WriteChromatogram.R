@@ -1,5 +1,5 @@
 WriteChromatogram <- 
-function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 = F,filename= "./chromatogram.pdf",BSAID = NULL,jitfac = 1,contcol = "orange",showpdf = F,ContPrec = 1){
+function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 = F,filename= "./chromatogram.pdf",BSAID = NULL,jitfac = 1,contcol = c("orange","pink3"),showpdf = F,ContPrec = 1){
   cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","tomato3")
   ForConPlotAgg = NULL
   M = NULL
@@ -14,10 +14,12 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
   xSepS <- x[x$Sequence != " ",]
   xTimeT <- aggregate(xSepS$Intensity,list(round(xSepS$Retention.time,2)),fun)
   xSep <- x[x$Sequence == " ",]
-  xTimeS <- aggregate(x$Intensity,list(round(x$Retention.time,2)),fun)
+  xTimeS <- aggregate(xSep$Intensity,list(round(xSep$Retention.time,2)),fun)
   
-  PieInfo <- c(sum(xTimeS[,2]),sum(xTimeT[,2]))
-  names(PieInfo) <- c("All Peaks","Identified")
+  s1 <- as.numeric(as.character(xTimeS[,2]))
+  s2 <- as.numeric(as.character(xTimeT[,2]))
+  PieInfo <- c(sum(s1,na.rm = T),sum(s2,na.rm = T))
+  names(PieInfo) <- c("Unassigned","Identified")
   
   pdf(pdfname <- paste(dirname(filename),"/","chromatogram_",basename(filename),".pdf",sep = ""),width = 15,height= 5)
   par(mai = c(1,1,0.5,0.1))
@@ -26,7 +28,7 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
   
   DPsel <- x$DP.PEP < 0.01
   DPsel[is.na(DPsel)] <- F
-  xTimeS <<- xTimeS
+  xTimeS <- xTimeS
   plot(xTimeS[,1],(xTimeS[,2]),type = "l",col = colvec[1],frame = F,xlab = "time [min]",ylab = "Intensity",axes = F,main = unique(x$Raw.file)[1])
   points(xTimeT[,1],(xTimeT[,2]),type = "h",col = colvec[2])
   
@@ -36,7 +38,6 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
     a <- paste("Identified",dim(xSepS)[1])
     b <-paste("Dependent",length(DPsel[DPsel]))
     try(legVec <-  c(a,b))
-    #print(legVec)
     xTimeD[,1] <- jitter(xTimeD[,1],factor = jitfac)
     testcol <- densCols(xTimeD[,1],colramp = colorRampPalette(c("grey",colvec[3])))
     tsf <- log10(xTimeD[,2])
@@ -45,7 +46,7 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
       try(rug(xTimeD[i,1],ticksize = tsf[i],col =testcol[i]))
       
     }
-    try(PieInfo <- c(PieInfo,sum(xTimeD[,2])))
+    try(PieInfo <- c(PieInfo,sum(xTimeD[,2],na.rm = T)))
     names(PieInfo)[length(PieInfo)] <- "Dependent"
   }else{
     legVec = c(paste("MS/MS",dim(xSepS)[1]))
@@ -116,8 +117,8 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
         colvec <- colvec[-3]
       }
       
-      try(PieInfo <- c(PieInfo,sum(BSAxt[,2])))
-      try(correctPie <- correctPie+sum(BSAxt[,2]))
+      try(PieInfo <- c(PieInfo,sum(BSAxt[,2],na.rm = T)))
+      try(correctPie <- correctPie+sum(BSAxt[,2],na.rm = T))
       names(PieInfo)[length(PieInfo)] <- iBSAID     
     }
     }
@@ -134,17 +135,22 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
   
   # add contaminant Information:
   try(Contaminants <- read.csv(paste(path.package("mqqc"),"data/contaminants.csv",sep = "/"),skip = 6,sep = ";"),silent = T)
+
+  Contaminants$Possible.origin.and.other.comments <- sapply(Contaminants$Possible.origin.and.other.comments,function(x){
+    gsub("^.",toupper(substr(x,start = 1,stop = 1)),x)
+    
+  })
   if(exists("Contaminants")){
     xSep <- x[x$Sequence == " ",]
     xCon <- round(Contaminants$Monoisotopic.ion.mass..singly.charged.,ContPrec)
     xSepMass <- round(xSep$Mass,ContPrec)
-    ConSum <- aggregate(xSep$Intensity,list(xSepMass),sum)
+    ConSum <- aggregate(xSep$Intensity,list(xSepMass),sum,na.rm = T)
     
     M <- merge(ConSum,cbind(xCon,Contaminants),by = 1)
     
     ForConPlot <- merge.control(round(xSep$Mass,ContPrec),M[,1])
-    ForConPlotAgg <- aggregate(xSep$Intensity[ForConPlot],list(xSep$Retention.time[ForConPlot]),sum)
-    ForConPlotAggM <<- aggregate(xSep$Mass[ForConPlot],list(xSep$Retention.time[ForConPlot]),function(x){
+    ForConPlotAgg <- aggregate(xSep$Intensity[ForConPlot],list(xSep$Retention.time[ForConPlot]),sum,na.rm = T)
+    ForConPlotAggM <- aggregate(xSep$Mass[ForConPlot],list(xSep$Retention.time[ForConPlot]),function(x){
       x <- table(x)
       ret <- names(x)[x == max(x)]
       if(length(ret) > 1){
@@ -160,19 +166,24 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
     
     
     
-    MPIE <- aggregate(M[,2],list(M$Compound.ID.or.species),function(x){c(sum(x),length(x))})
-    MPIELaterPlot <<- aggregate(M[,2],list(paste(M$Possible.origin.and.other.comments,M$Compound.ID.or.species,sep = "##")),function(x){c(sum(x),length(x))})
+    MPIE <- aggregate(M[,2],list(M$Compound.ID.or.species),function(x){c(sum(x,na.rm = T),length(x))})
+    MPIELaterPlot <- aggregate(M[,2],list(paste(M$Possible.origin.and.other.comments,M$Compound.ID.or.species,sep = "##")),function(x){c(sum(x,na.rm = T),length(x))})
     
     colnames(MPIE$x) <- c("SummedIntensities","nPeaks")
     write.csv(MPIE, paste(dirname(filename),"/","unidentified_contaminants_",basename(filename),".csv",sep = ""))
     MPIEVec <- MPIE$x[,1]
     names(MPIEVec ) <- MPIE[,1]
     #MPIEVec <- MPIEVec[names(MPIEVec) != "Peptide"]
-    
-    PieInfo[1] <- PieInfo[1] - sum(MPIEVec)
-    Frac <- sum(MPIEVec)/sum(PieInfo)
+    tempAGGvec <- rep("Non Peptide Contaminants",length(MPIEVec))
+    tempAGGvec[names(MPIEVec) =="Peptide"] <- "Peptide Contaminants"
+    MPIEVecSplit <- aggregate(MPIEVec,list(tempAGGvec),sum,na.rm = T)
+    MPIEVecSplitvec <- MPIEVecSplit[,2]
+    names(MPIEVecSplitvec) <- MPIEVecSplit[,1]
+    PieInfo[1] <- PieInfo[1] - sum(MPIEVec,na.rm = T)
+    Frac <- sum(MPIEVec,na.rm =T)/sum(PieInfo,sum = T)
+    if(is.na(Frac)){Frac <- 1}
     if(Frac> 0.01){
-    try(tempFEfa <<- round(as.numeric(unlist(ForConPlotAggM$x)),1))
+    try(tempFEfa <- round(as.numeric(unlist(ForConPlotAggM$x)),1))
     try(sel <- as.numeric(ForConPlotAgg[,2])/max(xTimeS[,2]) > 0.05)
 
       try(    text(as.numeric(ForConPlotAgg[,1])[sel],as.numeric(ForConPlotAgg[,2])[sel],tempFEfa[sel],col = "orange",cex = 0.3,srt = 90,pos = 3))
@@ -198,14 +209,28 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
     try(legend("topleft",legend = c(legVec) , fill = c(colvec[-1][1:length(legVec)]),bty = "n",border = "transparent",title = "Peptides:"))
     
   }
+  
 
   par(new = T)
   par(mai = c(2,0,0.8+0.4*length(BSAID),11.5),lwd = 0.1)
-  PieInfo <<- PieInfo
+  PieInfo[is.na(PieInfo)] <- 0
+  colvec <- colvec
   try(pie(PieInfo,border = "white",radius = 0.4,col=c(colvec[1:length(PieInfo[names(PieInfo) != "contaminants"])],contcol),cex = 0.5,labels = NA,lwd = 0.5))
   par(mai = c(0,0,0.5,0))
   layout(matrix(1:3,1,3),width = c(1.5,2,2))
-  try(pie(PieInfo,border = "white",radius = 0.4,col=c(colvec[1:length(PieInfo[names(PieInfo) != "contaminants"])],contcol),cex = 0.7,lwd = 0.5,main = "All Peaks\nCumulative Intensities"))
+  replacePoint  <- grep("contaminants",names(PieInfo))
+  if(length(replacePoint) > 0){
+    
+    MPIEVecSplitvec <- MPIEVecSplitvec
+    if(length(PieInfo) == replacePoint){
+    PieInfo <- c(PieInfo[1:(replacePoint-1)],MPIEVecSplitvec)
+    }else{
+      PieInfo <- c(PieInfo[1:(replacePoint-1)],MPIEVecSplitvec,PieInfo[(replacePoint+1):length(PieInfo)]  )
+    }
+  }
+  
+  try(pie(PieInfo,border = "transparent",radius = 0.4,col=colch <<-c(colvec[1:length(PieInfo[ grepl("Contaminants",names(PieInfo))])],contcol[1:length(MPIEVecSplitvec)]),cex = 0.7,lwd = 0.5,main = "All Peaks\nCumulative Intensities"))
+
   if(exists("MPIE")){
     PieCut <- function(x,cutT = 0.05){
       xnum <- as.numeric(x[,2])
@@ -228,8 +253,10 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
     try(MPIEoutLabelOther <- PieCut(MPIEoutLabelOther))
     
     
-    pie(as.numeric(MPIEoutLabelPeps[,2]),labels =paste(MPIEoutLabelPeps[,1],"n:",as.numeric(MPIEoutLabelPeps[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelPeps)[1]),border = "white",main = "Potential Protein contaminants by MS1\nCumulative Intensities")
+    pie(as.numeric(MPIEoutLabelPeps[,2]),labels =paste(gsub("##Peptide","",MPIEoutLabelPeps[,1]),"n:",as.numeric(MPIEoutLabelPeps[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelPeps)[1]),border = "white",main = "Potential Protein contaminants by MS1\nCumulative Intensities")
+    symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[2],lwd = 3)
     pie(as.numeric(MPIEoutLabelOther[,2]),labels =paste(MPIEoutLabelOther[,1],"n:",as.numeric(MPIEoutLabelOther[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelOther)[1]),border = "white",main = "Non Peptide Contaminants by MS1\nCumulative Intensities")
+    symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[1],lwd = 3)
     
   }
 #abline(h=0,col = "grey",lwd = 0)
@@ -238,18 +265,22 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
 if(showpdf){
   system(paste("open",pdfname))
 }
-  return(list(all = xTimeS,identified = xTimeT,contaminantsProfile = ForConPlotAgg,contaminants = M))
+sumall <- sum(as.numeric(unlist(PieInfo)),na.rm = T)
+  return(list(all = xTimeS,identified = xTimeT,contaminantsProfile = ForConPlotAgg,contaminants = M,Int = PieInfo,IntPerc=sapply(PieInfo,function(x){as.numeric(x)/sumall*100})))
 }
 
+#x <- read.csv("/Users/henno/temp/FixMQQC/txt/allPeptides.txt",stringsAsFactors = F,sep = "\t")
+#x <- read.csv("/Users/henno/temp/test/KOSHHS/allPeptides.txt",stringsAsFactors = F,sep = "\t")
 
-#try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0,showpdf = T))
+#try(ChrPath <- WriteChromatogram(x,filename = "fwef",BSAID =NULL ,jitfac = 0,showpdf = T))
 
-#x <- read.csv("/Users/henno/temp/mqqc/Test2BSA/txt/allPeptides.txt",stringsAsFactors = F,sep = "\t")
 
-#keep <- WriteChromatogram(x,fun = sum,log10= F,jitfac = 0,showpdf = T)
-
-# try to match Contaminants
-
+# keep <- WriteChromatogram(x,fun = sum,log10= F,jitfac = 0,showpdf = T)
+# sumall <- sum(as.numeric(unlist(keep$Int)),na.rm = T)
+# 
+# # try to match Contaminants
+# print(sum(keep$Int)-sum(as.numeric(x$Intensity),na.rm = T))
+# keep$Int
 #funhu <-spline(xTimeS[,1],xTimeS[,2])
 #txtplot(xTimeS[,1],xTimeS[,2],width = 150)
 #hui   <- txtplot(funhu$x[funhu$y > 0],funhu$y[funhu$y > 0],width = 150,xlab = "time [min]",ylab = "Intensity")

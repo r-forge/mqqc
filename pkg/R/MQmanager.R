@@ -17,10 +17,14 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1, Stand
   # checking for task txt
   setwd(folder)
   TL1 <- system("tasklist",intern = T)
-  TL <- grep("MaxQuantCmd.exe",TL1,ignore.case = T)
-  if(length(TL)==0){
-    TL <- grep("MaxQua",TL1, ignore.case = T)
+  TL <- grep("MaxQuantCmd.exe", TL1, ignore.case = T)
+  if (length(TL) == 0) {
+    TL <- grep(pattern <- "MaxQuantTask.exe", TL1, ignore.case = T)
   }
+  if (length(TL) == 0) {
+    TL <- grep(pattern <- "MAXQUA~1.EXE", TL1, ignore.case = T)
+  }
+  
   if(!exists("TL")){TL <- NULL}
    mqqcRunningMQ <<- paste("",length(TL),"/",cores)
 

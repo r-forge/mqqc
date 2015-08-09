@@ -11,6 +11,14 @@ successDelete <-
     # Search only in folders which have not been processed, reduces search space
     if( file.exists(collectListPath)){
       collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
+      collectListInitdim <- dim(collectList)
+      collectListclean    <- apply(collectList,2,function(x){all(is.na(x))})
+      collectList <- collectList[,!collectListclean]
+      if(dim(collectList)[2] < collectListInitdim[2]){
+      	write.csv(collectList, collectListPath,row.names = F,quote = F)
+      }
+      
+      
       imported 		<- collectList[,dim(collectList)[2]]
       processed  <- unlist(lapply(strsplit(as.character(imported),"/combined"),function(x){return(x[1])}))
       folders <- setdiff(folders,processed)	
@@ -54,7 +62,8 @@ successDelete <-
           if(length(tempmqqcInfo)!=0){
             write("",paste(dirname(tempI[i]),"mqqcProcessed",sep = "/"))
             dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"), showWarnings = F)
-            qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T)
+            qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T,recursive = T)
+            qcData <- qcData[grep("unidentified_conta",basename(qcData),invert = T)]
             if(length(qcData)> 0&tempIproc[i]){
               writeName <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
               for(ba in qcData){    
@@ -72,24 +81,33 @@ successDelete <-
                     		ImprCheckListCol  <- gsub("\"","", ImprCheckListCol)
                     		ImprTempCol 			<- unlist(strsplit(temp[1],","))
                     
-                   			tempCheckList <- read.csv(checkList,quote = "")
-                          NewData     <- read.csv(ba,quote = "")
+                   			tempCheckList 	<- read.csv(checkList,quote = "")
+                          	NewData     	<- read.csv(ba,quote = "")
                     			newT        <- unique(c(colnames(tempCheckList),colnames(NewData)))
-                    			newOrder <- merge.control(newT,colnames(tempCheckList))
+                    			newOrder 	<- merge.control(newT,colnames(tempCheckList))
+                    			NewDatMatch 		<- match(newT,colnames(NewData))
+                    			NewData <-t(NewData)[NewDatMatch, ]
+                    			
+                    			
+                    			tempCheckListMatch 	<- match(newT ,colnames(tempCheckList))
+                    			if(!any(is.na(tempCheckListMatch))){
+								tempCheckList <- tempCheckList[,tempCheckListMatch]
+                    			}else{
+                    				tempCheckList  <- t(tempCheckList)[tempCheckListMatch,]
+                    				rownames(tempCheckList) <- newT
+                    				tempCheckList <- t(tempCheckList)
+                    			}
                    			  #newOrder <- merge.control(colnames(NewData),colnames(tempCheckList))
                    			
                     			NewOrderNew <- setdiff(1:length(newT), newOrder)
                     			if(length(NewOrderNew) > 0){
                     				newOrder <- c(newOrder, NewOrderNew)
                     			}
-                    newOrderList <- merge.control(colnames(tempCheckList),newT[newOrder])
-        						tempCheckListNew <- t(tempCheckList)[ newOrderList,]
-        						tempCheckListNew <-  t(tempCheckListNew)
-        						colnames(tempCheckListNew) <- newT[newOrder]
-        						NewDataSort <- merge.control(colnames(NewData),newT)
-        						attachVec <-t(NewData)[NewDataSort,]
-                    		tempCheckListNew <- rbind(tempCheckListNew,attachVec)
-                    		write.csv(tempCheckListNew, writeName,row.names = F,quote = F)
+                    			NewData <<- NewData
+                    			tempCheckList <<- tempCheckList
+                    			tempCheckListNew <- rbind(tempCheckList,NewData)
+                    			colnames(tempCheckListNew) <- newT
+                    		try(write.csv(tempCheckListNew, writeName,row.names = F,quote = F))
         						#write.csv(tempCheckList, writeName,row.names = F,quote = F)
         						
                     #tempCheckList<- cbind(tempCheckList,"")

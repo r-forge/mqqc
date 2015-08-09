@@ -17,19 +17,31 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
       MQQCspectab <- grep("MQQCspecies.csv.gz",Spec,value = T)[1]
       try(suc <- file.rename(MQQCspectab,to = gsub(".gz$","",MQQCspectab)))
       try(suc <- file.rename(MQQCspectab,to = gsub(".gz2$","",MQQCspectab)))
-      try(suc <- file.rename(MQQCspectab,to = gsub(".bz$","",MQQCspectab)))
-      try(suc <- file.rename(MQQCspectab,to = gsub(".bz2$","",MQQCspectab)))
       
       if(suc){
       file.remove(MQQCspectab)
       }
-    }
+      MQQCspectab <- grep("MQQCspecies.csv.bz",Spec,value = T)[1]
+      
+      try(suc <- file.rename(MQQCspectab,to = gsub(".bz$","",MQQCspectab)))
+      try(suc <- file.rename(MQQCspectab,to = gsub(".bz2$","",MQQCspectab)))
+      if(suc){
+        file.remove(MQQCspectab)
+      }
+    
+    }  
   }
+
   if(length(grep("contaminants.csv$",Spec)) == 0){
     if(length(grep("contaminants.csv",Spec))> 0){
       MQQCspectab <- grep("contaminants.csv.gz",Spec,value = T)[1]
       try(suc <- file.rename(MQQCspectab,to = gsub(".gz$","",MQQCspectab)))
       try(suc <- file.rename(MQQCspectab,to = gsub(".gz2$","",MQQCspectab)))
+      if(suc){
+        file.remove(MQQCspectab)
+      }
+      
+      MQQCspectab <- grep("contaminants.csv.bz",Spec,value = T)[1]
       try(suc <- file.rename(MQQCspectab,to = gsub(".bz$","",MQQCspectab)))
       try(suc <- file.rename(MQQCspectab,to = gsub(".bz2$","",MQQCspectab)))      
       if(suc){
@@ -107,13 +119,15 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   	if(!Debug){
   		options(warn = -1,show.error.messages = F, showWarnCalls = F)
   	}else{
-  		options(warn = -1,show.error.messages = T, showWarnCalls = T)
+  		options(warn = 1,show.error.messages = T, showWarnCalls = T)
   		}
   }
 
 }
 StandardIDs = c(Param$StdIDhigh,Param$StdIDlow)
-
+if(file.exists(as.character(Param$MQ))){
+  write(Param$MQ,paste(path.package("mqqc"),"data","MQpath",sep ="/")) 
+}
 	 print("Preparing MQQC")
     if(!file.exists(htmloutPath)){
       htmloutPath <- paste(folder,paste("_RmqqcFile_html"),sep = "/")
