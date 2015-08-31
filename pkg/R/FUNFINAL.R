@@ -142,6 +142,10 @@ if(file.exists(collectListPath)){
 		#Names 		<- sapply(strsplit(tempListOne$Name,"_"),function(x){x[1]})
 		if(dim(tempListOne)[1] != 0){
 		Names <- grepRE(as.character(tempListOne$Name),RESettings$REmac)
+    # Fix, cause crash, if NA in Names
+		Names[is.na(Names)] <- ""
+    #NamesUni <- unique(Names)
+    
 	for(iNames in unique(Names)){
     
 	  
@@ -410,9 +414,9 @@ cat("\rfinished FUNFINAL function")
 #  RESettings <- Param[grep("^RE",names(Param))]
 #   StandardIDs = c("","");placeholder = "PLACEHOLDER"
 #   LoadSettings(sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_")
-#    LoadSettings(RESettingsSep = "_",StandardIDs = c("",""), placeholder = "PLACEHOLDER" )
+#     LoadSettings(RESettingsSep = "_",StandardIDs = c("",""), placeholder = "PLACEHOLDER" )
 #   funlastLoop = 2
-#  try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
+#   try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 # #  system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))
 # #finalMQQC <- finalMQQC
 # #sucFolder="_RmqqcFile_Processed"
