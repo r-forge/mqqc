@@ -158,14 +158,15 @@ try(tempMSMS <- MSMS[MSMS$Raw.file  == i,])
 
 #LoadSettings(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)
 tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
-export 	<- unlist(qc.prepare.data$sd)
+export 	  <- unlist(qc.prepare.data$sd)
 
+ChrPath <- ""
 if(length(qc.prepare.data$IdentifiedProteins) > 0& length(AllPeptides) > 0){
   if(nchar(as.character(qc.prepare.data$IdentifiedProteins)) > 0){
     try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
   }else{
     try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i,BSAID =NULL,jitfac = 0))
-  }
+  } 
 }
 
 add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))

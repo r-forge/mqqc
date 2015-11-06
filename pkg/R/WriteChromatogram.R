@@ -53,10 +53,11 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
     
   }
   xTimeT[,1] <- jitter(xTimeT[,1],factor = jitfac)
-  
   tsf <- log10(xTimeT[,2])
   tsf <- (tsf/max(tsf,na.rm = T))*0.025
+  if(length(xTimeT[,1]) > 1){
   testcol <- densCols(xTimeT[,1],colramp = colorRampPalette(c("grey",colvec[2])))
+  }else{testcol <- colvec[2]}
   for( i in 1:length(xTimeT[,1])){
     #print(tsf[i])
     try(  rug(jitter(xTimeT[i,1],factor = jitfac),ticksize=as.numeric(as.character(tsf[i])),col = testcol[i]))
@@ -135,7 +136,6 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
   
   # add contaminant Information:
   try(Contaminants <- read.csv(paste(path.package("mqqc"),"data/contaminants.csv",sep = "/"),skip = 6,sep = ";"),silent = T)
-
   Contaminants$Possible.origin.and.other.comments <- sapply(Contaminants$Possible.origin.and.other.comments,function(x){
     gsub("^.",toupper(substr(x,start = 1,stop = 1)),x)
     
@@ -229,6 +229,7 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
     }
   }
   
+  PieInfo[is.na(PieInfo)] <- 0
   try(pie(PieInfo,border = "transparent",radius = 0.4,col=colch <<-c(colvec[1:length(PieInfo[ grepl("Contaminants",names(PieInfo))])],contcol[1:length(MPIEVecSplitvec)]),cex = 0.7,lwd = 0.5,main = "All Peaks\nCumulative Intensities"))
 
   if(exists("MPIE")){
@@ -252,12 +253,15 @@ function(x,colvec = c("darkgrey","black","steelblue","tomato3"),fun = sum,log10 
     try(MPIEoutLabelPeps <- PieCut(MPIEoutLabelPeps))
     try(MPIEoutLabelOther <- PieCut(MPIEoutLabelOther))
     
+    MPIEoutLabelPeps <- MPIEoutLabelPeps[!is.na(MPIEoutLabelPeps[,2]),]
+    MPIEoutLabelOther <- MPIEoutLabelOther[!is.na(MPIEoutLabelOther[,2]),]
     
+    if(dim(MPIEoutLabelPeps)[1] > 0){
     pie(as.numeric(MPIEoutLabelPeps[,2]),labels =paste(gsub("##Peptide","",MPIEoutLabelPeps[,1]),"n:",as.numeric(MPIEoutLabelPeps[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelPeps)[1]),border = "white",main = "Potential Protein contaminants by MS1\nCumulative Intensities")
     symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[2],lwd = 3)
     pie(as.numeric(MPIEoutLabelOther[,2]),labels =paste(MPIEoutLabelOther[,1],"n:",as.numeric(MPIEoutLabelOther[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelOther)[1]),border = "white",main = "Non Peptide Contaminants by MS1\nCumulative Intensities")
     symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[1],lwd = 3)
-    
+    }
   }
 #abline(h=0,col = "grey",lwd = 0)
 
@@ -268,6 +272,9 @@ if(showpdf){
 sumall <- sum(as.numeric(unlist(PieInfo)),na.rm = T)
   return(list(all = xTimeS,identified = xTimeT,contaminantsProfile = ForConPlotAgg,contaminants = M,Int = PieInfo,IntPerc=sapply(PieInfo,function(x){as.numeric(x)/sumall*100})))
 }
+
+#temp <- read.csv("/Volumes/mqqc/Tiffy_20151004_OP_ECstdltq_Prox02raw_folder/combined/txt/allPeptides.txt",sep = "\t")
+#WriteChromatogram(temp)
 
 #x <- read.csv("/Users/henno/temp/FixMQQC/txt/allPeptides.txt",stringsAsFactors = F,sep = "\t")
 #x <- read.csv("/Users/henno/temp/test/KOSHHS/allPeptides.txt",stringsAsFactors = F,sep = "\t")

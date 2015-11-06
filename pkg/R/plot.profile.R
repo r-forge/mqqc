@@ -66,7 +66,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
     name.file <- c(as.character(name.file), paste("BSA peptides:",length(grep("MSMS",BSAEVI$type)),", all peptides:",length(grep("MSMS",data.i$type))),intens)
     
   }else{
-    name.file <- c(as.character(name.file), paste("proteins:",length(unique(data.i$proteins))),paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
+    name.file <- c(as.character(name.file), paste("proteins:",length(unique(data.i$leading.razor.protein))),paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
   }
 	grid(col = "darkgrey",lwd = 1.5)
 	
