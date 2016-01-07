@@ -143,9 +143,9 @@
    <deNovoSequencing>false</deNovoSequencing>
    <deNovoVarMods>true</deNovoVarMods>
    <massDifferenceSearch>false</massDifferenceSearch>
-   <minPepLen>7</minPepLen>
+   <minPepLen>8</minPepLen>
    <peptideFdr>0.01</peptideFdr>
-   <proteinFdr>0.0065</proteinFdr>
+   <proteinFdr>1</proteinFdr>
    <siteFdr>0.01</siteFdr>
    <minPeptideLengthForUnspecificSearch>8</minPeptideLengthForUnspecificSearch>
    <maxPeptideLengthForUnspecificSearch>25</maxPeptideLengthForUnspecificSearch>
