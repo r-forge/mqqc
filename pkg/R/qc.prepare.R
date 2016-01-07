@@ -28,23 +28,27 @@ ls.null <- function(get.env = get.env2){
 # needs to be modular
 ####
 thresholds <- list()
-mass.error 		<- c(0.5,5)
+mass.error 		<- c(0,-3,3)
+thresholds$mass.error 		<- c(0,-3,3)
+thresholds$mass.error.cal 		<- c(0,-3,3)
 thresholds$msms.count 		<- 4000
-thresholds$ret.peak.shape <- c(0.5,3)
-thresholds$ret.width 		  <- c(0.3,1)
+thresholds$ret.peak.shape <- c(0,-1,1)
+thresholds$ret.width 		  <- c(0.3,0,1)
 thresholds$total.msms.min	<- 150
 thresholds$quan.msms.min	<- 200
-thresholds$mass.error.cal <- c(0.5,5)
 thresholds$quan.duplicates.msms <- 0.05
 thresholds$score 			    <- 100
-thresholds$msmsEff 			  <- 60
-thresholds$quanRetRSD 		<- 0.05
-thresholds$quanRetSlope 	<- 0.02
+thresholds$msmsEff 			  <- 30
+thresholds$quanRetRSD 		<- 0.1
 thresholds$quanRet50ratio	<- 1.2
-thresholds$msmsQuantile	 <-  c(4.5,5) # log10 Int
-thresholds$msmsCounts 	<- c(30,40)
-thresholds$Intensities 			<- c(50000000,1000000000)
+thresholds$quanRetSlope 	<- 1
 
+thresholds$msmsQuantile	 <-  c(4.5,4,5) # log10 Int
+thresholds$msmsCounts 	<- c(25,15,35)
+thresholds$Intensities 			<- c(8,6.5,9.5) # log10 int
+thresholds$ProteinCoverage <- 30
+thresholdsBA <- thresholds
+thresholds$MSID.min <- 500
 if(SpeciesTable){
 		colnames(Data) <- tolower(colnames(Data))
 
@@ -67,13 +71,42 @@ if(SpeciesTable){
 			
 		})
 		
+		}else{
+		  speciesUsed <- species[species$Abbreviation == "default",]
+		  thresholds	<- as.list(speciesUsed[1,])
+		  thresholds <- lapply(thresholds,function(x){
+		    x <- as.character(x)
+		    x <- unlist(strsplit(x," "))
+		    x <- as.numeric(x)
+		    
+		  })
+		  if(dim(speciesUsed)[1] == 0){
+		    thresholds <- thresholdsBA
+		    cat("\n\nWARNING! Wether a parameter ID nor a default method was detected. Jumping to preset thresholds. Scoring might be deficient\n\n")
+		  }
+		  
+		  
+		  
 		}
 }
+
+# pdf("SpeciesStatistics.pdf",width = 10)
+try(SpecStat <- SpeciesStatistic(Data$leading.razor.protein,F))
+# graphics.off()
+# system("open SpeciesStatistics.pdf")
+if(exists("SpecStat")){
+  MostProperSpecies = SpecStat
+  
+}else{MostProperSpecies = NA;  SpecStat = NA}
+# if(all(is.na(SpecStat))){
+#   unlink("SpeciesStatistics.pdf")
+# }
+
 #.cols <- colnames(Data)
 #Data <- apply(Data,2,function(x){as.numeric(as.character(x))})
 #colnames(Data) <- .cols
 Data <- as.data.frame(Data)
-grep.col <- function(string,Data,fixed = T){
+grep.col <- function(string,Data,fixed =  T){
   x <- grep(string,colnames(Data),fixed = fixed)
 if(length(x) == 0){
 	 x <- 0
@@ -269,8 +302,13 @@ xSel <- x[x > tempQuan[2]&x< tempQuan[4]]
 slope <- NA
 y<- y
 x<- x
-try(slope <- coefficients(lm(scale(y)~x))[2])
-rSDquanRet				<- sd(ySel)/median(ySel)
+ySel <- ySel/mean(ySel,na.rm = T)
+xSel <- xSel-min(xSel,na.rm = T)
+xSel <- xSel/max(xSel,na.rm = T) 
+rSDquanRet				<- sd(ySel,na.rm = T)/mean(ySel,na.rm = T)
+try(slope <- coefficients(lm(scale(ySel)~xSel))[2])
+
+
 }else{
   rSDquanRet <- NA
   slope <- NA
@@ -281,18 +319,19 @@ summary.Data$quanRetSlope <- slope
 
 RatioIQuan <- diff(tempQuan[c(2,4)])/diff(tempQuan[c(1,5)]) # Ratio between inner and outer quantile distance of retention time, the bigger the better
 summary.Data$RatioIQuan <- RatioIQuan 
-summary.Data$quanRet50ratio <- diff(tempQuan[c(2,3)])/diff(tempQuan[c(3,4)])
+summary.Data$quanRet50ratio <- log2( diff(tempQuan[c(2,3)])/diff(tempQuan[c(3,4)]))
 
 
 
-score$quanRetRSD 		  <- 	ThreshCompare(summary.Data$quanRetRSD,thresholds$quanRetRSD,type = "single")
+score$quanRetRSD 		  <- 	ThreshCompare(1/summary.Data$quanRetRSD,1/thresholds$quanRetRSD,type = "single")
 s <- summary.Data$quanRetRSD
 r <- thresholds$quanRetRSD
-score$quanRetSlope 		<-	ThreshCompare(abs(summary.Data$quanRetSlope),thresholds$quanRetSlope,type = "single")
-if(abs(summary.Data$quanRet50ratio) > 1){
-score$quanRet50ratio 	<- 	ThreshCompare(abs(summary.Data$quanRet50ratio),thresholds$quanRet50ratio)}else{
-score$quanRet50ratio 	<- 	ThreshCompare(thresholds$quanRet50ratio,abs(summary.Data$quanRet50ratio))#?
-}
+score$quanRetSlope 		<-	ThreshCompare(1/abs(summary.Data$quanRetSlope),1/thresholds$quanRetSlope,type = "single")
+score$quanRet50ratio 	<- 	ThreshCompare(1/abs(summary.Data$quanRet50ratio),1/abs(log2(thresholds$quanRet50ratio)),type = "single")
+# if(abs(summary.Data$quanRet50ratio) > 1){
+# score$quanRet50ratio 	<- 	ThreshCompare(abs(summary.Data$quanRet50ratio),abs(thresholds$quanRet50ratio))}else{
+# score$quanRet50ratio 	<- 	ThreshCompare(thresholds$quanRet50ratio,abs(summary.Data$quanRet50ratio))#?
+# }
 # Intensity Value
 vals <- grep("^intensity",colnames(Data),ignore.case = T)
 if(length(vals) > 1){
@@ -360,7 +399,12 @@ score$msmsCount 	<-  ThreshCompare((summary.Data$msmsMassCount)[3],thresholds$ms
 # Check Summary 
 summaryPath <- list.files(path,pattern = "proteinGroups.txt",full.name = T)
 # include Protein entry, in case older sepcies table is used
+noCoverage <- F
 if(length(speciesUsed$Protein)==0){
+  if(dim(speciesUsed)[1] == 0){
+    speciesUsed <- rbind(speciesUsed,"")
+    noCoverage <- T
+  }
   speciesUsed$Protein <- ""
 }
 if(nchar(as.character(speciesUsed$Protein)) > 0){
@@ -374,9 +418,9 @@ if(nchar(as.character(speciesUsed$Protein)) > 0){
 	}
   
   }else{
-  if(file.exists(summaryPath)){
+  if(file.exists(summaryPath)&!noCoverage){
   summaryFile   <- read.csv(summaryPath,sep = "\t")
-  Coverage 	<- 	median(summaryFile$Sequence.coverage....,na.rm = T)#paste(quantile(summaryFile$Sequence.coverage....,na.rm = T),collapse = " # ")  
+  Coverage 	    <- 	median(summaryFile$Sequence.coverage....,na.rm = T)#paste(quantile(summaryFile$Sequence.coverage....,na.rm = T),collapse = " # ")  
   }else{Coverage <- NA}
 }
 	
@@ -397,16 +441,42 @@ score$ProteinCoverage <- ThreshCompare(summary.Data$Coverage,thresholds$ProteinC
 nLCvec <- c(score$quanRetRSD,score$quanRet50ratio,score$quanRetSlope)
 nLCvec[nLCvec > 1] <- 1
 score$nLCcombi <- mean(nLCvec)
+print(score$nLCcombi)
 
-
-
+#AllPeptides
 msmsEff <- msmsInfo$MSMSEff*100
 #msmsEff <- sumDat() # gets msms effecency info from summary table
 
  if(length(msmsEff) == 0){
    
- 	try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
- }#else{
+ #	try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
+ # try(msmsEff <- length(Data.i.quant$ms.ms.ids[!is.na(Data.i.quant$ms.ms.ids)])/(max(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T)-min(as.numeric(Data.i.quant$ms.ms.ids),na.rm = T))*100)
+    msmsEff <- NA
+
+    
+   
+ }
+MSID.min = NA
+if(length(AllPeptides) > 0){
+  allMSMS <- (AllPeptides$Sequence != " ")
+  allMSMS <- allMSMS[allMSMS]
+  msmsEffAll <-  length(Data.i$reverse[Data.i$reverse != "+"])/dim(AllPeptides)[1]*100
+  
+  sel       <- AllPeptides$Retention.time > min(quant.range) & AllPeptides$Retention.time < max(quant.range)
+  allMSMS   <- (AllPeptides$Sequence[sel] != " ")
+  Features  <-length(sel[sel])
+  #allMSMST  <- allMSMS[allMSMS]
+  #allMSMSF  <- allMSMS[!allMSMS]
+  
+  msmsEffQuantile <-  length(Data.i.quant$reverse[Data.i.quant$reverse != "+"])/length(allMSMS)*100
+  msmsEff <- msmsEffQuantile
+  summary.Data$MSID.min <- Features/abs(diff(quant.range[c(1,3)]))
+  score$MSID.min <-   ThreshCompare(summary.Data$MSID.min,thresholds$MSID.min )
+  
+}else{score$MSID.min <- NA;summary.Data$MSID.min <- NA}
+
+
+#else{
 # 	if(dim(msmsEff)[1] == 2){
 # 		msmsEff <- msmsEff[1,2]
 # 	}else{
@@ -425,6 +495,7 @@ msmsEff <- as.numeric(msmsEff)
 	# msmsEff <- as.numeric(msmsEff[dim(msmsEff)[1],2])/thresholds$msmsEff
 # }
 summary.Data$msmsEff 	<- msmsEff
+summary.Data$msmsEffall 	<- msmsEffAll
 # if(is.vector(msmsEff)){msmsEff <- as.matrix(msmsEff)}
 score$msmsEff 			<- ThreshCompare(msmsEff,thresholds$msmsEff)
 summary.Data <- summary.Data
@@ -437,17 +508,19 @@ score$score <- ThreshCompare(summary.Data$score[3],thresholds$score)
 # score nlc
 score$peak.shape 	<- ThreshCompare(log2(summary.Data$ret.peak.shape[3]),thresholds$ret.peak.shape,type = "quantile",cat = "fixed")
 
-score$ret.width 	<- ThreshCompare((summary.Data$ret.width[c(3)]),thresholds$ret.width,type = "quantile",cat = "low")
+score$ret.width 	<- ThreshCompare(log2(summary.Data$ret.width[c(3)]),log2(thresholds$ret.width),type = "quantile",cat = "low")
 
 score$quan.duplicates.msms 	<- ThreshCompare(summary.Data$quan.duplicates.msms,thresholds$quan.duplicates.msms)
 
 
 # 2. MS combi score
-MSvec <- c(score$Intensity,score$mass.error,score$msms)
+#MSvec <- c(score$Intensity,score$mass.error,score$msms)
+MSvec <- c(score$MSID.min,score$mass.error,score$msms)
+
 MSvec[MSvec > 1] <- 1
 score$combiMS <- mean(MSvec)
 # 3. MSMS combi score
-MSvec <- c(score$msmsCount,score$msmsQuantile,score$msmsEff)
+MSvec <- c(score$msms,score$msmsQuantile,score$msmsEff)
 MSvec[MSvec > 1] <- 1
 score$combiMSMS <- mean(MSvec)
 # 4. nLC combi score
@@ -459,12 +532,14 @@ summary.Data$LCcombiScore <- mean(nLCvec)
 # efficiency 
 # if(length(msmsEff) == 1){
 # if(any(is.na(msmsEff))){
-
-
-return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein))
+parID <- speciesUsed$Abbreviation
+if(length(parID) == 0){
+  parID <- "not detected"
 }
-#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
+return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein,parID = parID,SpecStat = MostProperSpecies))
+}
+#tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data =  temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
-
+# start.qc()
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))

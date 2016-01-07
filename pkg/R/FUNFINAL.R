@@ -409,14 +409,14 @@ try(htmlMod(pathHtml = paste(finalMQQC,"index.html",sep = "/"),Machines = Machin
 cat("\rfinished FUNFINAL function")
 }
 
-# Param <- mqqcGUI()
-# folder <- Param$folder
-#  RESettings <- Param[grep("^RE",names(Param))]
-#   StandardIDs = c("","");placeholder = "PLACEHOLDER"
-#   LoadSettings(sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_")
-#     LoadSettings(RESettingsSep = "_",StandardIDs = c("",""), placeholder = "PLACEHOLDER" )
-#   funlastLoop = 2
-#   try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
+#  Param <- mqqcGUI()
+#  folder <- Param$folder
+#   RESettings <- Param[grep("^RE",names(Param))]
+#    StandardIDs = c("","");placeholder = "PLACEHOLDER"
+#    LoadSettings(sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_")
+#      LoadSettings(RESettingsSep = "_",StandardIDs = c("",""), placeholder = "PLACEHOLDER" )
+#    funlastLoop = 2
+#    try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 # #  system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))
 # #finalMQQC <- finalMQQC
 # #sucFolder="_RmqqcFile_Processed"

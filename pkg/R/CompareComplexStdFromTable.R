@@ -64,7 +64,10 @@ if(TargetVec == StandardIDs[2]&TargetVec!= ""){
   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","msmsMassCount.50.","MS Median Intensity","MSMS Median Fragment Counts", logPlot = "x",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))
 #  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"System.Time.s","Coverage","Date","Coverage [%]", axesplot = F,leg = F))
   try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","Coverage","Uncalibrated mass error [ppm]","Coverage [%]", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines))
-
+  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"MSID.min","Coverage","Features [1/min]","Coverage [%]", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines))
+  
+  
+   
 }else{
   #print(UniMachine)
   try(PlotTwoFun(tempListOne = tempListOne,"msmsQuantile.50.","score.50.","MSMS Median Intensity","Andromeda Median Score",logPlot = "x",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))  
@@ -73,11 +76,11 @@ if(TargetVec == StandardIDs[2]&TargetVec!= ""){
   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","msmsQuantile.50.","MS Median Intensity","MSMS Median Intensity", logPlot = "xy",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))
   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","msmsMassCount.50.","MS Median Intensity","MSMS Median Fragment Counts", logPlot = "x",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))
 #LegFun <- PlotTwoFun(tempListOne = tempListOne,"System.Time.s","quan.msms.min","Date","MSMS/min", axesplot = F,leg = F)
-  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","quan.msms.min","Uncalibrated mass error [ppm]","MSMS/min", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))
-
+  # try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","quan.msms.min","Uncalibrated mass error [ppm]","MSMS/min", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF))
+  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"MSID.min","quan.msms.min","Features/min","PSMs/min", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines))
+  
 
 }
-
 
 
 
@@ -103,14 +106,14 @@ if(pdfShow){
 
 DensMatrixTemplate <<- rbind(
   #MS
-  c("quan.msms.min","IDs/min",F,"MS"),
+  c("MSID.min","Features/min",F,"MS"),
   c("Intensity.50.","log10 MS Median Intensity",T,"MS"),
   c("mass.error.uncal.50.","Mass Error in [ppm]",F,"MS"),
   c("Coverage","Coverage",F,"MS"),
   #MSMS
+  c("quan.msms.min","IDs/min",F,"MSMS"),
   c("msmsQuantile.50.","log10 MSMS Median Intensity",T,"MSMS"),
   c("msmsMassCount.50.","MSMS Median Fragment Counts",F,"MSMS"),
-  c("msmsEff","identified MSMS",F,"MSMS"),
   #nlc
   c("LCcombiScore","LC profile symmetry",F,"LC"),
   c("ret.width.50.","Retention Time [min]",F,"LC"),
@@ -152,60 +155,66 @@ LegFun <- LegFun
 for(i in unique(DensMatrixTemplate[,4])){
   tempDensMatrix <-   DensMatrixTemplate[DensMatrixTemplate[,4]== i,]
   for(a in 1:vmax){
-  if(a > dim(tempDensMatrix)[1]){
-    empty.plot()
-  }else{  
-
-  tempI <<- tempListOne[,tolower(colnames(tempListOne)) ==  tolower(tempDensMatrix[a,1])]
-#print(length(tempI))
-tempDensMatrix <<- tempDensMatrix
-  if(length(tempI) > 0){
-  if(tempDensMatrix[a,3] == "TRUE"){
-    tempI <- log10(tempI)
-  }
-  tempM <<- aggregate(tempI,list(UniMachine),median,na.rm = T)
-  temp <<- aggregate(tempI,list(UniMachine),function(x){
-    
-      tempi <- class(try(tempDens <- density(x,na.rm = T),silent = F))
-      if(tempi!="try-error"){
-        tempDens$y <- tempDens$y /max(tempDens$y,na.rm = T)
-      }else{tempDens <- list(x=0,y = 0)}
-    
-      return(tempDens)})
-  
-  OrderFun <- merge.control(temp$Group.1,LegFun$Mac)
-  xlim <- range(tempI[!is.infinite(tempI)],na.rm = T)
-  if(!any(c(is.na(xlim),is.infinite(xlim)))){
-  plot(1,type = "n",ylim = c(0,1),xlim =xlim ,xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
-  }else{
-    plot(1,type = "n",ylim = c(0,1) ,xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
-    
-  }
-  itCompare <<- 0
-  #print(OrderFun)
-  sapply(OrderFun,function(x){
-    itCompare <<- itCompare+1
-    subDens <- temp$x[x,]
-    try(subDens$y <- subDens$y /max(subDens$y ))
-    trye <- class(try(points(subDens,col = LegFun$col[itCompare],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
-    if(trye!="try-error"){
-    try(xl<- median(tempM[x,2],na.rm = T))
-    #abline(v = xl<- median(tempM[x,2],na.rm = T),col = LegFun$col[x],lty = "dotted")
-    try(subvec <- abs(xl -subDens$x) )
-    try(yl <- subDens$y[subvec == min(subvec,na.rm = T)][1])
-    try(lines(c(xl,xl),c(0,yl),col = LegFun$col[itCompare],lty = "dotted"))
-    try(axis(1,at = xl,col = LegFun$col[itCompare],label = ""))
+    if(a > dim(tempDensMatrix)[1]){
+      empty.plot()
+    }else{  
+      
+      tempI <- tempListOne[,tolower(colnames(tempListOne)) ==  tolower(tempDensMatrix[a,1])]
+      #print(length(tempI))
+      tempDensMatrix <- tempDensMatrix
+      if(length(tempI) > 0){
+        if(tempDensMatrix[a,3] == "TRUE"){
+          tempI <- log10(tempI)
+        }
+        tempM <- aggregate(tempI,list(UniMachine),median,na.rm = T)
+        temp <- aggregate(tempI,list(UniMachine),function(x){
+          tempDens <- list(x = 0,y = 0)
+          tempi <- class(try(tempDens <- density(x,na.rm = T),silent = F))
+          if(tempi!="try-error"){
+            tempDens$y <- tempDens$y /max(tempDens$y,na.rm = T)
+          }
+          return(tempDens)})
+        
+        OrderFun <- merge.control(temp$Group.1,LegFun$Mac)
+        xlim <- range(tempI[!is.infinite(tempI)],na.rm = T)
+        if(!any(c(is.na(xlim),is.infinite(xlim)))){
+          plot(1,type = "n",ylim = c(0,1),xlim =xlim ,xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
+        }else{
+          plot(1,type = "n",ylim = c(0,1) ,xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
+          
+        }
+        itCompare <<- 0
+        #print(OrderFun)
+        sapply(OrderFun,function(x){
+          itCompare <<- itCompare+1
+          if(is.matrix(temp$x)){
+            subDens <- temp$x[x,]
+          }
+          if(exists("subDens")){
+          try(subDens$y <- subDens$y /max(subDens$y ))
+          trye <- class(try(points(subDens,col = LegFun$col[itCompare],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
+          if(trye!="try-error"){
+            try(xl<- median(tempM[x,2],na.rm = T))
+            #abline(v = xl<- median(tempM[x,2],na.rm = T),col = LegFun$col[x],lty = "dotted")
+            try(subvec <- abs(xl -subDens$x) )
+            try(yl <- subDens$y[subvec == min(subvec,na.rm = T)][1])
+            try(lines(c(xl,xl),c(0,yl),col = LegFun$col[itCompare],lty = "dotted"))
+            try(axis(1,at = xl,col = LegFun$col[itCompare],label = ""))
+          }
+          }
+          
+        })
+        
+        
+        
+      }else{
+        plot(1,type = "n",ylim = c(0,1),xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
+      }
     }
-  })
-  
+  }
+}
 
-  
-}else{
-  plot(1,type = "n",ylim = c(0,1),xlab = "",main  = tempDensMatrix[a,2],ylab = "",frame = F)
-}
-}
-}
-}
+
 par(mai = rep(0,4),mar = rep(0,4))
 empty.plot()
 legend("left"
@@ -216,9 +225,12 @@ legend("left"
 )
 
 graphics.off()
-#system(paste("open",pdfName))
+# system(paste("open",pdfName))
+
+try(PairsFun(tempListOne,DensMatrixTemplate = DensMatrixTemplate,pdfname = paste(finalMQQC ,"TimeLines", paste("Correlations",PDFname,sep = "_"),sep = "/")))
+
 }
-#try(CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
+# try(CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = T,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = F)
 
 #try(CompareComplexStdFromTable(tempListOne = input,RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = "",PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
 

@@ -9,6 +9,8 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   if(length(grep("tcltk2",library())) == 0){
     install.packages("tcltk2", repos = source)
   }
+  
+  
 
   ## Fox SpeciesTable
   Spec <-list.files(paste(path.package("mqqc"),"/data",sep = ""),full.name = T) 
@@ -32,6 +34,9 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
     }  
   }
 
+  # Modifiying Species, Add DP
+  
+  
   if(length(grep("contaminants.csv$",Spec)) == 0){
     if(length(grep("contaminants.csv",Spec))> 0){
       MQQCspectab <- grep("contaminants.csv.gz",Spec,value = T)[1]
@@ -81,7 +86,7 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
   
     print("Initiate Settings")
 
-  if(automatedStart){
+if(automatedStart){
 	Tryerror<- class(try(load(file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))))
 	if(Tryerror== "try-error"){
 			print("Error, could not auto start. No Param.Rdata available.")
@@ -137,6 +142,41 @@ if(file.exists(as.character(Param$MQ))){
     try(writeToHtml(path =paste(htmloutPath,"index.html",sep = "/"),Machines = Param$Machines),silent = T)
     dir.create(paste(folder,"_RmqqcFile_Old",sep = "/"), showWarnings = F)
 
+    dbPath <- paste(folder,paste("_RmqqcFile_databases"),sep = "/")
+    
+  if(!file.exists(dbPath)){
+    dir.create(dbPath)
+  }
+    cat("Setting up Generic Database")
+    GenericDBPathCounts <<- paste(dbPath,"NameCounts.rda",sep = "/")
+    GenericDBPath <<- paste(dbPath,"GenericDB.fasta",sep = "/")
+    if(!file.exists(GenericDBPath)){
+    data(ArtificDB)
+    data(NameCounts)
+    data(ApexCutsID)
+    na <- grep(">",ArtificDB,fixed = T)
+    naN <-  ArtificDB[na]
+    naM <- match(ApexCutsID[[1]],gsub(">","",naN))
+    naS <- na[naM]
+    Suse <- naS+1
+    FiNa <- sort(c(naS,Suse))
+    ArtificDBFirstSearch <- ArtificDB[FiNa]
+    write(ArtificDB,GenericDBPath )
+    write(ArtificDBFirstSearch,paste(dbPath,"GenericDBFirstSearch.fasta",sep = "/"))
+#     cat("Collecting Names in Generic Database")
+#     FaNa <- grep(">",ArtificDB,value = T,fixed = T)
+#     if(!exists(FaNa)){
+#     cat("Splitting Names in Generic Database")
+#     FaNa <- strsplitslot(FaNa,1,"_")
+#     FaNa <- table(FaNa)
+#     names(FaNa) <- gsub("^>","",names(FaNa))
+#     }
+    
+    try(rm(ArtificDB))
+    cat("Setting up Generic Database Done")
+    }
+    
+    
   if(!file.exists(fastaFile)){fastaFile <- NULL}
   if(.Platform$OS.type == "windows"){
 		try(hui <- initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable))  
@@ -166,10 +206,22 @@ if(file.exists(as.character(Param$MQ))){
   if(SpeciesTable){
     
     species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+    dpruns <- species$DependentPeptides == 0
+    dpcounter <- sapply(species$Abbreviation[dpruns],function(x){any(grepl(x,as.character(species$Abbreviation[!dpruns])))})
+    addTab <- species[dpruns,][!dpcounter,]
+    if(dim(addTab)[1] > 0){
+      
+      addTab$DependentPeptides <- 1
+      addTab$Abbreviation <- paste(addTab$Abbreviation ,"dp",sep = "")
+      species <- rbind(species,addTab)
+      species <- species[order(species$Abbreviation),]
+      species <- unique(species)
+      write.csv(species,paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F,row.names = F,sep = ",")
+    }
     XMLCheck <- species$Xml[file.exists(as.character(species$Xml))]
     if(length(XMLCheck) > 0){
       sapply(XMLCheck,function(x){
-        try(initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable,fastaInput=x))       
+        #try(initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable,fastaInput=x))       
       })
     }
   }

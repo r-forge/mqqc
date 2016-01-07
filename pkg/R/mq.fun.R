@@ -1,5 +1,8 @@
+
+
+
 mq.fun <-
-function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = list(Repar = "._.*_.*_PLACEHOLDER"),placeholder = "PLACEHOLDER",skipUnknown = T,UseOwnXML = F, StandardIDs = StandardIDs){
+function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = list(REpar = "._.*_.*_PLACEHOLDER_"),placeholder = "PLACEHOLDER",skipUnknown = T,UseOwnXML = F, StandardIDs = StandardIDs,GenDB = NULL,testFun = F){
 RunFile <- T
 if(exists("db")){
 	if(length(db) == 0){
@@ -16,6 +19,7 @@ if(exists("db")){
 # creating string for system call of MQ
 	#check MQ path
 	checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
+
 	if(length(checkMQ)==0 & .Platform$OS.type == "windows"){
 		cat("\rChoose MQ Directory!",rep(" ",100))
 		MQloop <- T
@@ -33,13 +37,12 @@ if(exists("db")){
 		}	
 	}else{
 		checkMQ.bin <- readLines(checkMQ)
-    
 	}
   
 	# preparing XML
 	  assign("filePath",filePath,envir = .GlobalEnv)
 
-   
+	  
       
   if(SpeciesTable){
     species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
@@ -56,15 +59,21 @@ if(exists("db")){
     speciesUsed <- species[temp,]
   }else{
     speciesUsed <- species[species$Abbreviation == "default",]
+    speciesUsed$Fasta <- GenericDBPath
   }	
-
+    print("HUI")
+    
   if(length(speciesUsed) > 0){
     
     if(dim(speciesUsed)[1] > 1){
       speciesUsed <- speciesUsed[1,]
     }
     
-    UseOwnXML <- file.exists(as.character(speciesUsed$Xml))
+    xmlp <- as.character(speciesUsed$Xml)
+    if(length(xmlp) ==0){
+      UseOwnXML <- F
+    }else{ UseOwnXML <- file.exists(xmlp)}
+   
     if(UseOwnXML){
       mqpar.name <- speciesUsed$Xml
     }
@@ -75,8 +84,8 @@ if(exists("db")){
     
     db <- speciesUsed$Fasta
 	  tryError <- class(try(dbControl <- readLines(as.character(speciesUsed$Fasta),n= 1)))
-
-    if(tryError == "try-error"){
+	  
+    if(tryError == "try-error" & !testFun){
     
       
       if(skipUnknown){
@@ -85,17 +94,31 @@ if(exists("db")){
         RunFile <- F
       }else{
         cat("\nError, Could not read fasta, switched to default database.\n")
+        db <- NA
       }
       
       db <- list.files(path.package("mqqc"),pattern = "fasta",recursive = T,full.name =T)
-    }else{try(
-      write("",paste(dirname(filePath),"MQEnterTag",sep = "/")))}
+    }else{
+      try(write("",paste(dirname(filePath),"MQEnterTag",sep = "/")))
+      }
     if(length(grep("/",db,fixed = T)) > 0){
       db <- path.convert(db)
+      try(dn <- GenericDBPath)
+      
     }
     
   }else{
+    if(skipUnknown){
+      
     db <- NA
+    
+    }else{
+      if(length(GenDB) == 0){
+        GenDB <-NA 
+        try(GenDB <- GenericDBPath)
+      }
+      db <- GenDB 
+    }
   }
   
   }
@@ -115,11 +138,16 @@ if(length(CheckDB) == 0){
 
   if(!UseOwnXML){
     mqpar.name 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"init_mqpar_lf.xml",full.name = T)
+    try(mqpar.name2 	<- 	list.files(paste(path.package("mqqc"),"data",sep ="/"),"GDB.xml",full.name = T))
+    if(length(GenDB) > 0){
+      mqpar.name <- mqpar.name2
+    }
   }
   if(length(mqpar.name)!=0){
     mqpar   			<- 	readLines(as.character(mqpar.name))
-    xmlNEW   	    <- 	xml.replace(c("filePaths"),path.convert(filePath),mqpar)
     xmlNEW         <- xml.replace(c("filePaths"),path.convert(filePath),mqpar)
+    
+    
     if(length(speciesUsed$DependentPeptides) > 0){
       if(speciesUsed$DependentPeptides){
         mqparDP <- grep("<dependentPeptides>",xmlNEW)
@@ -149,10 +177,29 @@ if(length(CheckDB) == 0){
       
     }
     if(!is.na(db)){
-      xmlNEW<- xml.replace("fastaFiles",db , xmlNEW) 
+      xmlNEW<- xml.replace("fastaFiles",db , xmlNEW)
+      if(length(GenDB) > 0){
+        if(!is.na(GenDB)){
+          if(any(grepl("<fastaFilesFirstSearch />",xmlNEW))){
+            where <- grep("<fastaFilesFirstSearch />",xmlNEW)
+            xmlNEWstart <- xmlNEW[1:(where-1)]
+            xmlNEWend <- xmlNEW[(where+1):length(xmlNEW)]
+            xmlNEWmiddle <- xmlNEW[where]
+            xmlNEWmiddle <- c(gsub(" />",">",xmlNEWmiddle,fixed = T))
+            xmlNEWmiddle <- c(xmlNEWmiddle,"      <string>/bla.fasta</string>" ,gsub("<fasta","</fasta",xmlNEWmiddle))
+            xmlNEW <- c(xmlNEWstart,xmlNEWmiddle,xmlNEWend)
+          }
+          xmlNEW<- xml.replace("fastaFilesFirstSearch",gsub("GenericDB.fasta$", "GenericDBFirstSearch.fasta",db), xmlNEW) 
+        }
+      }
+      
+      
     } 
+    # print(grep("fasta",xmlNEW,value = T))
   }
-    
+	  if(speciesUsed$Abbreviation == "default"){
+	    xmlNew<- gsub("<proteinFdr>.*.</proteinFdr>","<proteinFdr>1</proteinFdr>",mqpar)
+	  }
     if(RunFile){
 		  write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
   	  
@@ -183,7 +230,11 @@ if(length(CheckDB) == 0){
     try(   	write.csv("",paste(dirname(filePath),"DeleteTag",sep = "/")))
   
   }
-  
+# 	print(db)
+# 	print(MQcmd)
+#   print("DONE")
+	
 	#convert slashes to backslashes
 }
 
+# mq.fun("./Icke_20151144_HZ_BSAs_biueo",folder = folder,StandardIDs = c("ECstd","BSA"),testFun = F )

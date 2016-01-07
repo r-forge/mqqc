@@ -1,6 +1,8 @@
 plot.scores <-
 function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSACheck = F,colType = c("greenblue"))
 {
+  #TODO:   
+
   cat("\rplotting scores",rep(" ",100))
   #initiation of important vectors 
   if(colType == "greenblue"){
@@ -58,7 +60,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   TotalScore[TotalScore > 1] <- 1
   #TotalScore <- as.data.frame(t(as.data.frame(TotalScore)))
   
-  matchPa <- c("msms","msmsCount.50%","msmsQuantile.50%","mass.error.50%","score.50%","peak.shape")
+  matchPa <- c("msms","msmsCount.50%","msmsQuantile.50%","mass.error.50%","Intensity.50%","peak.shape.50%","MSID.min","ret.width.50%","nLCcombi")
   Temp <- merge.control(names(TotalScore),matchPa)
   
   finalAna <- TotalScore[Temp]
@@ -216,9 +218,27 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
     c("File",tempLeg,"","Details", LegString[-1])
   
   if(length(summary.data$missed.cleavages.percent) > 0){
-    if(summary.data$missed.cleavages.percent != "not available"){
+    if(summary.data$missed.cleavages.percent != "not available"&all(is.na(data.list$SpecStat))){
       mc <- round(as.numeric(summary.data$missed.cleavages),2)
       LegString = c(LegString,paste("missed cleavages:",mc,"%"))	
+    }else{
+      if(!all(is.na(data.list$SpecStat))){
+      SPEC <- data.list$SpecStat
+      SPEC <- SPEC[order(SPEC[,3],decreasing = T),]
+      SPECs <- SPEC[SPEC$Enrichment.p.BH == min(SPEC$Enrichment.p.BH) ,]
+      SpecRes <- apply(SPECs[,c(1,3,4)],1,function(x){
+          
+          try(data(NameCounts) )
+        if(exists("FaNa")){
+          x[1]<- NameAlternative[match(x[1],names(FaNa))]
+        }
+          x <- paste(c(" s: "," c: "," p: "),as.character(x),sep = "")
+          x <- paste(x,collapse ="")
+        return(x)
+      })
+      
+      LegString = c(LegString,paste("Species Detected:",SpecRes[1]))	
+      }
     }
   } 
   
@@ -348,7 +368,9 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   
   plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col.dir = NULL,xlimV = NULL,RampCols = c(MaxCol,"yellow","green")){
     col.temp <- (colorRampPalette(RampCols)(thresh*100))
-    
+    if(length(thresh) == 0){
+      thresh <- 0
+    }
     if(rev){
       col.temp <- (colorRampPalette(RampCols[-length(RampCols)])(thresh*100))
       col.temp <- rev(c(col.temp,rep(RampCols[length(RampCols)],thresh*100)))	
@@ -382,13 +404,10 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   ##
   # Peptide ID/min
   ##
-  if(BSACheck){
-    trytest <- 	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MS", col.dir = col.temp[round.spec(score$ProteinCoverage)]))
-    
-  }else{
-    trytest <- try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "Peptide [ID/min]",main = "MS", col.dir = col.temp[round.spec(score$msms)]))
+  if(length(thresholds$MSID.min) == 0){
+    thresholds$MSID.min <- c(500)
   }
-  
+  trytest <- try(plot.stat(summary.data$MSID.min,thresholds$MSID.min, name.val = "Features [ID/min]",main = "MS", col.dir = col.temp[round.spec(score$MSID.min)]))
   if(class(trytest) == "try-error"){
     empty.plot()
   }
@@ -459,7 +478,13 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   ##
   # Iden efficiency
   ##
-  trytest <- try(plot.stat(summary.data$msmsEff,thresholds$msmsEff,name.val = "Identification efficiency [%]",main = "MSMS",col = col.temp[round.spec(score$msmsEff)]))
+  if(BSACheck){
+    trytest <- 	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MSMS", col.dir = col.temp[round.spec(score$ProteinCoverage)]))
+    
+  }else{
+    trytest <- try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "PSMs [ID/min]",main = "MSMS", col.dir = col.temp[round.spec(score$msms)]))
+  }
+  # trytest <- try(plot.stat(summary.data$msmsEff,thresholds$msmsEff,name.val = "Identification efficiency [%]",main = "MSMS",col = col.temp[round.spec(score$msmsEff)]))
   if(class(trytest) == "try-error"){
     empty.plot()
   }
@@ -580,7 +605,14 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   
   
   ##plot.quans(summary.data$mass.error.cal,F,"mass.error","mass.error in ppm",thresholds$mass.error.cal)
-  
+  if(length(data.list$SpecStat) !=0){
+    if(!is.na(data.list$SpecStat)){
+      par(bg = "white",mai = c(1.5,2,0.5,0.2))
+      layout(matrix(1:2,1,2),width = c(0.6,1))
+      fr <<- data.list$SpecStat
+      try(plot(data.list$SpecStat))
+    }
+  }
   
   
   
@@ -596,6 +628,10 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
 
 return(list(TotalScore = SCVecs,TotalScoreColor = ColScore,plotData = plotData))
 }
+# tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
+
+# tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
+
 
 #tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 #tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))

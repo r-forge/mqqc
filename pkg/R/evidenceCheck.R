@@ -39,7 +39,7 @@ function(hotFolder, match = "evimsms", sucFolder)
    		
    }
       
-  mqqcInfo <- NULL
+   mqqcInfo <- NULL
   if(length(tempI)> 0){
     # Check if evidence was already processed if yes, no output of evidence path
     mqqcInfo <- c()
