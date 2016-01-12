@@ -1,5 +1,5 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org"){
+function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org",TabOrd = "source"){
   .GlobalEnv$MQQCRestartNow <- "no"
   try(tkControl(htmloutPath = htmloutPath))
  
@@ -302,7 +302,7 @@ if(funlastLoop %% 2 == 0){
 	sucFolder <<- sucFolder
 
  	cat("\r Updating Table")
-					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs))
+					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs,ordertype = TabOrd))
 		
   
 	}

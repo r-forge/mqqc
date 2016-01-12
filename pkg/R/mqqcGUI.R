@@ -209,6 +209,17 @@ dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
 	tk2tip(tk2label,"Display Warnings and errors in console.")	
 
 
+	tb1.TableOrder.var 					<- c("system","source")
+	tb1.val.pep.TableOrder 				<- tclVar()  
+	if(length(output$htmlsort) == 0){output$htmlsort = "source"}
+	tclvalue(tb1.val.pep.TableOrder) 	<- (output$htmlsort)
+	comboBox 							<- tk2combobox(TKMisc,values=tb1.TableOrder.var,textvariable = tb1.val.pep.TableOrder,width = 17,state = "readonly",width = 6)
+	tk2labelTaOr <- tk2label(TKMisc,text = "Table Sorting")
+	tkgrid(tk2labelTaOr,comboBox,pady = 2,sticky = "NSWE")
+	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
+	tk2tip(tk2labelTaOr,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads and uses n-1 for MQQC analysis.")
+	
+	
 	######
 	# cores
 	######
@@ -558,7 +569,8 @@ output <- list(
 		Machines = Machines,
 		StdIDhigh = tclvalue(StdIDhigh),
 		StdIDlow = tclvalue(StdIDlow),
-		BSAID = tclvalue(StdIDlowID)
+		BSAID = tclvalue(StdIDlowID),
+		TabOrd = tclvalue(tb1.val.pep.TableOrder)
 		)
 if(!.GlobalEnv$MQQCRestored ){
 save(output,file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))
@@ -593,7 +605,8 @@ return(output)
 
 }
 
-# Param <- mqqcGUI()
+ Param <- mqqcGUI()
+ print(Param)
 	# while(.GlobalEnv$MQQCRestartNow == "yes"){
   	#	 Param <- mqqcGUI()
 	#}

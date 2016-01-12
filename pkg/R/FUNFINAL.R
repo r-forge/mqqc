@@ -1,5 +1,5 @@
 FUNFINAL <-
-function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy"), dayThresh = 5, RESettings = NULL, RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" ){
+function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy"), dayThresh = 5, RESettings = NULL, RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" ,ordertype = "source"){
 #StandardIDs[1] = ""
   # ToDo Table is not rpeorted # html Path is not set 
   
@@ -152,7 +152,17 @@ if(file.exists(collectListPath)){
     
     
 		tempList <- tempListOne[Names == iNames,]
-		try(		tempList <- tempList[order(tempList$SourceTime,decreasing = T),])
+		
+		if(ordertype == "source"){
+		  try(		tempList <- tempList[order(tempList$SourceTime,decreasing = T),])
+		  
+		}
+		if(ordertype == "system"){
+		  try(		tempList <- tempList[order(tempList$System.Time.s,decreasing = T),])
+		  
+		}
+		
+		
 		if(dim(tempList)[1] > 10){
 			tempList <- tempList[1:10,]
 		}
