@@ -605,8 +605,8 @@ return(output)
 
 }
 
- Param <- mqqcGUI()
- print(Param)
+ # Param <- mqqcGUI()
+ # print(Param)
 	# while(.GlobalEnv$MQQCRestartNow == "yes"){
   	#	 Param <- mqqcGUI()
 	#}
