@@ -152,7 +152,7 @@ if(file.exists(collectListPath)){
     
     
 		tempList <- tempListOne[Names == iNames,]
-		
+		tempList <- tempList[!is.na(tempList$SourceTime),]
 		if(ordertype == "source"){
 		  try(		tempList <- tempList[order(tempList$SourceTime,decreasing = T),])
 		  
