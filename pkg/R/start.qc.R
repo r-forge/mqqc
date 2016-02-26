@@ -317,7 +317,7 @@ start.qc <-
 
 
 
-#start.qc()
+# start.qc()
 #start.qc("/Users/henno/temp/test/TiffyEC/txt/evidence.txt")
 #start.qc()
 #system(paste("open ",list.files(pattern = ".pdf",recursive = T,full.name = T)))

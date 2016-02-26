@@ -1,6 +1,8 @@
 plottingTimeLineFunction <- function(AllData,finalMQQC,TargetVec = "ECstd",PDF = F,lwdfac = 1, RESettings = RESettings, TLname = ""){
+  os <-   options("warn")
 
-#AllData <- backup
+  options(warn = -1)
+  #AllData <- backup
 uniSample <- AllData[grep(TargetVec, AllData$Name),]
 test <- sub(RESettings$REmac,"", as.character(uniSample$Name))
 
@@ -10,10 +12,31 @@ UniMachine  <- grepRE(as.character(uniSample$Name),RESettings$REmac)
 test <- sub(RESettings$REmac,"", UniMachine)
 
 
-Vec.Test <- c("quan.msms.min","Intensity.50%","msmsMassCount.50%","mass.error.uncal.50%")
-Names <- c("Peptide ID / min","MS Median Intensity","Fragment Counts / MSMS","uncalibrated Mass Error [ppm]")
+#Vec.Test <- c("quan.msms.min","Intensity.50%","msmsMassCount.50%","mass.error.uncal.50%")
+#Names <- c("Peptide ID / min","MS Median Intensity","Fragment Counts / MSMS","uncalibrated Mass Error [ppm]")
+DensMatrixTemplate <- rbind(
+  #MS
+  c("MSID.min","Features/min",F,"MS"),
+  c("Intensity.50.","MS Median Intensity",T,"MS"),
+  c("mass.error.uncal.50.","Mass Error in [ppm]",F,"MS"),
+ # c("Coverage","Coverage",F,"MS"),
+  #MSMS
+  c("quan.msms.min","IDs/min",F,"MSMS"),
+  c("msmsQuantile.50.","MSMS Median Intensity",T,"MSMS"),
+  c("msmsMassCount.50.","MSMS Median Fragment Counts",F,"MSMS"),
+  #nlc
+  c("LCcombiScore","LC profile symmetry",F,"LC"),
+  c("ret.width.50.","Retention Time [min]",F,"LC"),
+  c("ret.peak.shape.50.","Peak shape",T,"LC"))
+
+Vec.Test <- DensMatrixTemplate[,1]
+Names <- DensMatrixTemplate[,2]
+TypeQC <- DensMatrixTemplate[,4]
+# Names <- paste(TypeQC,Names,sep = ": ")
+
 ColMQQCTLPLOTTING <<- c()
 log2Fun <- c(F,T,F,F)
+log2Fun <- c(F,T,F,F,T,F,F,F,T)
 # for(i in log2Fun){
 # 	if(any(make.names(colnames(AllData)) == make.names(i))){
 # 		#AllData[,make.names(colnames(AllData)) == i] <- log10(AllData[,make.names(colnames(AllData)) == i] )
@@ -21,16 +44,19 @@ log2Fun <- c(F,T,F,F)
 # 	}
 # }
 
-lapply(make.names(Vec.Test),function(x){
+nouse <-lapply(make.names(Vec.Test),function(x){
 	tempVal <- as.character(tolower(colnames(uniSample)))
 	tempVal[is.na(tempVal)] <- "NA"
 	tempVal <-make.names(tempVal)	 == make.names(tolower(x))
+	checkty <- uniSample[,tempVal]
+	checktyS <- is.infinite(checkty)
 	if("mass.error.cal.50%" == x){
-	test<- aggregate(uniSample[,tempVal],list(UniMachine),min,na.rm = T)
+	test<- aggregate(checkty[!checktyS],list(UniMachine[!checktyS]),min,na.rm = T)
 		
 	}else{ 
-	test<- aggregate(uniSample[,tempVal],list(UniMachine),max,na.rm = T)
+	test<- aggregate(checkty[!checktyS],list(UniMachine[!checktyS]),max,na.rm = T)
 	}
+	test[is.infinite(test[,2]),2] <- NA
 	ColMQQCTLPLOTTING <<- 	cbind(ColMQQCTLPLOTTING,test[,2])
 	rownames(ColMQQCTLPLOTTING) <<- test[,1]
 	
@@ -47,20 +73,23 @@ names(MaxV) <- Vec.Test
 names(MinV) <- Vec.Test
 
 colnames(ColMQQCTLPLOTTING) <- Vec.Test
-for(i in unique(UniMachine)){
-	dir.create(paste(finalMQQC ,"TimeLines",sep = "/"))
+unim <- unique(UniMachine)
+# unim <- "Gladys"
+for(i in unim){
+  # print(i)
+	dir.create(paste(finalMQQC ,"TimeLines",sep = "/"),showWarnings = F)
 if(PDF){
 	inputName <- paste("TimeLine",TLname,".pdf",sep = "")
-		pdf(pdfName <- paste(finalMQQC ,"TimeLines",paste(i,inputName,sep = "-"),sep = "/"),height = 3.5,pointsize = 12,width = 17)
-	par(mai = c(1.2,0.5,0.5,0.1),mfrow = c(1,length(Vec.Test)),cex = 0.5,lwd =1)
+		pdf(pdfName <- paste(finalMQQC ,"TimeLines",paste(i,inputName,sep = "-"),sep = "/"),height = 10,pointsize = 12,width = 15)
+	par(mai = c(1.2,0.5,0.5,0.1),mfrow = c(3,3),cex = 0.5,lwd =1)
 	lwdfac = 1
 
 }else{
 	
 		inputName <- paste("TimeLine",TLname,".jpg",sep = "")
 
-		jpeg(pdfName <- paste(finalMQQC ,"TimeLines",paste(i,inputName,sep = "-"),sep = "/"),height = 350*1.1,pointsize = 10,width = 1700*1.1, quality = 90)
-	par(mai = c(3.4,2,2,0.1)/2,mfrow = c(1,length(Vec.Test)),cex = 1,lwd =3)
+		jpeg(pdfName <- paste(finalMQQC ,"TimeLines",paste(i,inputName,sep = "-"),sep = "/"),height = 1250,pointsize = 10,width = 1700*1.1, quality = 90)
+	par(mai = c(3.4,2,2,0.1)/2,mfrow = c(3,3),cex = 1,lwd =3)
 	lwdfac = 2
 
 }
@@ -124,7 +153,9 @@ for(a in Vec.Test){
     
     BestV <- log10(BestV)
     NameTemp <- paste("log10",NameTemp)
+    
   } 	
+
  	# if(a == Vec.Test[5]){
 
   # y <- log10(y)
@@ -137,13 +168,14 @@ for(a in Vec.Test){
   if(all(is.na(y))){y[is.na(y)] <- 0;Count[is.na(Count)] <- 0}
 	if(length(x) == length(y) & length(y) > 0 & any(!is.na(Count))){
 		
-	if(BordPlot){
+	if(BordPlot&0){
 		rangeVal <- range(c(Count,CountUp,CountLo),na.rm = T)
 		
 	}else{
-		rangeVal <- range(c(Count),na.rm = T)
+		rangeVal <- range(c(Count[!is.infinite(Count)]),na.rm = T)
 
 	}
+	# print(rangeVal)
 	#if(rangeVal[1] > 0){rangeVal[1] <- 0}
 if(!is.na(BestV) & a != grep("mass.error",(Vec.Test),value =T )){
 	if(rangeVal[2] < BestV)
@@ -157,7 +189,7 @@ y <- y[xYear]
 
 if(!any(c(all(is.na(x)),all(is.na(y))))){
 
-plot(x, y,axes = F,type = "n",lwd = 3,xlab = "",ylab = NameTemp,main = paste(i, NameTemp,sep = "\n"),cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
+plot(x, y,axes = F,type = "n",lwd = 3,xlab = "",ylab = NameTemp,main = paste(i, paste(TypeQC[it.a],NameTemp,sep = ": "),sep = "\n"),cex.main =2.25,cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
 grid()
 
 it.a <- it.a+1 # Counter for Names
@@ -166,11 +198,15 @@ it.a <- it.a+1 # Counter for Names
 
 	#lines(x,CountUp,type = "l",lty = "dashed",lwd = 1,col = "red")
 	#lines(x,CountLo,type = "l",lty = "dashed",lwd = 1,col = "red")
-polygon(c(x, rev(x)), c(CountUp[xYear], rev(CountLo[xYear])),
+	  coup <- CountUp[xYear]
+	  colo <- CountLo[xYear]
+	  sel <- is.na(coup)|is.na(colo)|is.na(x)
+	  sel <- !sel
+    polygon(c(x[sel], rev(x[sel])), c(coup[sel], rev(colo[sel])),
      col = "grey80", border = NA)
      }
   
-       lines(x,y,lwd =4*lwdfac,col = "grey30")
+       lines(x,y,lwd =2*lwdfac,col = "grey30")
 	time <- as.numeric(as.character(tempI$System.Time.s))[!deleteTimeVec]
   label <- substr(TimeI[! deleteTimeVec,1],1,10)
   if(as.numeric(Sys.time())-max(time) > 86400){
@@ -182,23 +218,28 @@ polygon(c(x, rev(x)), c(CountUp[xYear], rev(CountLo[xYear])),
 	axis(2,cex.axis = 2)
 	
 	if(!is.na(BestV)){
-		abline(h = BestV,col = "tomato",lty = "1414",lwd = 2*lwdfac)
+		# abline(h = BestV,col = "tomato",lty = "1414",lwd = 2*lwdfac)
 	}
 	if(length(MacLine) > 0){
-		abline(h = MacLine,col = "cadetblue",lty = "4949",lwd = 2*lwdfac)
+		# abline(h = MacLine,col = "cadetblue",lty = "4949",lwd = 2*lwdfac)
 	}
 	}
  points(lowess(x,y),type = "l",col = "orange",lwd = 2*lwdfac)
 
-if(it.a == 2){legend("bottomleft",legend = c("All",i),col = c("tomato","cadetblue"),box.col = "transparent",title = "Best value",lty = "dashed",bg = "#FFFFFF70")}
+# if(it.a == 2){legend("bottomleft",legend = c("All",i),col = c("tomato","cadetblue"),box.col = "transparent",title = "Best value",lty = "dashed",bg = "#FFFFFF70")}
 
 }
 }
 }
 	graphics.off()
 #stop()
+	 # system(paste("open", pdfName))
+	
 }
-#system(paste("open", pdfName))
+options(warn = unlist(os))
+}
+# LoadSettings( AllData= collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high")
+# (plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high"))
 
-}
 #try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings),silent = F)
+# try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-high"),silent = F)

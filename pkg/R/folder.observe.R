@@ -385,6 +385,7 @@ setwd(folder)
 		}
 
 	if(funlastLoop %% 8640 == 0){
+	    "Cleaning and Archiving"
   		try(CleaningFun(folder))
   		try(archiveProcessedFolder(folder))
   	}

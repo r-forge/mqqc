@@ -24,7 +24,6 @@ if(exists("NameAlternative")){
   for(i in 1:dim(ListReportT)[1]){
     TeN <- gsub(ListReportT[i,2],ListReportT[i,1],TeN)
   }
-  # print(TeN)
   TeN <- sapply(strsplit(as.character(TeN),"#"),function(x){paste(unique(substr(x,1,1)),collapse = "|")})
   MSet[,1] <- TeN
   MSet[AllSet,1] <- paste(MSet[AllSet,1] ,"All",sep = "_")
@@ -47,7 +46,6 @@ names(AllCheckFracSel)[length(AllCheckFracSel)] <- "Other"
 
 if(plotstuff){
   
-  # print(AllCheckFracSel)
   maisave <- par()$mai
   par(mai = rep(0.3,4))
   pie(AllCheckFracSel,col = colorRampPalette(cbPalette)(length(AllCheckFracSel)),border = "white",radius = 0.4,cex = 0.8)

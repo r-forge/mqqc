@@ -48,7 +48,7 @@ thresholds$msmsCounts 	<- c(25,15,35)
 thresholds$Intensities 			<- c(8,6.5,9.5) # log10 int
 thresholds$ProteinCoverage <- 30
 thresholdsBA <- thresholds
-thresholds$MSID.min <- 500
+thresholds$MSID.min <- 2000
 if(SpeciesTable){
 		colnames(Data) <- tolower(colnames(Data))
 
@@ -285,34 +285,63 @@ summary.Data$quan.duplicates 		<- double
 summary.Data$quan.duplicates.msms 	<- double/length(grep("MSMS",Data.i.quant$type))
 summary.Data$score<- quantile(Data.i$score,na.rm = T)
 # sd interquantile
-print("HUI")
+# print("HUI")
 
 if(length(Data.i$calibrated.retention.time[!is.na(Data.i$calibrated.retention.time)])> 1){
-  print("HUI")
+  # print("HUI")
   tempQuan   <- quantile(Data.i$calibrated.retention.time,na.rm = T)
   
-try(temp   	  <- density(Data.i$calibrated.retention.time))
-
-
+# try(temp2 <- density(sl));temp2$y <- temp2$y*temp2$n/sum(temp2$y)
+# #NF <- length(Data.i$calibrated.retention.time)/length(AllPeptides$Retention.time[!is.na(AllPeptides$Retention.time)])
+# 
+#   #temp$y <- temp$y * NF
+# plot(temp2)
+# points(temp,col = 2,type = "l")
+# 
+# sl <- AllPeptides$Retention.time[AllPeptides$Intensity >quantile(AllPeptides$Intensity)[2]]
+# 
+# 
+# length(sl)
+# hist(sl,breaks = 1000)
+# hist(Data.i$retention.time,add = T,border = 2,breaks = 100)
+if(length(AllPeptides) > 0){
+tempL <- 1:2
+}else{tempL <- 1}
+for(deci in tempL){
+if(deci == 1){
+try(temp   	  <- density(Data.i$calibrated.retention.time))#;temp$y <- temp$y*temp$n/sum(temp$y)
+}
+if(deci == 2){
+  try(temp   	  <- density(AllPeptides$Retention.time))#;temp$y <- temp$y*temp$n/sum(temp$y)
+}
 x <- temp$x
 y <- temp$y
 
 ySel <- y[x > tempQuan[2]&x< tempQuan[4]]
 xSel <- x[x > tempQuan[2]&x< tempQuan[4]]
-slope <- NA
 y<- y
 x<- x
 ySel <- ySel/mean(ySel,na.rm = T)
 xSel <- xSel-min(xSel,na.rm = T)
 xSel <- xSel/max(xSel,na.rm = T) 
-rSDquanRet				<- sd(ySel,na.rm = T)/mean(ySel,na.rm = T)
+if(deci == 1){
+slope <- NA
+rSDquanRet <- NA
+try(rSDquanRet				<- sd(ySel,na.rm = T)/mean(ySel,na.rm = T))
 try(slope <- coefficients(lm(scale(ySel)~xSel))[2])
-
+}else{
+  slopeALL <- NA
+  rSDquanRetALL <- NA
+  try(  rSDquanRetALL				<- sd(ySel,na.rm = T)/mean(ySel,na.rm = T))
+  try(slopeALL <- coefficients(lm(scale(ySel)~xSel))[2]) 
+}
+}
 
 }else{
   rSDquanRet <- NA
   slope <- NA
 }
+
 summary.Data$quanRetRSD <- rSDquanRet
 summary.Data$quanRetSlope <- slope
 #tempQuan <- tempQuan
@@ -441,7 +470,7 @@ score$ProteinCoverage <- ThreshCompare(summary.Data$Coverage,thresholds$ProteinC
 nLCvec <- c(score$quanRetRSD,score$quanRet50ratio,score$quanRetSlope)
 nLCvec[nLCvec > 1] <- 1
 score$nLCcombi <- mean(nLCvec)
-print(score$nLCcombi)
+# print(score$nLCcombi)
 
 #AllPeptides
 msmsEff <- msmsInfo$MSMSEff*100
@@ -470,7 +499,9 @@ if(length(AllPeptides) > 0){
   
   msmsEffQuantile <-  length(Data.i.quant$reverse[Data.i.quant$reverse != "+"])/length(allMSMS)*100
   msmsEff <- msmsEffQuantile
-  summary.Data$MSID.min <- Features/abs(diff(quant.range[c(1,3)]))
+  tempMSIDMIN <- unlist(Features/abs(diff(quant.range[c(1,3)])))
+  names(tempMSIDMIN) <- NULL
+  summary.Data$MSID.min <- tempMSIDMIN 
   score$MSID.min <-   ThreshCompare(summary.Data$MSID.min,thresholds$MSID.min )
   
 }else{score$MSID.min <- NA;summary.Data$MSID.min <- NA}
@@ -515,19 +546,19 @@ score$quan.duplicates.msms 	<- ThreshCompare(summary.Data$quan.duplicates.msms,t
 
 # 2. MS combi score
 #MSvec <- c(score$Intensity,score$mass.error,score$msms)
-MSvec <- c(score$MSID.min,score$mass.error,score$msms)
+MSvec <- c(score$MSID.min,score$mass.error,score$Intensity)
 
 MSvec[MSvec > 1] <- 1
-score$combiMS <- mean(MSvec)
+score$combiMS <- mean(MSvec,na.rm = T)
 # 3. MSMS combi score
-MSvec <- c(score$msms,score$msmsQuantile,score$msmsEff)
-MSvec[MSvec > 1] <- 1
-score$combiMSMS <- mean(MSvec)
+MSMSvec <- c(score$msms,score$msmsQuantile,score$msmsEff)
+MSMSvec[MSMSvec > 1] <- 1
+score$combiMSMS <- mean(MSMSvec,na.rm = T)
 # 4. nLC combi score
 nLCvec <- c(score$nLCcombi,score$peak.shape,score$ret.width)
 nLCvec[nLCvec > 1] <- 1
 score$LCcombi <- mean(nLCvec)
-summary.Data$LCcombiScore <- mean(nLCvec)
+summary.Data$LCcombiScore <- mean(nLCvec,na.rm = T)
 
 # efficiency 
 # if(length(msmsEff) == 1){

@@ -1,6 +1,3 @@
-
-
-
 mq.fun <-
 function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = list(REpar = "._.*_.*_PLACEHOLDER_"),placeholder = "PLACEHOLDER",skipUnknown = T,UseOwnXML = F, StandardIDs = StandardIDs,GenDB = NULL,testFun = F){
 RunFile <- T
@@ -195,7 +192,6 @@ if(length(CheckDB) == 0){
       
       
     } 
-    # print(grep("fasta",xmlNEW,value = T))
   }
 	  if(speciesUsed$Abbreviation == "default"){
 	    xmlNew<- gsub("<proteinFdr>.*.</proteinFdr>","<proteinFdr>1</proteinFdr>",mqpar)
@@ -230,11 +226,6 @@ if(length(CheckDB) == 0){
     try(   	write.csv("",paste(dirname(filePath),"DeleteTag",sep = "/")))
   
   }
-# 	print(db)
-# 	print(MQcmd)
-#   print("DONE")
-	
-	#convert slashes to backslashes
 }
 
 # mq.fun("./Icke_20151144_HZ_BSAs_biueo",folder = folder,StandardIDs = c("ECstd","BSA"),testFun = F )

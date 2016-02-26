@@ -1,19 +1,21 @@
 PairsFun <- 
-function(inputframe,DensMatrixTemplate = NULL,pdfshow = F,pdfname = "pairsfun.pdf",filterMQQC = T,makepdf = T,mainvec = NULL){
+function(inputframe,DensMatrixTemplate = NULL,pdfshow = F,pdfname = "pairsfun.pdf",filterMQQC = T,makepdf = T,mainvec = NULL,SelectMatrix = NULL){
   
   panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
   {
     usr <- par("usr"); on.exit(par(usr))
     par(usr = c(0, 1, 0, 1))
     sel <- is.na(x)|is.na(y)|is.infinite(x)|is.infinite(y)
-    r <- abs(cor(x[!sel], y[!sel]))
+    ct  <- cor.test(x[!sel], y[!sel])
+    r   <- (ct$estimate)
     txt <- format(c(r, 0.123456789), digits = digits)[1]
     txt <- paste0(prefix, txt)
     if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-    cexfinal <- cex.cor * r
+    cexfinal <- cex.cor * abs(r)
     if(cexfinal < 0.2){cexfinal <- 0.2}
     text(0.5, 0.5, txt, cex = cexfinal,pos = 3)
-    text(0.5, 0.5, length(sel[!sel]), cex = 0.8,pos = 1,col = "darkgrey")
+    text(0.5, 0.45, paste("n =",length(sel[!sel])), cex = 1.2,pos = 1,col = "darkgrey")
+    text(0.5, 0.2, paste("p =",signif(ct$p.value)), cex = 1.2,col = "darkgrey")
     
   }
   if(makepdf){
@@ -21,7 +23,7 @@ function(inputframe,DensMatrixTemplate = NULL,pdfshow = F,pdfname = "pairsfun.pd
   }
   if(length(DensMatrixTemplate) > 0){
   cselect <- sapply(DensMatrixTemplate[,1],function(x){grep(x,colnames(inputframe))})
-  
+  nam <- DensMatrixTemplate[,2]
   d <- inputframe[,cselect]
   }else{
   d <- inputframe
@@ -34,6 +36,10 @@ function(inputframe,DensMatrixTemplate = NULL,pdfshow = F,pdfname = "pairsfun.pd
   d[,dl] <- log10(d[,dl])
   mnames <- ""
   try(mnames <- strsplitslot(inputframe$Name,1,"_"))
+  # print(mnames)
+  if(length(mnames)==0){
+    mnames = rep(1,dim(inputframe)[1])
+  }
   for(i in unique(mnames)){
     ds <- d[mnames == i,]
     dsNArem <- apply(ds,2,function(x){all(is.na(x))})
@@ -46,6 +52,11 @@ function(inputframe,DensMatrixTemplate = NULL,pdfshow = F,pdfname = "pairsfun.pd
       points(x,y,col = densCols(x,y,colramp = colorRampPalette(rcol)),cex = 0.5,...)
       abline(0,1,col = "darkgrey",lty = "dotted")
     }
+    if(length(DensMatrixTemplate) > 0){
+    ren <- paste(DensMatrixTemplate[,4],DensMatrixTemplate[,2],sep = ": ")[match(colnames(ds),DensMatrixTemplate[,1])]
+    colnames(ds)[!is.na(ren)] <- ren[!is.na(ren)] 
+    }
+    ds <<- ds
     try(  pairs(ds,upper.panel = panel.cor,lower.panel = lp,pch = 20,main = i),silent = T)
   }
   if(makepdf){
@@ -55,6 +66,11 @@ function(inputframe,DensMatrixTemplate = NULL,pdfshow = F,pdfname = "pairsfun.pd
   system(paste("open",pdfname))
   }
 }
+# graphics.off()
+# PairsFun(subs,filterMQQC = F,makepdf = F)
+
+ # try(PairsFun(tempListOne,DensMatrixTemplate = DensMatrixTemplate,pdfname = paste(finalMQQC ,"TimeLines", paste("Correlations",PDFname,sep = "_"),sep = "/"),pdfshow = T))
+
 # PairsFun(SPD,filterMQQC = F,makepdf = F)
 
 # PairsFun(hnm,filterMQQC = F,makepdf = F,mainvec = "Change")

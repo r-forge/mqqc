@@ -91,7 +91,7 @@ successDelete <-
                     			
                     			tempCheckListMatch 	<- match(newT ,colnames(tempCheckList))
                     			if(!any(is.na(tempCheckListMatch))){
-								tempCheckList <- tempCheckList[,tempCheckListMatch]
+								              tempCheckList <- tempCheckList[,tempCheckListMatch]
                     			}else{
                     				tempCheckList  <- t(tempCheckList)[tempCheckListMatch,]
                     				rownames(tempCheckList) <- newT
@@ -103,9 +103,9 @@ successDelete <-
                     			if(length(NewOrderNew) > 0){
                     				newOrder <- c(newOrder, NewOrderNew)
                     			}
-                    			NewData <<- NewData
-                    			tempCheckList <<- tempCheckList
-                    			tempCheckListNew <- rbind(tempCheckList,NewData)
+                    			NewData <- NewData
+                    			tempCheckList <- apply(tempCheckList,2,as.character)
+                    			tempCheckListNew <- rbind(tempCheckList,as.character(NewData))
                     			colnames(tempCheckListNew) <- newT
                     		try(write.csv(tempCheckListNew, writeName,row.names = F,quote = F))
         						#write.csv(tempCheckList, writeName,row.names = F,quote = F)
