@@ -339,6 +339,9 @@ tabTopParCo <- paste("
      <div class=\"tabbertab\">
 	  <h2> Machine Metric Comparisons </h2>")
 	  
+tabTopParCo <<- tabTopParCo
+collVecParCo <<- collVecParCo
+# stop()
 tabParCo <- paste(tabTopParCo, collVecParCo,"</div>",sep = "\n")
 ######
 # density comparissons
@@ -392,6 +395,11 @@ if(StandardIDs[2]== ""){
 tab4 <<- tab4
 tab5 <<- tab5
 tab3 <<- tab3
+initHtml <<- initHtml
+tabTL <<- tabTL
+tabParCo <<- tabParCo
+tabDensCo <<- tabDensCo
+endHtml <<- endHtml
 finalHtml <- 	paste(initHtml,
 
 				paste(tab4,collapse = ""), # ECstd
@@ -400,8 +408,8 @@ finalHtml <- 	paste(initHtml,
 				#tab1,						# LiveViewEcoli
 				#tab2,						# 
 				tabTL,						# Timeline EC
-				tabParCo,					# Parameter Comparison
-				tabDensCo,
+				tabParCo[1],					# Parameter Comparison
+				tabDensCo[1],
 				endHtml,
 				
 	"<div style=\"float:right\"><br><a href = \"./disclaimer.html\" target = \"_blank\"> MQQC can be used under the terms of the  GNU General Public License  </a></div> 
@@ -433,13 +441,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 write(disclaimer,file =paste(dirname(path),"disclaimer.html",sep = "/"))
 
 #print(path)
-#system(paste("open",path))
+system(paste("open",path))
 }
 #try(  FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 #finalMQQC = htmloutPath
 #StandardIDs <- c("","")
 #Machines = "hui"
-#try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = "tableHtml",Table2 = "tableHtml2" ,Table3 = "tableHtml3", insertText = "insertText",Machines = "Machines", StandardIDs=c("","")))
+# try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),inputVec2 = sort(paste(".","all",paste(Machines,".pdf",sep = ""),sep = "/")),path = paste(finalMQQC,"index.html",sep = "/"),Table = "tableHtml",Table2 = "tableHtml2" ,Table3 = "tableHtml3", insertText = "insertText",Machines = "Machines", StandardIDs=c("","")))
 #path = paste(finalMQQC,"index.html",sep = "/")
 #system(paste("open",path ))
 # try(writeToHtml(inputVec = sort(paste(".", StandardIDs[1],paste(Machines,".pdf",sep = ""),sep = "/")),

@@ -1,5 +1,5 @@
 FUNFINAL <-
-function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy"), dayThresh = 5, RESettings = NULL, RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" ,ordertype = "source"){
+function(finalMQQC = "D:/resultsmqqc",folder,sucFolder="_RmqqcFile_Processed",Machines 	= c("Bibo","Kermit","Grobi","Bert","Tiffy"), dayThresh = 5, RESettings = NULL, RESettingsSep = "_",StandardIDs = c("ECstd","BSA"), placeholder = "PLACEHOLDER" ,ordertype = "source",withinlastyear = T,maxReport = 10){
 #StandardIDs[1] = ""
   # ToDo Table is not rpeorted # html Path is not set 
   
@@ -29,7 +29,15 @@ collectListPath <- paste(folder,sucFolder,"list_collect.csv",sep = "/")
 if(file.exists(collectListPath)){
 	
 	collectList	<- read.csv(collectListPath, check.names = F,stringsAsFactors = F)
-	collectList <- collectList[!is.na(collectList$msms.count),]
+	collectList <- collectList[!is.na(collectList$Name),]
+	
+	if(withinlastyear){
+  yeard <- 	max(collectList$System.Time.s,na.rm = T)-31536000
+  collectList$System.Time.s[is.na(collectList$System.Time.s)] <- 0
+  collectList <- collectList[collectList$System.Time.s > yeard,]
+  
+	}
+  collectList <- collectList[!is.na(collectList$msms.count),]
 	collectList <- cbind(1:dim(collectList)[1],collectList)
 	collectList   <- collectList[!duplicated(collectList$Name),]
 	Names 		<- collectList$Name
@@ -143,7 +151,7 @@ if(file.exists(collectListPath)){
 	collectList$SourceTime[is.na(collectList$SourceTime)] <- collectList$System.Time.s[is.na(collectList$SourceTime)]
   
 	for(iList in InitList){
-		tempListOne <- collectList[iList,]
+		tempListOne <<- collectList[iList,]
 		collectListSorted <- c()
 		collectListSortedLife <- c()
 		
@@ -163,17 +171,16 @@ if(file.exists(collectListPath)){
 		tempList <- tempListOne[Names == iNames,]
 		tempList <- tempList[!is.na(tempList$SourceTime),]
 		if(ordertype == "source"){
-		  try(		tempList <- tempList[order(tempList$SourceTime,decreasing = T),])
+		  try(		tempList <- tempList[order(as.numeric(tempList$SourceTime),decreasing = T),])
 		  
 		}
 		if(ordertype == "system"){
-		  try(		tempList <- tempList[order(tempList$System.Time.s,decreasing = T),])
+		  try(		tempList <- tempList[order(as.numeric(tempList$System.Time.s),decreasing = T),])
 		  
 		}
 		
-		
-		if(dim(tempList)[1] > 10){
-			tempList <- tempList[1:10,]
+		if(dim(tempList)[1] > maxReport){
+			tempList2 <- tempList[1:maxReport,]
 		}
 		if(any(iNames==Machines)
 		#&!all(is.na(tempList[1,]))
@@ -413,6 +420,7 @@ it <- it+1
 	if(!exists("tableHtml")){tableHtml 	<<- "NO DATA"}  
 	if(!exists("tableHtml2")){tableHtml2 <<- "NO DATA"}  
 	if(!exists("tableHtml3")){tableHtml3 <<- "NO DATA"}  
+	cbCopy(tableHtml)
 #tableHtml <<- tableHtml # EC
 #tableHtml2 <<- tableHtml2 # sample data
 #tableHtml3 <<- tableHtml3 # BSA
@@ -432,9 +440,9 @@ cat("\rfinished FUNFINAL function")
 #  folder <- Param$folder
 #   RESettings <- Param[grep("^RE",names(Param))]
 #    StandardIDs = c("","");placeholder = "PLACEHOLDER"
-#    LoadSettings(sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_",ordertype = "system")
+#    LoadSettings(withinlastyear = T,maxReport = 10,sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_",ordertype = "system")
 #      LoadSettings(RESettingsSep = "_", placeholder = "PLACEHOLDER" )
-#    funlastLoop = 2
+#   funlastLoop = 2
 #    finalMQQC <- Param$htmloutPath
 #    try(	FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=finalMQQC,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 #  system(paste("open ", paste(finalMQQC,"index.html",sep = "/"),sep = ""))

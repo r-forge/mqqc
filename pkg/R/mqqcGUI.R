@@ -224,38 +224,53 @@ dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
 	# cores
 	######
 	
-	tb1.duplicates.var 					<- c("auto",1:24)
+	tb1.duplicates.var 					<- c("auto",1:200)
 	tb1.val.pep.duplicates 				<- tclVar()  
 	tclvalue(tb1.val.pep.duplicates) 	<- (output$cores)
 	comboBox 							<- tk2combobox(TKMisc,values=tb1.duplicates.var,textvariable = tb1.val.pep.duplicates,width = 17,state = "readonly",width = 6)
 	tk2label <- tk2label(TKMisc,text = "Threads")
 	tkgrid(tk2label,comboBox,pady = 2,sticky = "NSWE")
+	tk2tip(tk2label,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads.")
+	
 	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
-	tk2tip(tk2label,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads and uses n-1 for MQQC analysis.")
-
+	######
+	# Length of Reported List per machine
+	######
+	
+	
+	tb1.LL.var 					<- c(seq(0,200,by = 10))
+	tb1.val.pep.LL 				<- tclVar()  
+	if(length(output$ListLength) ==0){output$ListLength <- 10}
+	tclvalue(tb1.val.pep.LL) 	<- (output$ListLength)
+	comboBox 							<- tk2combobox(TKMisc,values=tb1.LL.var,textvariable = tb1.val.pep.LL,width = 17,state = "readonly",width = 6)
+	tk2label <- tk2label(TKMisc,text = "List length")
+	tkgrid(tk2label,comboBox,pady = 2,sticky = "NSWE")
+	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
+	tk2tip(tk2label,"Maximal number of rows reported in the html list per machine.")
+	
 	####
 	# set fasta files
 	####
 speciesFun <- 	function(){
-		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv$",full.name = T,recursive = T)
-			 species <- read.csv(species.path)
+		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.txt$",full.name = T,recursive = T)
+			 species <- read.csv(species.path,sep= "\t")
 			 try(speciesTK(species))	
 				species$Fasta <- .GlobalEnv$mqqcSpeciesSet
-              write.csv(species,file =species.path,quote = F, row.names = F)
+              write.table(species,file =species.path,quote = F, row.names = F,sep = "\t")
 			
 	}
 speciesFunFix <- 	function(){
-		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv$",full.name = T,recursive = T)
-			 species <- read.csv(species.path)
+		     species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.txt$",full.name = T,recursive = T)
+			 species <- read.csv(species.path,sep = "\t")
 			 try(species <- fix(species))	
-			 write.csv(species,file =species.path,quote = F, row.names = F)
+			 write.table(species,file =species.path,quote = F, row.names = F,sep = "\t")
          print("wrote Species Table")
 		
 	}
 
 loadSpecies <- function(){
-		inFile <- tclvalue(tkgetOpenFile(initialfile = "MQQCspecies.csv"))
-		species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv$",full.name = T,recursive = T)
+		inFile <- tclvalue(tkgetOpenFile(initialfile = "MQQCspecies.txt"))
+		species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.txt$",full.name = T,recursive = T)
 		inF <- 		try(readLines(inFile,n = 1))
 		oldF <- try(readLines(species.path ,n = 1))
 		tkMes <- "yes"
@@ -266,7 +281,7 @@ loadSpecies <- function(){
 			if(tkMes == "yes"){
 				tkMes	<- tclvalue(tkmessageBox(icon = "warning",message = paste("Backup original table?",sep = "\n"),type = "yesno"))
 				if(tkMes == "yes"){
-					out <- tclvalue(tkgetSaveFile(initialfile = "MQQCspecies.csv"))
+					out <- tclvalue(tkgetSaveFile(initialfile = "MQQCspecies.txt"))
 					if(out !=""){
 						file.copy(species.path,out, overwrite = F)
 					}
@@ -278,8 +293,8 @@ loadSpecies <- function(){
 
 }
 exportSpecies <- function(){
-		species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.csv$",full.name = T,recursive = T)
-		out <- tclvalue(tkgetSaveFile(initialfile = "MQQCspecies.csv"))
+		species.path<- list.files(path.package("mqqc"),pattern = "MQQCspecies.txt$",full.name = T,recursive = T)
+		out <- tclvalue(tkgetSaveFile(initialfile = "MQQCspecies.txt"))
 		if(out!=""){
 			file.copy(species.path,out)
 		}
@@ -570,7 +585,8 @@ output <- list(
 		StdIDhigh = tclvalue(StdIDhigh),
 		StdIDlow = tclvalue(StdIDlow),
 		BSAID = tclvalue(StdIDlowID),
-		TabOrd = tclvalue(tb1.val.pep.TableOrder)
+		TabOrd = tclvalue(tb1.val.pep.TableOrder),
+		ListLength = tclvalue(tb1.val.pep.LL)
 		)
 if(!.GlobalEnv$MQQCRestored ){
 save(output,file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))
@@ -605,7 +621,7 @@ return(output)
 
 }
 
- # Param <- mqqcGUI()
+# Param <- mqqcGUI()
  # print(Param)
 	# while(.GlobalEnv$MQQCRestartNow == "yes"){
   	#	 Param <- mqqcGUI()

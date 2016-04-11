@@ -21,12 +21,21 @@ if(exists("NameAlternative")){
   
   
   TeN <- MSet[,1]
-  for(i in 1:dim(ListReportT)[1]){
-    TeN <- gsub(ListReportT[i,2],ListReportT[i,1],TeN)
-  }
-  TeN <- sapply(strsplit(as.character(TeN),"#"),function(x){paste(unique(substr(x,1,1)),collapse = "|")})
+  TeN <- sapply(TeN,function(x){
+    tempx <<- unlist(strsplit(x,"#"))
+    tempx2 <- ListReportT[match(tolower(tempx),tolower(ListReportT[,2])),1]
+    tempx2[is.na(tempx2)] <- x[is.na(tempx2)]
+    tempx2 <- paste(tempx2,collapse = "#")
+    return(tempx2)
+  })
+  
+  
+#   for(i in 1:dim(ListReportT)[1]){
+#     TeN <- gsub(ListReportT[i,2],ListReportT[i,1],TeN)
+#   }
+  # TeN <- sapply(strsplit(as.character(TeN),"#"),function(x){paste(unique(substr(x,1,1)),collapse = "|")})
   MSet[,1] <- TeN
-  MSet[AllSet,1] <- paste(MSet[AllSet,1] ,"All",sep = "_")
+  # MSet[AllSet,1] <- paste(MSet[AllSet,1] ,"All",sep = "_")
   # ListReport <- paste(ListReport,collapse = "\n")
 }
 
@@ -49,6 +58,9 @@ if(plotstuff){
   maisave <- par()$mai
   par(mai = rep(0.3,4))
   pie(AllCheckFracSel,col = colorRampPalette(cbPalette)(length(AllCheckFracSel)),border = "white",radius = 0.4,cex = 0.8)
+  # mtext("Fractions of matching PSMs")
+  legend("topleft",legend = paste("p  < 0.01 (Enrichment anaylsis)"),title = "Fractions of\nmatching PSMs",bty = "n",pch = "*",xpd = NA)
+  maisave2 <- maisave[3] <- 0.5
   par(mai = maisave)
   MSet <- MSetBackup
   
@@ -75,7 +87,7 @@ if(plotstuff){
   ps <- ps[jicord]
   MSet <- MSet[jicord,]
   texCex <- texCex[jicord]
-  plot(jic ,(ps),type = "n",pch = 20,frame = F,xlab = "log10 Peptide Count",ylab = "-log10 adjusted p",xlim = range(jic,na.rm = T)+c(0,diff(range(jic,na.rm = T))*0.5),...)
+  plot(jic ,(ps),type = "n",pch = 20,frame = F,xlab = "log10 PSMs Count",ylab = "-log10 adjusted p",main = "Enrichment Analysis vs Matching PSMs",xlim = range(jic,na.rm = T)+c(0,diff(range(jic,na.rm = T))*0.5),...)
   grid()
   cols <- rep("darkgrey",length(jic))
   cols[jic > log10(cuti) & ps > -log10(alpha)] <- "orange"
@@ -87,5 +99,7 @@ if(plotstuff){
   legend("bottomright",ListReport,bg = "transparent",box.col = "transparent",cex = 0.8)
 }
 }
+# par(mfrow = c(1,2))
+# try(plot(fr))
 
    # plot(qc.prepare.data$SpecStat)

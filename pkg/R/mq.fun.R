@@ -42,7 +42,7 @@ if(exists("db")){
 	  
       
   if(SpeciesTable){
-    species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+    species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
       
     regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, templateFasta$REpar,fixed = T)})
     #regEx <-  paste(regEx,"_",sep = "")
@@ -67,7 +67,7 @@ if(exists("db")){
     }
     
     xmlp <- as.character(speciesUsed$Xml)
-    if(length(xmlp) ==0){
+    if(length(xmlp) ==0|xmlp == "ToDo"){
       UseOwnXML <- F
     }else{ UseOwnXML <- file.exists(xmlp)}
    
@@ -100,7 +100,7 @@ if(exists("db")){
       }
     if(length(grep("/",db,fixed = T)) > 0){
       db <- path.convert(db)
-      try(dn <- GenericDBPath)
+      try(db <- GenericDBPath)
       
     }
     
@@ -228,4 +228,5 @@ if(length(CheckDB) == 0){
   }
 }
 
-# mq.fun("./Icke_20151144_HZ_BSAs_biueo",folder = folder,StandardIDs = c("ECstd","BSA"),testFun = F )
+# GenericDBPath
+# mq.fun(filePath="./Icke_20151144_HZ_BSAs_biueo",folder = folder,StandardIDs = c("ECstd","BSA"),testFun = F )

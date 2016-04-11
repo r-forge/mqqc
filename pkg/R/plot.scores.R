@@ -223,14 +223,36 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
       LegString = c(LegString,paste("missed cleavages:",mc,"%"))	
     }else{
       if(!all(is.na(data.list$SpecStat))){
-      SPEC <- data.list$SpecStat
+      SPEC <<- data.list$SpecStat
       SPEC <- SPEC[order(SPEC[,3],decreasing = T),]
-      SPECs <- SPEC[SPEC$Enrichment.p.BH == min(SPEC$Enrichment.p.BH) ,]
+      SPEC$Enrichment.p.BH[is.na(SPEC$Enrichment.p.BH)] <- 1
+      SPECs <- SPEC[SPEC$Enrichment.p.BH == min(SPEC$Enrichment.p.BH,na.rm = T) ,]
       SpecRes <- apply(SPECs[,c(1,3,4)],1,function(x){
           
           try(data(NameCounts) )
         if(exists("FaNa")){
-          x[1]<- NameAlternative[match(x[1],names(FaNa))]
+          xn <- NameAlternative[match(x[1],names(FaNa))]
+          if(is.na(xn)){
+            xn <- x[1]
+          }
+          if(any(grepl("#",xn))){
+          xn <- unlist(strsplit(as.character(xn),"#"))
+          idi =0
+          dupli <- T
+          while(dupli){
+            idi = 1+idi
+            xns <- substr(xn,1,idi)
+            if(any(duplicated(xns))){
+              dupli <- T
+            }else{
+              dupli <- F
+            }
+          }
+          }else{
+            xns <- xn
+          }
+          
+          x[1] <- paste(xns,collapse = "#")
         }
           x <- paste(c(" s: "," c: "," p: "),as.character(x),sep = "")
           x <- paste(x,collapse ="")
@@ -328,7 +350,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   
   # plot real data
   par(mai = c(0.27,1,0.5,0.2),bg = "lightblue")
-  plot.quans <- function(temp.plot,log2,xlab ="",ylab = "",ref.data,thresh.auto = T,bg ="lightblue",fg.col = 1 ,main = "",ylim = range(temp.plot),temp.col = c(1,2,2)){
+  plot.quans <- function(temp.plot,log2,xlab ="",ylab = "",ref.data,thresh.auto = T,bg ="lightblue",fg.col = 1 ,main = "",ylim = range(temp.plot),temp.col = c(1,2,2),axesOn = T){
     # if fg.vol is 0 
     if(length(fg.col) == 0){fg.col <- 1}
     
@@ -338,7 +360,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
     temp.plot <- na.inf.fun(temp.plot)
     
     #boxplot(temp.plot,type = "n",xlim = c(1:2),axes = F,frame = T,xlab = xlab,ylab = ylab,lwd = 5,las = 2,fg = fg.col,bty = "n",ylim = ylim, boxwex = 2)
-    boxplot(temp.plot,range = 0,col = "transparent",xlab = "",ylab = "",type = "n",axes = F,border = "transparent")
+    boxplot(temp.plot,range = 0,col = "transparent",xlab = "",ylab = "",type = "n",axes = F,border = "transparent",axes = axesOn)
     
     mtext(xlab,1,line = 1)
     mtext(main,3,line = 0.3,cex = 0.7)
@@ -359,7 +381,9 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
       abline(h=ref.data,col = temp.col,lwd = 2,lty = c("solid",11,11))	
       
     }
+    if(axesOn){
     axis(2,las = 2,fg = 1,lwd = 2)
+    }
     box(lwd = 4,fg = fg.col)
     boxplot(temp.plot,range = 0,col = fg.col,xlab = xlab,ylab = ylab,type = "n",axes = F,add = T)
     
@@ -465,8 +489,10 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   # peak width
   ## 
   
-  trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [min]",thresholds$ret.width,fg.col = col.temp[round.spec(score$ret.width)],main = "nLC",ylim = range(summary.data$ret.width[1:4]))
-  )
+  trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$ret.width),fg.col = col.temp[round.spec(score$ret.width)],main = "nLC",ylim = range(summary.data$ret.width[1:4]),axesOn = F))
+  axis(2,at = pretty(summary.data$ret.width),label = round(10^pretty(summary.data$ret.width)),las = 2)
+  
+  
   
   if(class(trytest) == "try-error"){
     empty.plot()
@@ -610,6 +636,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
       par(bg = "white",mai = c(1.5,2,0.5,0.2))
       layout(matrix(1:2,1,2),width = c(0.6,1))
       fr <<- data.list$SpecStat
+      
       try(plot(data.list$SpecStat))
     }
   }

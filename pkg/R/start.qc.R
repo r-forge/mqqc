@@ -33,7 +33,11 @@ start.qc <-
       tryError <- class(try(DataEvidence <- read.csv(evidence.path,sep = "\t",stringsAsFactors = F)))
       .path <- dirname(evidence.path)
       .name <- basename(evidence.path)
+
     }
+    
+   
+    
     cat("\rData loaded",rep(" ",100))
     
     setwd(.path)
@@ -93,51 +97,66 @@ start.qc <-
     # MSMS 
     check <- file.exists(peppath<- paste(.path,"msms.txt",sep = "/"))
     if(check){
-      
-      #     ReadBigSubset <- function(x,select = NULL){
-      #     
-      #     ##read in data one line at a time
-      #     
-      #     source <- file(x, "r")
-      #       
-      #     header = readLines(x,n = 1)
-      #     header = unlist(strsplit(header,"\t"))
-      #     header = make.names(header)
-      #     if(length(select > 0)){
-      #      headerGrep <- sapply(select,function(x){grep(paste("^",x,"$",sep = ""),header)})
-      #     }else{headerGrep <- 1:length(header)}
-      #     #when reading from a connection, readLines jumps to a second line/block after each execution
-      #     readOut <- c()
-      #     while (length(line <- readLines(source, n=1, warn=FALSE)) > 0){
-      #       line<- unlist(strsplit(line,"\t"))[headerGrep]
-      #       readOut <- rbind2(readOut,line)
-      #     }
-      #     close(source)
-      #     return(readOut)
-      #     }
-      #     
-      #     ReadBigSubset <- function(x,select = NULL){
-      #       temp <- readLines(x)
-      #       header = unlist(strsplit(temp[1],"\t"))
-      #       header = make.names(header)
-      #       if(length(select > 0)){
-      #         headerGrep <- sapply(select,function(x){grep(paste("^",x,"$",sep = ""),header)})
-      #       }else{headerGrep <- 1:length(header)}
-      #       retVal <- lapply(temp,function(x){
-      #         unlist(strsplit(x,"\t"))[headerGrep]
-      #       })
-      #       
-      #     }
+     
       MSMS <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
-      # subset
-      #raw.file intensities
-      #MSMS <- subset(MSMS,select = c("Raw.file","Intensities"))
       
     }else{
       MSMS <- NULL
     }
+    #MSMS Scans
+    check <- file.exists(peppath<- paste(.path,"msScans.txt",sep = "/"))
+    
+    if(check){
+      
+      msScans <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+      
+    }else{
+      msScans <- NULL
+    }
+    check <- file.exists(peppath<- paste(.path,"msmsScans.txt",sep = "/"))
+    
+    if(check){
+      
+      msmsScans <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+      
+    }else{
+      msmsScans <- NULL
+    }
+    
     
     cat("MSMS",dim(MSMS),"ALLP",dim(AllPeptides),"Peptides",dim(Peptides))
+    try(data(NameCounts) ) 
+    
+    SGFDR <- F
+    
+    try(hu <- match(strsplitslot(DataEvidence$Leading.Razor.Protein,1,"_"),names(FaNa)),silent = T)
+    try(SGFDR <- length(is.na(hu)[!is.na(hu)])/dim(DataEvidence)[1] > 0.4,silent = T)
+    if(SGFDR){
+      newEvi <-subgroupFDRgenericDB(DataEvidence)
+      DataEvidence <- DataEvidence[newEvi[,1] == 1,]
+      EVIid <- paste(DataEvidence$Raw.file,DataEvidence$MS.MS.Scan.Number,DataEvidence$Type)
+      MSMSid <- paste(MSMS$Raw.file,MSMS$Scan.number,MSMS$Type)
+      AllPeptides$Type <- gsub("MULTI","MULTI-MSMS",AllPeptides$Type)
+      # AllPid <- paste(AllPeptides$Raw.file,strsplitslot(AllPeptides$MSMS.Scan.Numbers,1,";"),AllPeptides$Type)
+      # cut MSMS
+      MSMSex <- match(EVIid,MSMSid)      
+      MSMS <- MSMS[MSMSex,]
+      # cut ALLpeps 
+      AllPid <- paste(AllPeptides$Raw.file,strsplitslot(AllPeptides$MSMS.Scan.Numbers,1,";"),AllPeptides$Type)
+      ALLex <- match(EVIid,AllPid)    
+      ALLex <-  ALLex[!is.na(ALLex)] 
+      AllPeptides$Sequence[ALLex] <- " "
+      # cut msmsScans
+      msmsScans$Type <- gsub("MULTI","MULTI-MSMS",msmsScans$Type)
+      msmsScansID <- paste(msmsScans$Raw.file,msmsScans$Scan.number,msmsScans$Type)
+      msmsScansex <- match(EVIid,msmsScansID)    
+      msmsScansex <-  msmsScansex[!is.na(msmsScansex)] 
+      msmsScans$Sequence[msmsScansex] <- " "
+      msmsScans$Identified <- "-"
+      msmsScans$Identified[msmsScansex] <- "+"
+      
+    }
+    
     
     
     i = rep.v
@@ -165,9 +184,9 @@ start.qc <-
       ChrPath <- ""
       if(length(qc.prepare.data$IdentifiedProteins) > 0& length(AllPeptides) > 0){
         if(nchar(as.character(qc.prepare.data$IdentifiedProteins)) > 0){
-          try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
+          try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
         }else{
-          try(ChrPath <- WriteChromatogram(tempAllPeptides,filename = i,BSAID =NULL,jitfac = 0))
+          try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =NULL,jitfac = 0))
         } 
       }
       
@@ -175,13 +194,15 @@ start.qc <-
       names(add.vec) <- c("Name","System.Time.s","System.Time")
       export <- t(as.matrix(c(add.vec ,export)))
       
-      
+      if(ChrPath != ""){
       IntensityPercentages <- round(ChrPath$IntPerc,1)[-1]
       IntensityPercentagesN <- c("Identified",        "Non Peptide Contaminants","Peptide Contaminants","Dependent")
       IntensityPercentages <- IntensityPercentages[merge.control(names(IntensityPercentages),IntensityPercentagesN)]
       names(IntensityPercentages) <- paste("RelCumulativeIntensity",IntensityPercentagesN)
       export <- cbind(export,t(as.matrix(IntensityPercentages[-1])))
-      
+      }else{
+        
+      }
       ####
       # BSACheck
       ####
@@ -308,6 +329,7 @@ start.qc <-
     #try(return(list(qc = qc.prepare.data)))
     #try(system("open ."))
   }
+# start.qc()
 # LoadSettings(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769")
 # Param <- mqqcGUI()
 # for(i in 1:length(Param)){

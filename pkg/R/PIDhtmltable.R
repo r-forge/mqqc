@@ -1,8 +1,8 @@
 PIDhtmltable <- 
 function(htmloutPath,htmlname = "MQQC_PID.html"){
-  species   <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+  species   <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
   if(length(species) == 1){
-    species   <- read.csv2(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+    species   <- read.csv2(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
   }
   species$Fasta <- basename(as.character(species$Fasta))
   species$Xml <- basename(as.character(species$Xml))

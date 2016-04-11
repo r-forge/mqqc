@@ -1,5 +1,5 @@
 plot.profile <-
-function(data.i,layout = T,linePlot =F,BSACheck = F, plot.legend = T){	
+function(data.i,layout = T,linePlot =F,BSACheck = F, plot.legend = T,ProtFDR = 0.01){	
 AllDensCol <- colors()[235]
 IntQuanDensCol <- colors()[57]	#632
 plotData <- list()
@@ -8,6 +8,7 @@ if(layout){
 
 	}
 colnames(data.i) <- tolower(colnames(data.i))
+data.i$m.z[data.i$Reverse == "+"] <- NA
 if(BSACheck){
 	
 	BSAEVI <- data.i[BSAgrep <- grep("P02769",data.i$proteins),]
@@ -22,7 +23,8 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 
 	Ramp.col <- colorRampPalette(c("dodgerblue2","blue","darkblue","navyblue"))(101)
 	BSA.col <- colorRampPalette(c("orange","red","darkred","violet"))(101)
-
+	CON.col <- colorRampPalette(c("orange","red","darkred","violet"))(101)
+	
 	intensity <- data.i$intensity
 	intensity <- intensity/max(intensity,na.rm = T)*100
 	intensity[is.na(intensity)] <- 0
@@ -30,8 +32,12 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 		Ramp.col.BSA <- BSA.col[(round(intensity)+1)[BSAgrep]]
 	}
 		Ramp.col <- Ramp.col[(round(intensity,1)+1)]
+		Ramp.col[data.i$potential.contaminant == "+"] <- "orange"
 	if(BSACheck){
 		Ramp.col[BSAgrep] <- Ramp.col.BSA
+	}else{
+	  Ramp.col[data.i$potential.contaminant == "+"] <- CON.col[(round(intensity)+1)[data.i$potential.contaminant == "+"]]
+	  
 	}
 	
 	
@@ -66,7 +72,20 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
     name.file <- c(as.character(name.file), paste("BSA peptides:",length(grep("MSMS",BSAEVI$type)),", all peptides:",length(grep("MSMS",data.i$type))),intens)
     
   }else{
-    name.file <- c(as.character(name.file), paste("proteins:",length(unique(data.i$leading.razor.protein))),paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
+    sel <- data.i$q.value < 0.01
+    if(length(sel) == 0){
+      sel <- rep(T,dim(data.i)[1])
+    }
+    pepPu<- aggregate(data.i$pep,list(data.i$leading.razor.protein,data.i$sequence),min,na.rm = T)
+    pepPr <- aggregate(pepPu$x,list(pepPu$Group.1),prod)
+    pepPr <- pepPr[order(pepPr[,2]),]
+    Rev <- grep("^REV",pepPr[,1])
+    RevP <- (1:length(Rev))/Rev
+    hum <- Rev-c(0,Rev[-length(Rev)])
+    # hum[length(hum)] <- 0
+    fu <- unlist(apply(cbind(hum,RevP),1,function(x){return(rep(x[2],x[1]))}))
+    PL <- length(fu[fu < ProtFDR])
+    name.file <- c(as.character(name.file), paste("proteins:",PL),paste("peptides, all:",length(grep("MSMS",data.i$type)),", unique:",uniqueSeq),intens)
   }
 	grid(col = "darkgrey",lwd = 1.5)
 	
@@ -74,7 +93,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	legend("topleft",legend = name.file,bg = "white",box.col = "transparent")
 	}
 	tempBorder <- densCols(data.i$retention.time,data.i$m.z,colramp = colorRampPalette(c("white","darkgrey")))
-	
+	# tempBorder[data.i$Potential.contaminant == "+"] <- "orange"
 		for(i in 1:length(unique(Ramp.col))){
 			mFac	<- diff(yrange<- range(data.i$m.z,na.rm = T))/250
 
@@ -220,6 +239,7 @@ Inner <- temp$x <= quantiles[4] & temp$x >= quantiles[2]
 return(plotData)
 	
 }
+# plot.profile(data.i,linePlot = T)
 #try(plotData<- plot.profile(data.i,T,dots,BSACheck= BSACheck,plot.legend = F))
 
 #plot.profile(temp.DataEvidence)

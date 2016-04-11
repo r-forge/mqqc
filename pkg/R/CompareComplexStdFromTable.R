@@ -149,7 +149,7 @@ vmax <- max(table(DensMatrixTemplate[,4]))
 colmax <- length(unique(DensMatrixTemplate[,4]))
 LayoutM <- matrix(1:(vmax*colmax),vmax,colmax)
 LayoutM <- cbind(LayoutM,LegPlot<- max(LayoutM)+1)
-layout(LayoutM,width = c(rep(1,colmax),0.5))
+layout(LayoutM,width = c(rep(1,colmax),0.8))
 
 LegFun <- LegFun
 PointsListQuantiles <- list()
@@ -180,9 +180,10 @@ for(i in unique(DensMatrixTemplate[,4])){
         
         CurrentL <- lapply(unique(UniMachine),function(x){
           sel <- x == UniMachine
-          tempM <- tempListOne[sel,]
+          tempM <<- tempListOne[sel,]
+          na <- tempListOne$Name[tempM$System.Time.s == max(tempM$System.Time.s,na.rm = T)]
           Current <- tempI[sel][tempM$System.Time.s == max(tempM$System.Time.s,na.rm = T)]
-          return(Current)
+          return(c(Current,na))
         })
         names(CurrentL) <- unique(UniMachine)
         tempM <- aggregate(tempI,list(UniMachine),median,na.rm = T)
@@ -218,10 +219,10 @@ for(i in unique(DensMatrixTemplate[,4])){
             trye <- class(try(points(subDens,col = LegFun$col[itCompare],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
             Current <<- CurrentL[[itCompare]]
             
-            CurrentDiff <- abs(subDens$x-Current)
+            CurrentDiff <- abs(subDens$x-as.numeric(Current[1]))
             Currenty <- subDens$y[CurrentDiff == min(CurrentDiff,na.rm = T)]
             Currenty <- Currenty[!is.na(Currenty)]
-            pointsList<- c(Current,Currenty,col = LegFun$col[itCompare],pch = LegFun$pch[itCompare],subDens$Quantile)
+            pointsList<- c(as.numeric(Current[1]),Currenty,col = LegFun$col[itCompare],pch = LegFun$pch[itCompare],subDens$Quantile)
             # try(points())
             
             if(trye!="try-error"){
@@ -233,14 +234,16 @@ for(i in unique(DensMatrixTemplate[,4])){
               try(axis(1,at = xl,col = LegFun$col[itCompare],label = ""))
             }
           }else{            pointsList<- c(Current,rep(NA,8))
-}
+          }
           return(pointsList)
         })
         apply(pointsList,2,function(x){
           try(points(x[1],x[2],bg = "white",col = "white",pch = 23,cex = 1.85,lwd = 0.5))
+          return(NULL)
         })
         apply(pointsList,2,function(x){
           try(points(x[1],x[2],col = x[3],pch = as.numeric(x[4]),cex = 1,xpd = NA))
+          return(NULL)
         })
         # print(pointsList)
         pointsList <- pointsList[grep("%",rownames(pointsList)),]
@@ -262,14 +265,19 @@ names(PointsListQuantiles)<- naQuan
 
 par(mai = rep(0,4),mar = rep(0,4))
 empty.plot()
+
+CL <- sapply(CurrentL,function(x){x[2]})
+
 legend("left"
-       ,legend = as.character(LegFun$Mac)	
+       ,legend = paste(as.character(LegFun$Mac)	,CL,sep = "\n")
        ,col = as.character(LegFun$col)
        ,lwd = LegFun$lwd,
        ,border = "transparent",box.col = "transparent",bg = "#FFFFFF80",xpd = NA
 )
 
 graphics.off()
+# system(paste("open",pdfName))
+
  # system(paste("open",pdfName))
 
 try(PairsFun(tempListOne,DensMatrixTemplate = DensMatrixTemplate,pdfname = paste(finalMQQC ,"TimeLines", paste("Correlations",PDFname,sep = "_"),sep = "/")))

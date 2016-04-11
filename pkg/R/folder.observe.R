@@ -14,16 +14,16 @@ function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "te
 
   ## Fox SpeciesTable
   Spec <-list.files(paste(path.package("mqqc"),"/data",sep = ""),full.name = T) 
-  if(length(grep("MQQCspecies.csv$",Spec)) == 0){
-    if(length(grep("MQQCspecies.csv.gz",Spec))> 0){
-      MQQCspectab <- grep("MQQCspecies.csv.gz",Spec,value = T)[1]
+  if(length(grep("MQQCspecies.txt$",Spec)) == 0){
+    if(length(grep("MQQCspecies.txt.gz",Spec))> 0){
+      MQQCspectab <- grep("MQQCspecies.txt.gz",Spec,value = T)[1]
       try(suc <- file.rename(MQQCspectab,to = gsub(".gz$","",MQQCspectab)))
       try(suc <- file.rename(MQQCspectab,to = gsub(".gz2$","",MQQCspectab)))
       
       if(suc){
       file.remove(MQQCspectab)
       }
-      MQQCspectab <- grep("MQQCspecies.csv.bz",Spec,value = T)[1]
+      MQQCspectab <- grep("MQQCspecies.txt.bz",Spec,value = T)[1]
       
       try(suc <- file.rename(MQQCspectab,to = gsub(".bz$","",MQQCspectab)))
       try(suc <- file.rename(MQQCspectab,to = gsub(".bz2$","",MQQCspectab)))
@@ -205,7 +205,7 @@ if(file.exists(as.character(Param$MQ))){
  
   if(SpeciesTable){
     
-    species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"))
+    species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
     dpruns <- species$DependentPeptides == 0
     dpcounter <- sapply(species$Abbreviation[dpruns],function(x){any(grepl(x,as.character(species$Abbreviation[!dpruns])))})
     addTab <- species[dpruns,][!dpcounter,]
@@ -216,7 +216,7 @@ if(file.exists(as.character(Param$MQ))){
       species <- rbind(species,addTab)
       species <- species[order(species$Abbreviation),]
       species <- unique(species)
-      write.csv(species,paste(path.package("mqqc"),"data/MQQCspecies.csv",sep = "/"),quote = F,row.names = F,sep = ",")
+      write.table(species,paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),quote = F,row.names = F,sep = "\t")
     }
     XMLCheck <- species$Xml[file.exists(as.character(species$Xml))]
     if(length(XMLCheck) > 0){
@@ -302,7 +302,7 @@ if(funlastLoop %% 2 == 0){
 	sucFolder <<- sucFolder
 
  	cat("\r Updating Table")
-					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs,ordertype = TabOrd))
+					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs,ordertype = TabOrd,maxReport = Param$ListLength))
 		
   
 	}

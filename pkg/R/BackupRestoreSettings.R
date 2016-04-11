@@ -15,7 +15,7 @@ if(ASK){
 }
 
 if(action == "b"){
-FileToLoad <- c("MailSettings","MQQCspecies.csv","Param.Rdata","MailList.txt")
+FileToLoad <- c("MailSettings","MQQCspecies.txt","Param.Rdata","MailList.txt")
 MQQCSettings <- list()
 for(i in 1:length(FileToLoad)){
 	if(length(grep(".Rdata$",FileToLoad[i])) > 0){
