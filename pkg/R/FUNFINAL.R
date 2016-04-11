@@ -420,7 +420,6 @@ it <- it+1
 	if(!exists("tableHtml")){tableHtml 	<<- "NO DATA"}  
 	if(!exists("tableHtml2")){tableHtml2 <<- "NO DATA"}  
 	if(!exists("tableHtml3")){tableHtml3 <<- "NO DATA"}  
-	cbCopy(tableHtml)
 #tableHtml <<- tableHtml # EC
 #tableHtml2 <<- tableHtml2 # sample data
 #tableHtml3 <<- tableHtml3 # BSA
