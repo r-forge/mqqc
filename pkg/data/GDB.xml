@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<MaxQuantParams xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" aifSilWeight="4" aifIsoWeight="2" aifTopx="20" aifCorrelation="0.47" aifCorrelationFirstPass="0.8" aifMinMass="0" aifMsmsTol="10" aifSecondPass="true" aifIterative="true" aifThresholdFdr="0.01" writeMsScansTable="false" writeMsmsScansTable="false" writeMs3ScansTable="false" writeAllPeptidesTable="true" writeMzRangeTable="false">
+<MaxQuantParams xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" aifSilWeight="4" aifIsoWeight="2" aifTopx="20" aifCorrelation="0.47" aifCorrelationFirstPass="0.8" aifMinMass="0" aifMsmsTol="10" aifSecondPass="true" aifIterative="true" aifThresholdFdr="0.01" writeMsScansTable="true" writeMsmsScansTable="true" writeMs3ScansTable="false" writeAllPeptidesTable="true" writeMzRangeTable="false">
    <name>Session1</name>
    <maxQuantVersion>1.5.2.8</maxQuantVersion>
    <tempFolder />
