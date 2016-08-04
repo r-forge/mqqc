@@ -45,10 +45,8 @@ hus<-sapply(uniNa,function(x){
       }
       FinFDR <- c(FinFDR,rep(hu[ih],length(ihs:ihi)))
     }
-    # stop()
     FinFDR <<- FinFDR
     tempEvi <<- tempEvi
-    # stop()
     SubGroupFDRSelect[xu] <<- SubGroupFDRSelect[xu]|FinFDR[order(tempEvi$le)]< ALPHA
     
 #     FDR <- sapply(1:length(Rev),function(x){
@@ -65,14 +63,12 @@ hus<-sapply(uniNa,function(x){
 #     })
     
     
-    # stop()
   }else{
     print("NO")
     
     SubGroupFDRSelect[xu] <- SubGroupFDRSelect[xu]|F
   }
   
-  # stop()
 })
 SubGroupFDRSelect[is.na(SubGroupFDRSelect)] <- -1
 return(cbind(SubGroupFDRSelect,RealNames))

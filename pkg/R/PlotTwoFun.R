@@ -24,8 +24,8 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
   
   Exclude <- is.na(a)|is.na(b)|a == 0|b == 0
   
-  yrange <- range(b[!Exclude],na.rm = T)
-  xrange <- range(a[!Exclude],na.rm = T)
+  yrange <- range(quantile(b[!Exclude],probs = c(0,1)),na.rm = T)
+  xrange <- range(quantile(a[!Exclude],probs = c(0,1)),na.rm = T)
   pranx <- pretty(xrange)
   prany <- pretty(yrange)
   

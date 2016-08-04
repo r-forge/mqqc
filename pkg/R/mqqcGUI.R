@@ -211,13 +211,24 @@ dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
 
 	tb1.TableOrder.var 					<- c("system","source")
 	tb1.val.pep.TableOrder 				<- tclVar()  
-	if(length(output$htmlsort) == 0){output$htmlsort = "source"}
-	tclvalue(tb1.val.pep.TableOrder) 	<- (output$htmlsort)
+	if(length(output$TabOrd) == 0){output$TabOrd = "source"}
+	tclvalue(tb1.val.pep.TableOrder) 	<- (output$TabOrd)
 	comboBox 							<- tk2combobox(TKMisc,values=tb1.TableOrder.var,textvariable = tb1.val.pep.TableOrder,width = 17,state = "readonly",width = 6)
 	tk2labelTaOr <- tk2label(TKMisc,text = "Table Sorting")
 	tkgrid(tk2labelTaOr,comboBox,pady = 2,sticky = "NSWE")
 	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
 	tk2tip(tk2labelTaOr,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads and uses n-1 for MQQC analysis.")
+	
+	
+	tb1.MQFilter.var 					<- c("all","db","std")
+	tb1.val.pep.MQFilter 				<- tclVar()  
+	if(length(output$MQfilter) == 0){output$MQfilter = "all"}
+	tclvalue(tb1.val.pep.MQFilter) 	<- (output$MQfilter)
+	comboBox 							<- tk2combobox(TKMisc,values=tb1.MQFilter.var,textvariable = tb1.val.pep.MQFilter,width = 17,state = "readonly",width = 6)
+	tk2labelMQfil <- tk2label(TKMisc,text = "ID Filter")
+	tkgrid(tk2labelMQfil,comboBox,pady = 2,sticky = "NSWE")
+	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
+	tk2tip(tk2labelMQfil,"Define Parameter IDs, that will be analyzed.\n\n\"all\" allows all IDs to be processed, including the \"generic\"search option for undefined IDs.\n\n\"db\" allows only matching IDs to be processed. The \"generic\"search option is only used with the \"default\" tag.\n\n\"std\" allows only standard IDs as defined in the GUI to be processed")
 	
 	
 	######
@@ -432,6 +443,9 @@ tkgrid(tk2label(RegExp,text = "Mail *"), tempMail,pady = 2,sticky = "W",padx = 2
 tkgrid(tk2label(RegExp,text = "Parameter"), tempPar,pady = 2,sticky = "W",padx = 2)
 tkgrid(tk2label(RegExp,text = "Misc *"), tempMisc,pady = 2,sticky = "W",padx = 2)
 
+
+
+
 ##=======
 # Machine Table
 #========
@@ -492,6 +506,19 @@ trkLab1 <- tk2label(ttTRK,text = "Username",justify = "left")
 trkLab2 <- tk2label(ttTRK,text = "Password",justify = "left")
 trkLab3 <- tk2label(ttTRK,text = "smtp.server",justify = "left")
 trkLab4 <- tk2label(ttTRK,text = "email address",justify = "left")
+trkLab5 <- tk2label(ttTRK,text = "port",justify = "left")
+
+tb1.MailSecurity.var 					<- c("tls","ssl","plain")
+tb1.val.pep.MailSecurity 				<- tclVar()  
+if(is.na(trk[6])){output$MailSecurity = "tls"}
+tclvalue(tb1.val.pep.MailSecurity) 	<- trk[6]
+comboBox 							<- tk2combobox(ttTRK,values=tb1.MailSecurity.var,textvariable = tb1.val.pep.MailSecurity,width = 17,state = "readonly",width = 6)
+tk2labelMailSec <- tk2label(ttTRK,text = "Security")
+tkgrid(tk2labelMailSec,comboBox,pady = 2,sticky = "NSWE")
+#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
+tk2tip(tk2labelMailSec,"Define Parameter IDs, that will be analyzed.\n\n\"all\" allows all IDs to be processed, including the \"generic\"search option for undefined IDs.\n\n\"db\" allows only matching IDs to be processed. The \"generic\"search option is only used with the \"default\" tag.\n\n\"std\" allows only standard IDs as defined in the GUI to be processed")
+
+
 
 tk2tip(ttTRK,"Mail Server Settings.\nRequires Perl and email account that supports SMTP and SASL for authentication.\nIt is recommended to setup a new email account for mqqc usage only.\n WARNING! Safety of password storage in mqqc cannot be warrantied!")
 
@@ -500,16 +527,24 @@ trk1 <- tclVar(trk[1])
 trk2 <- tclVar(trk[2])
 trk3 <- tclVar(trk[3])
 trk4 <- tclVar(trk[4])
+if(is.na(trk[5])){
+  trk[5] <- 587
+}
+trk5 <- tclVar(trk[5])
 
 TRK1 <- tkentry(ttTRK, textvariable = trk1,background = "white",width = 10)
 TRK2 <- tkentry(ttTRK, textvariable = trk2,show = "*",background = "white",width = 10)
 TRK3 <- tkentry(ttTRK, textvariable = trk3,background = "white",width = 10)
 TRK4 <- tkentry(ttTRK, textvariable = trk4,background = "white",width = 10)
+TRK5 <- tkentry(ttTRK, textvariable = trk5,background = "white",width = 10)
+
 
 tkgrid(trkLab1,TRK1,sticky = "WE",padx = 2,pady = 2)
 tkgrid(trkLab2,TRK2, sticky = "W",padx = 2,pady = 2)
 tkgrid(trkLab3,TRK3, sticky = "W",padx = 2,pady = 2)
 tkgrid(trkLab4,TRK4, sticky = "W",padx = 2,pady = 2)
+tkgrid(trkLab5,TRK5, sticky = "W",padx = 2,pady = 2)
+
 tkgrid(StdID ,ttTRK ,sticky = "WNSE",padx = 5,pady=5)
 
 
@@ -558,7 +593,7 @@ while(!is.null(out)){
 }
 #print(Machines)
 
-trk <- c(tclvalue(trk1),tclvalue(trk2),tclvalue(trk3),tclvalue(trk4))
+trk <- c(tclvalue(trk1),tclvalue(trk2),tclvalue(trk3),tclvalue(trk4),tclvalue(trk5),tclvalue(tb1.val.pep.MailSecurity))
 if(!.GlobalEnv$MQQCRestored){
 write(trk ,paste(path.package("mqqc"),"data/mailSettings",sep = "/"))
 }
@@ -586,6 +621,7 @@ output <- list(
 		StdIDlow = tclvalue(StdIDlow),
 		BSAID = tclvalue(StdIDlowID),
 		TabOrd = tclvalue(tb1.val.pep.TableOrder),
+		MQfilter = tclvalue(tb1.val.pep.MQFilter),
 		ListLength = tclvalue(tb1.val.pep.LL)
 		)
 if(!.GlobalEnv$MQQCRestored ){
@@ -622,7 +658,7 @@ return(output)
 }
 
 # Param <- mqqcGUI()
- # print(Param)
+ # print(Param)^
 	# while(.GlobalEnv$MQQCRestartNow == "yes"){
   	#	 Param <- mqqcGUI()
 	#}

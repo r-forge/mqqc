@@ -99,7 +99,7 @@ if(plotstuff){
   legend("bottomright",ListReport,bg = "transparent",box.col = "transparent",cex = 0.8)
 }
 }
-# par(mfrow = c(1,2))
-# try(plot(fr))
+ # par(mfrow = c(1,2))
+ # try(plot(fr))
 
    # plot(qc.prepare.data$SpecStat)

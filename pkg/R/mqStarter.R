@@ -1,5 +1,5 @@
 mqStarter <-
-function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,templateFasta,placeholder, StandardIDs = StandardIDs){
+function(temp.batch.n, InfoString = "_RmqqcFile_",folder,...){
   
  
   
@@ -15,9 +15,8 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 	if(length(list.files(pattern = folder.name)) > 0){
 		folder.name <- paste(folder.name,make.names(Sys.time()),sep = "")			
 	}
-	
+	setwd(folder)
 	dir.create(folder.name)
-  setwd(folder)
 	tryError <- class(try(file.rename(basename(temp.batch.n),path.file <-   paste(getwd(),folder.name,temp.batch.n,sep = "/")),silent = T))
 	Sys.sleep(0.1)
 	if(tryError != "try-error"){
@@ -28,7 +27,7 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,cores,SpeciesTable,temp
 		try(write.table(t(as.matrix(vec)),file = paste(folder,paste(InfoString,"Info.txt",sep = ""),sep = "/"),append = T,quote = F,sep = "\t",row.names = F,col.names = F),silent = T)
 	}
 	# MQ function plus XML stuff
-	mq.fun(filePath = path.file ,folder,cores, SpeciesTable,templateFasta,placeholder, StandardIDs = StandardIDs)
+	mq.fun(filePath = path.file ,folder,...)
 	}
 	return(path.file)	
 }

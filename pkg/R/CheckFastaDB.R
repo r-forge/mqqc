@@ -8,7 +8,7 @@ if(length(grep(CheckFasta,dbSetF)) == 0){
   addLine <- paste("      <databases filename=",CheckFasta," search_expression=\"(.*)\" replacement_expression=\"%1\" />")
   dbSetF <- c(dbSetF[1:addLinePos],addLine,dbSetF[(addLinePos+1):length(dbSetF)])
   cat("\rDatabases not set. Extending databases.xml!")
-  write(dbSetF,dbSetF)
+  write(dbSetF,dbSet)
 }
 
 }

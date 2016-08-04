@@ -1,5 +1,6 @@
 qc.prepare <- 
-function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769",selectedFile = 1,RESettings = RESettings,Peptides = NULL,AllPeptides = NULL,MSMS = NULL,ProtFDR = 0.01){
+function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769",selectedFile = 1,RESettings = RESettings,Peptides = NULL,AllPeptides = NULL,MSMS = NULL,msSC = NULL,msmsScans = NULL,ProtFDR = 0.01){
+
 score <- list()
 
 sumDat <- function(){
@@ -39,7 +40,7 @@ thresholds$quan.msms.min	<- 200
 thresholds$quan.duplicates.msms <- 0.05
 thresholds$score 			    <- 100
 thresholds$msmsEff 			  <- 30
-thresholds$quanRetRSD 		<- 0.1
+thresholds$quanRetRSD 		<- 0.3
 thresholds$quanRet50ratio	<- 1.2
 thresholds$quanRetSlope 	<- 1
 thresholds$msmsQuantile	 <-  c(4.5,4,5) # log10 Int
@@ -133,7 +134,8 @@ raw.files <- grep.col("raw.file",Data)
 
 # to make sure that only one file is processed
 Data$reverse[is.na(Data$reverse)] <- ""
-Data.i  <- Data[unique(Data[,raw.files])[selectedFile] == Data[,raw.files],]
+Data.i  <<- Data[unique(Data[,raw.files])[selectedFile] == Data[,raw.files],]
+Data.iall  <<- Data.i#[Data.i$reverse == "+",]
 Data.i  <- Data.i[Data.i$reverse != "+",]
 #Data.i <<- Data.i
 RawFilesUsed <- unique(Data.i$raw.file)
@@ -142,7 +144,6 @@ RawFilesUsed <- unique(Data.i$raw.file)
 # include Dependent Peptides Module
 summary.Data$DependentPeptides <- NULL
 if(all(1)){
-  #print("Dependent")
 
   if(file.exists(DPfile <- paste(path,"allPeptides.txt",sep = "/"))|length(AllPeptides) > 0){
     DepPepFun<- function(x,filename = "DPpie",NormPep = NULL,unknowns = T,cbPalette = rainbow(10),maxShow = 20){ 
@@ -235,17 +236,48 @@ try(summary.Data$DependentPeptides <-  DepPepFun(DPfile,NormPep = dim(Data.i)[1]
   }
 }
 
+# UniRef90 <- rank(Data.i$intensity)[]
+# UniRef90/dim(Data.i)[1]
 # Number of Proteins:
-pepPu<- aggregate(Data.i$pep,list(Data.i$leading.razor.protein,Data.i$sequence),min,na.rm = T)
+pepPu<- aggregate(Data.iall$pep,list(Data.iall$leading.razor.protein,Data.iall$sequence),min,na.rm = T)
 pepPr <- aggregate(pepPu$x,list(pepPu$Group.1),prod)
 pepPr <- pepPr[order(pepPr[,2]),]
 Rev <- grep("^REV",pepPr[,1])
 RevP <- (1:length(Rev))/Rev
+if(length(RevP) == 0){RevP <- 0}
 hum <- Rev-c(0,Rev[-length(Rev)])
 # hum[length(hum)] <- 0
 fu <- unlist(apply(cbind(hum,RevP),1,function(x){return(rep(x[2],x[1]))}))
+if(length(fu) > 0){
+  
 PL <- length(fu[fu < ProtFDR])
+fu <<- fu
+pepPr <<- pepPr
+sele <<- pepPr[fu < 0.05,]
+}else{
+  PL <- length(fu)
+  sele <- pepPr
+}
+
 summary.Data$Protein <- PL
+UNIREF <- grep("^UniRef90|^REV_UniRef",Data.iall$proteins)
+
+
+if(length(UNIREF) > 0){
+  sele <<- sele
+  UNIREFP <<- Data.iall[UNIREF,]
+  UNIREFP <- UNIREFP[!is.na(match(strsplitslot(UNIREFP$proteins),sele[,1])),]
+  Puniref <- grep("^REV_",UNIREFP$proteins,value = T,invert = T)
+  PunirefRev <- length(grep("^REV_",UNIREFP$proteins,value = T,invert = F))
+  Iuniref <- rank(UNIREFP$intensity)
+  Iuniref <- Iuniref/dim(Data.i)[1]
+  SCuniref <- UNIREFP$score
+  Sequniref <- UNIREFP$sequence
+  
+  UniRef <- list(id = Puniref,intensities = Iuniref,score = SCuniref,sequence = Sequniref,Rev = PunirefRev)
+}else{
+  UniRef <- list(id = NA,intensities = NA,score = NA,sequence = NA,Rev = NA)
+}
 # MSMS
 
 type.ident 	<- Data.i[,grep.col("type", Data.i)]
@@ -255,7 +287,8 @@ seq 					<- Data.i$sequence[grep("MSMS",type.ident)]
 uniPepCount 	<- length(unique(seq))
 summary.Data$uniPepCount <- uniPepCount
 
-
+rm(msSCH)
+msSCH <<- msSC
 # Ret.time
 reten.ident 	<- Data.i[,grep.col("retention.time", Data.i)]
 reten.start 		<- reten.ident[,grep.col("start",reten.ident)]
@@ -271,7 +304,7 @@ reten.start 		<- reten.ident[,grep.col("start",reten.ident)]
 reten.stop 		<- reten.ident[,grep.col("finish", reten.ident)]
 reten.mid 		<- reten.ident[,colnames(reten.ident) == "calibrated.retention.time"]
 
-ls.null()
+# ls.null()
 
 
 ret.peak.ratio 	<- (reten.stop-reten.mid)/(reten.mid-reten.start)
@@ -309,10 +342,8 @@ summary.Data$quan.duplicates 		<- double
 summary.Data$quan.duplicates.msms 	<- double/length(grep("MSMS",Data.i.quant$type))
 summary.Data$score<- quantile(Data.i$score,na.rm = T)
 # sd interquantile
-# print("HUI")
 
 if(length(Data.i.quant$calibrated.retention.time[!is.na(Data.i.quant$calibrated.retention.time)])> 1){
-  # print("HUI")
   tempQuan   <- quantile(Data.i.quant$calibrated.retention.time,na.rm = T)
   
 # try(temp2 <- density(sl));temp2$y <- temp2$y*temp2$n/sum(temp2$y)
@@ -376,11 +407,12 @@ summary.Data$quanRet50ratio <- log2( diff(tempQuan[c(2,3)])/diff(tempQuan[c(3,4)
 
 
 
-score$quanRetRSD 		  <- 	ThreshCompare(1/summary.Data$quanRetRSD,1/thresholds$quanRetRSD,type = "single")
+score$quanRetRSD 		  <- 	ThreshCompare(summary.Data$quanRetRSD,c(0,0,thresholds$quanRetRSD),type = "quantile",cat = "fixed")
 s <- summary.Data$quanRetRSD
 r <- thresholds$quanRetRSD
 score$quanRetSlope 		<-	ThreshCompare(1/abs(summary.Data$quanRetSlope),1/thresholds$quanRetSlope,type = "single")
-score$quanRet50ratio 	<- 	ThreshCompare(1/abs(summary.Data$quanRet50ratio),1/abs(log2(thresholds$quanRet50ratio)),type = "single")
+score$quanRet50ratio 	<-  ThreshCompare(abs(abs(summary.Data$quanRet50ratio)),c(0,abs(abs(log2(thresholds$quanRet50ratio))),abs(abs(log2(thresholds$quanRet50ratio)))),cat = "fixed",type = "quantile",log = T)
+
 # if(abs(summary.Data$quanRet50ratio) > 1){
 # score$quanRet50ratio 	<- 	ThreshCompare(abs(summary.Data$quanRet50ratio),abs(thresholds$quanRet50ratio))}else{
 # score$quanRet50ratio 	<- 	ThreshCompare(thresholds$quanRet50ratio,abs(summary.Data$quanRet50ratio))#?
@@ -426,7 +458,7 @@ if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))|length(Peptides) 
 summary.Data$missed.cleavages.percent =as.character(rat)
 MSMSsel <- match(Data.i.quant$ms.ms.scan.number,MSMS$Scan.number)
 
-try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed,quant.range = range(quant.range),MSMS.Import = MSMS[MSMSsel,]),silent = T)
+try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed,quant.range = range(quant.range),MSMS.Import = MSMS[MSMSsel,]),silent = F)
 if(!exists("msmsInfo")){
 	msmsInfo <- rep(0,5)
 	msmsInfo <-	list(MSMSint = "nodata",MSMSn = "nodata")
@@ -492,10 +524,62 @@ score$ProteinCoverage <- ThreshCompare(summary.Data$Coverage,thresholds$ProteinC
 #####
 
 # 1. nLC shape Combi
-nLCvec <- c(score$quanRetRSD,score$quanRet50ratio,score$quanRetSlope)
+nLCvec <- c(score$quanRetRSD,score$quanRet50ratio)
 nLCvec[nLCvec > 1] <- 1
 score$nLCcombi <- mean(nLCvec)
-# print(score$nLCcombi)
+# msScans Analysis:
+# quant.range <- c(8,35)
+
+
+if(length(msSC) > 0){
+  msSC$Retention.time <- as.numeric(as.character(msSC$Retention.time))
+  rs <- msSC$Retention.time*60
+  msSC$Isotope.patterns <- c(1,diff(rs))*unfactor(msSC$Isotope.patterns...s)
+  
+  msSCquant <- msSC[msSC$Retention.time >= min(quant.range)&msSC$Retention.time<= max(quant.range,na.rm = T),]
+  summary.Data$Ion.injection.time <- quantile(as.numeric(as.character(msSCquant$Ion.injection.time)),na.rm = T)
+  summary.Data$Peaks.s <- quantile(as.numeric(as.character(msSCquant$Peaks...s)),na.rm = T)
+  summary.Data$MS.MS.identification.rate <- quantile(as.numeric(as.character(msSCquant$MS.MS.identification.rate....)),na.rm = T)
+  summary.Data$Cycle.time <- quantile(as.numeric(as.character(msSCquant$Cycle.time)),na.rm = T)
+  
+  rettimePlots <- function(x,feature,logfun = log10,plotfun = plot ,...){
+    y <- x[,colnames(x) == feature]
+    if(length(y ) == dim(x)[1]){
+      y <- logfun(as.numeric(as.character(y)))
+      a <- round(as.numeric(as.character(x$Retention.time)),1)
+      b <- y
+      b <- aggregate(b,list(a),median,na.rm = T)
+      
+      
+      plotfun(b[,1] ,b[,2],las = 1,...)
+      points(medwin(b[,1],b[,2],win = dim(b)[1]/30),col = "red",type = "l")
+    }
+  }
+
+  
+  pdf("RetPlots.pdf",height = 4)
+  par(mfrow = c(2,3),mai = c(0.6,0.6,0.2,0.1))
+  unfactor <- function(x){as.numeric(as.character(x))}
+  retfun <-  function(x){return(x)}
+  rettimePlots(msSC,"Ion.injection.time",ylab = "log10 Ion injection time",type = "l",xlab = "Retention time in min")
+  rettimePlots(msSC,"MS.MS.identification.rate....",type = "l",logfun =retfun,ylab = "MS2 identification rate [%]",xlab = "Retention time in min")
+  rettimePlots(msSC,"Cycle.time",type = "l",logfun = retfun,xlab = "Retention time in min",ylab = "Cycle time")
+  rettimePlots(msSC,"Peaks...s",type = "l",xlab = "Retention time in min",logfun = retfun,ylab = "Peaks [1/s]")
+  rettimePlots(msSC,"Single.peaks...s",type = "l",plotfun = points,logfun = retfun,lty = "dashed",xlab = "Retention time in min")
+  rettimePlots(msSC,"Isotope.patterns...s",type = "l",logfun = retfun,plotfun = plot,lty = "solid",xlab = "Retention time in min",ylab = "Isotope patterns / s")
+  rettimePlots(msSC,"Isotope.pattern.length",type = "l",logfun = retfun,plotfun = plot,lty = "dashed",xlab = "Retention time in min",ylab = "Isotope pattern length")
+  dev.off()
+  # system("open RetPlots.pdf")
+  summary.Data$Isotope.patterns.min <- sum(msSCquant$Isotope.patterns,na.rm = T)/diff(range(msSCquant$Retention.time))
+  # 0.07566 0.50490 0.76764 1.84680 2.98290 4.12050
+  
+  
+  # rettimePlots(msSC,"Single.isotope.patterns...s",type = "l",plotfun = plot,lty = "dashed")
+  
+  
+}else{summary.Data$Isotope.patterns.min <- NA}
+score$Isotope.patterns.min <-   ThreshCompare(summary.Data$Isotope.patterns.min,thresholds$MSID.min )
+
 
 #AllPeptides
 msmsEff <- msmsInfo$MSMSEff*100
@@ -571,7 +655,13 @@ score$quan.duplicates.msms 	<- ThreshCompare(summary.Data$quan.duplicates.msms,t
 
 # 2. MS combi score
 #MSvec <- c(score$Intensity,score$mass.error,score$msms)
-MSvec <- c(score$MSID.min,score$mass.error,score$Intensity)
+if(length(msSC) > 0){
+MSfeature <- score$Isotope.patterns.min
+}else{
+MSfeature <- score$MSID.min
+}
+
+MSvec <- c(MSfeature,score$mass.error,score$Intensity)
 
 MSvec[MSvec > 1] <- 1
 score$combiMS <- mean(MSvec,na.rm = T)
@@ -592,10 +682,9 @@ parID <- speciesUsed$Abbreviation
 if(length(parID) == 0){
   parID <- "not detected"
 }
-return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein,parID = parID,SpecStat = MostProperSpecies))
+return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein,parID = parID,SpecStat = MostProperSpecies,UniRef = UniRef))
 }
-# tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
-
+# tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data =  temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))
 # start.qc()

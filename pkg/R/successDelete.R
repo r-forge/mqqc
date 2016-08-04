@@ -61,7 +61,10 @@ successDelete <-
           # check if mqqc is in folder
           if(length(tempmqqcInfo)!=0){
             write("",paste(dirname(tempI[i]),"mqqcProcessed",sep = "/"))
-            dir.create(sucFolderPath <- paste(hotFolder,sucFolder,sep = "/"), showWarnings = F)
+            sucFolderPath <- paste(hotFolder,sucFolder,sep = "/")
+            if(!file.exists(sucFolderPath)){
+              dir.create(sucFolderPath, showWarnings = F)
+            }
             qcData <- list.files(tempmqqcInfo,pattern = ".csv",full.name = T,recursive = T)
             qcData <- qcData[grep("unidentified_conta",basename(qcData),invert = T)]
             if(length(qcData)> 0&tempIproc[i]){
@@ -125,11 +128,14 @@ successDelete <-
             }
             # start renaming      
             if(any(list.files(dirname(tempmqqcInfo))  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){
-              write("",paste(dirname(tempI[i]),"mqqcMoved",sep = "/"))
               MovTest <- tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" & basename(tempmqqcInfo) !=  "mqqcMoved" ]
               DelCont <- F
               if(length(MovTest) > 0){
                 	DelCont         <-  file.rename(MovTest[1],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
+                	if(DelCont){
+                	  write("",paste(dirname(tempI[i]),"mqqcMoved",sep = "/"))
+                	}
+                	
               }
               if(DelCont){
                 tempmqqcInfo <<- tempmqqcInfo
@@ -185,5 +191,3 @@ successDelete <-
     
     return(mqqcInfo)
   }
-
-

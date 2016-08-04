@@ -1,6 +1,6 @@
 
 PrepareMail <- 
-function(Title= "Tomato",Message="Merry Christmas",recipient = "santa\\@clause.np"){
+function(Title= "Tomato",Message="Merry Christmas",recipient = "santa\\@clause.np",MailSecurity = list(ssl = F,tls = T,port= 587),...){
 
 MailList <- list()
 MailList$user <- "user"
@@ -17,20 +17,37 @@ if(length(MailSettings) > 0){
 
 	MailSettings <- readLines(MailSettings[1])
 
-	if(length(MailSettings) ==4){
-		MailList[c(1,2,3,5)] <- MailSettings	
+	if(length(MailSecurity) == 0){
+	  cat("Trying to obtain settings from MailSettings")
+	  MailSecurity$ssl <-F
+	  MailSecurity$tls <-F
+	  if(MailSettings[6]== "tls"){
+	    MailSecurity$ssl <-F
+	    MailSecurity$tls <-T
+	    
+	  }
+	  if(MailSettings[6]== "ssl"){
+	    MailSecurity$ssl <-T
+	    MailSecurity$tls <-F
+	  }
+	  MailSecurity$port = as.numeric(MailSettings[5])
 	}
 	MailList <<- MailList
 	perl.init <- list.files(paste(path.package("mqqc"),"data",sep = "/"),pattern = "mailPerl.pl",full.name = T)
 
 	MailList <<- MailList
 	perl.init <<- perl.init
-	MailOverPerl(MailList,perl.init)
-		
+	MailSecurity <<- MailSecurity
+	if(require(mailR)){
+	  cat("\rsending Mail to",MailList$to)
+	  send.mail(from = MailSettings[4],to = MailList$to,subject =MailList$title,body = MailList$message,smtp = list(host.name = MailSettings[3],port = MailSecurity$port,user.name = MailSettings[1],passwd = MailSettings[2],ssl = MailSecurity$ssl,tls = MailSecurity$tls),authenticate = T,send = T,...)
+	}
 	}
 
 
 
 }
+
+# PrepareMail("Hiho","Ich freue mich, dass diese eMail ankommt!",recipient = "henrik.zauber@mdc-berlin.de",MailSecurity = NULL)
 
 

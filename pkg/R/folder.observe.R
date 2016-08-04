@@ -2,13 +2,17 @@ folder.observe <-
 function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org",TabOrd = "source"){
   .GlobalEnv$MQQCRestartNow <- "no"
   try(tkControl(htmloutPath = htmloutPath))
- 
-  if(length(grep("txtplot",library())) == 0){
-	install.packages("txtplot", repos = source)
-	}
-  if(length(grep("tcltk2",library())) == 0){
-    install.packages("tcltk2", repos = source)
+  for(packagename in c("txtplot","tcltk2","mailR")){
+    if(length(grep(packagename,library())) == 0){
+      cat("installing",packagename,"\n")
+      
+      install.packages(packagename, repos = source)
+    }else{
+      cat("found",packagename,"\n")
+    }
   }
+
+
   
   
 
@@ -191,13 +195,13 @@ if(file.exists(as.character(Param$MQ))){
 		  } 
 		} 
 		if(length(grep("Perl",Registry,ignore.case=T,value = T)) == 0){
-		  CheckVal <- tclvalue(tkmessageBox(message = "Warning!\nPerl seems not to be installed. email alerts will be switched off.",type = "ok",title = "MQQC Warning",icon = "warning"))
-		  if(CheckVal == "no"){
-		    stop("Abort by user. Missing MSFileReader installation.")
-		  } 
+		  # CheckVal <- tclvalue(tkmessageBox(message = "Warning!\nPerl seems not to be installed. email alerts will be switched off.",type = "ok",title = "MQQC Warning",icon = "warning"))
+		  # if(CheckVal == "no"){
+		    # stop("Abort by user. Missing MSFileReader installation.")
+		  # } 
 		}else{
-			try(system("ppm install Net::SMTP"),silent = T)
-			try(system("ppm install Authen::SASL"),silent = T)
+			# try(system("ppm install Net::SMTP"),silent = T)
+			# try(system("ppm install Authen::SASL"),silent = T)
 		} 
   }
 
@@ -322,7 +326,7 @@ setwd(folder)
 
 		# exclude _RmqqcFile_ and use exclusively raw txt
 		obs.files			  <- list.files(folder,full.name = T)
-   		obs.files      		 <- obs.files[!file.info(obs.files)[,2]]
+   	obs.files      		 <- obs.files[!file.info(obs.files)[,2]]
 		temp.obs 			  <- grep("^_RmqqcFile_",obs.files)
 	#	temp.obs 			  <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
 		temp.obs 			  <- unique(temp.obs)
@@ -330,7 +334,7 @@ setwd(folder)
 		obs.files 			<- grep("raw$|txt$",obs.files,value = T, ignore.case = T)
 		obs.files.diff 		<- setdiff(obs.files,files) 
 		obs.files.minus 	<- setdiff(files,obs.files) 
-    	obs.files <- obs.files[grep("^_RmqqcFile_",basename(obs.files),invert = T)]
+    obs.files <- obs.files[grep("^_RmqqcFile_",basename(obs.files),invert = T)]
 		
 		if(length(obs.files) > 0){
 		 	cat("\r Starting MQ run for", obs.files)	
@@ -344,7 +348,7 @@ setwd(folder)
 			  temp.batch.n 	<- names(temp.batch)[temp.batch == 0][1]
 			  if(!is.na(temp.batch.n)){
 			    # starting Maxquant stuff
-			    tryError <- class(try(fun(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, templateFasta = RESettings, placeholder = placeholder,InfoString = "_RmqqcFile_", StandardIDs = StandardIDs)))
+			    tryError <- class(try(fun(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, templateFasta = RESettings, placeholder = placeholder,InfoString = "_RmqqcFile_", StandardIDs = StandardIDs,MQfilter = MQfilter)))
 			    if(tryError == "try-error"){
 			      #	return(temp.batch.n)
 			      catFun(paste("error in file", temp.batch.n))
@@ -385,15 +389,12 @@ setwd(folder)
 		}
 
 	if(funlastLoop %% 8640 == 0){
-	    "Cleaning and Archiving"
+	  catFun("Cleaning and Archiving")
   		try(CleaningFun(folder))
   		try(archiveProcessedFolder(folder))
   	}
   		
 	}
-  	
-  
-	
 return(folder = folder)	
 }
 

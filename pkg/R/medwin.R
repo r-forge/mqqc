@@ -1,5 +1,5 @@
 medwin <- 
-function(x,y,win = 8,...){
+function(x,y,win = 8,fun = mean,...){
   
   ord <- order(as.numeric(as.character(x)))
   x <- x[ord]
@@ -16,7 +16,7 @@ function(x,y,win = 8,...){
     }
     yt <- y[st:endt]
     xt <- x[r]
-    ytm <- mean(yt,na.rm = T)
+    ytm <- fun(yt,...)
     yts <- sd(yt,na.rm = T)
     return(c(xt,ytm,yts))
   })

@@ -32,9 +32,9 @@ if(file.exists(collectListPath)){
 	collectList <- collectList[!is.na(collectList$Name),]
 	
 	if(withinlastyear){
-  yeard <- 	max(collectList$System.Time.s,na.rm = T)-31536000
+  yeard <- 	max(as.numeric(as.character(collectList$System.Time.s)),na.rm = T)-31536000
   collectList$System.Time.s[is.na(collectList$System.Time.s)] <- 0
-  collectList <- collectList[collectList$System.Time.s > yeard,]
+  collectList <- collectList[as.numeric(as.character(collectList$System.Time.s)) > yeard,]
   
 	}
   collectList <- collectList[!is.na(collectList$msms.count),]
@@ -119,17 +119,16 @@ if(file.exists(collectListPath)){
     if(AnalysisType == "both"|AnalysisType == "high" ){
     quanDir <- paste(folder,"_RmqqcFile_Quantiles",sep = "/")
     dir.create(quanDir,showWarnings = F)
-  	try(ECquan <- CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = F,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
+  	try(ECquan <- CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
   	try(save(ECquan,file = paste(quanDir,"ECquan.rda",sep = "/")),silent = T)
     # LoadSettings(AllData = collectList,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high")
-  	# stop("test Start")
     try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high"),silent = T)
   	try(trash  <-CompareComplexStdFromTable(collectList[ECstd,],RESettings,F,finalMQQC, PDFname = "ComplexStandardComparison.jpg", TargetVec = StandardIDs[1],PDF = F, Machines = Machines),silent = T)
   	try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-high"),silent = T)
     }
     if(AnalysisType == "both"|AnalysisType =="low"){
       
-  	try(BSAquan<- CompareComplexStdFromTable(collectList[BSA,],RESettings,F,finalMQQC, PDFname = "LowComplexStandardComparison.pdf", TargetVec = StandardIDs[2],PDF = T, Machines = Machines),silent = T)
+  	try(BSAquan<- CompareComplexStdFromTable(collectList[BSA,],RESettings,F,finalMQQC, PDFname = "LowComplexStandardComparison.pdf", TargetVec = StandardIDs[2],PDF = T, Machines = Machines),silent = F)
     try(save(BSAquan,file = paste(quanDir,"BSAquan.rda",sep = "/")),silent = T)
     
     try(plottingTimeLineFunction(AllData = collectList[BSA,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-Low"),silent = T)
@@ -215,10 +214,10 @@ if(file.exists(collectListPath)){
 			}
       }
 			
-						file.copy(FCheck <-gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC, StandardIDs[1],paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
+			FCheck <-file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC, StandardIDs[1],paste(iNames,".pdf",sep = ""),sep = "/"), overwrite = T)
 
 			}else{
-				file.copy(FCheck <-gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC,"all",paste(iNames,".pdf",sep = ""),sep = "/"),overwrite = T)
+			  FCheck <- file.copy(gsub("csv$","pdf",tempList$exitPath[1]),paste(finalMQQC,"all",paste(iNames,".pdf",sep = ""),sep = "/"),overwrite = T)
 
 			}
 			
@@ -316,16 +315,13 @@ if(length(ToMove) > 0){
 ToMoveInit <- ToMove
 ToMove <- paste(dirname(ToMoveInit),paste("MSMS_Dens_",basename(ToMoveInit),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
-file.copy(ToMove,Fcheck<<- paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"))
-try(Fcheck <- file.exists(Fcheck))
+try(Fcheck <- file.copy(ToMove, paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/")))
 ToMove <- paste(dirname(ToMoveInit),paste("DepPepPie_",basename(ToMoveInit),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
-SucDP <- file.copy(ToMove,Dcheck<<- paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T)
-try(Dcheck <- file.exists(Dcheck))
+try(Dcheck <- file.copy(ToMove,paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T))
 ToMove <- paste(dirname(ToMoveInit),paste("chromatogram_",basename(ToMoveInit),sep = ""),sep = "/")
 ToMove <- gsub("raw.pdf$","pdf", ToMove)
-Chrom <- file.copy(ToMove,Ccheck<<- paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T)
-try(Ccheck <- file.exists(Ccheck))
+try(Ccheck <- file.copy(ToMove, paste(finalMQQC,htmlPdfFold,basename(ToMove),sep = "/"),overwrite = T))
 }
 }
 #if(length(pathPdf) > 0){}

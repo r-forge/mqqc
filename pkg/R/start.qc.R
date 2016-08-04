@@ -81,8 +81,7 @@ start.qc <-
     list.collect <- list(length=length(rep.v))
     a <- 1
     #### Test Preread Tables, should fasten readout
-    #print(.path)
-    
+
     check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
     if(check){
       cat("\rLoading peptides",rep(" ",100))
@@ -158,6 +157,22 @@ start.qc <-
     }
     
     
+    # ret <- as.numeric(msScans$Retention.time)
+    # 
+    # 
+    # fun = max
+    # MS1 <- aggregate(unfactor(msScans$Base.peak.intensity),list(createWindows(ret)),fun)
+    # MS2 <- aggregate(unfactor(msmsScans$Base.peak.intensity),list(createWindows(unfactor(msmsScans$Retention.time)),msmsScans$Identified),fun)
+    # MS1$x <- MS1$x/max(MS1$x)
+    # MS2$x <- MS2$x/max(MS2$x)
+    # plot(MS1$Group.1,MS1$x,type = "n",ylim = c(-1,1),ylab = "relative Intensity")
+    # plotPOL(MS1$Group.1,MS1$x,col = "grey40",border = "transparent")
+    # plotPOL(MS2$Group.1[MS2$Group.2 == "-"],MS2$x[MS2$Group.2 == "-"]*-1,col = "grey40",border = "transparent",fun = max) 
+    # plotPOL(MS2$Group.1[MS2$Group.2 == "+"],MS2$x[MS2$Group.2 == "+"]*-1,col = "red",border = "transparent",fun = max) 
+    
+    
+    
+   
     
     i = rep.v
     for(i in rep.v){
@@ -166,30 +181,35 @@ start.qc <-
       ####
       
       temp.DataEvidence <- DataEvidence[as.character(DataEvidence[,raw.files]) ==as.character(i),]	
-      
-      temp.DataEvidence <- temp.DataEvidence
+      # temp.DataEvidence <<- temp.DataEvidence
+      # temp.DataEvidence <- temp.DataEvidence
       cat("\rstarting qc.prepare",rep(" ",100))
       
       try(tempAllPeptides <- AllPeptides[AllPeptides$Raw.file  == i,])
       try(tempMSMS <- MSMS[MSMS$Raw.file  == i,])
+      # msScans <<- msScans$
+      # msmsScans <<- msmsScans
       
       ####funfin
       # Calculation of Scores
       ####
+ 
       
       LoadSettings(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)
-      tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
+      # msScans <<- msScans
+      tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
       export 	  <- unlist(qc.prepare.data$sd)
       
       ChrPath <- ""
       if(length(qc.prepare.data$IdentifiedProteins) > 0& length(AllPeptides) > 0){
         if(nchar(as.character(qc.prepare.data$IdentifiedProteins)) > 0){
           try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
-        }else{
+        }
+        if(ChrPath == ""){
           try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =NULL,jitfac = 0))
         } 
       }
-      
+      # graphics.off()
       add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
       names(add.vec) <- c("Name","System.Time.s","System.Time")
       export <- t(as.matrix(c(add.vec ,export)))
@@ -201,7 +221,11 @@ start.qc <-
       names(IntensityPercentages) <- paste("RelCumulativeIntensity",IntensityPercentagesN)
       export <- cbind(export,t(as.matrix(IntensityPercentages[-1])))
       }else{
+        IntensityPercentages <- rep("no info",4)
+        IntensityPercentagesN <- c("Identified",        "Non Peptide Contaminants","Peptide Contaminants","Dependent")
+        names(IntensityPercentages) <- paste("RelCumulativeIntensity",IntensityPercentagesN)
         
+        export2 <- cbind(export,t(as.matrix(IntensityPercentages[-1])))
       }
       ####
       # BSACheck
@@ -211,12 +235,12 @@ start.qc <-
         
         BSACheck <- T
       }else{BSACheck <- F}
-      
+      #plotData$retentionTime
       
       ####  AllPepsData
       # Plotting
       ####
-      tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
+      tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,msScans = msScans,msmsScans= msmsScans,data.list = qc.prepare.data,pdf.name = i, open.doc = open.doc,pdfOut = pdfOut, BSACheck = BSACheck)))
       if(exists("ChrPath")){
         try(ASCIIprofileplot(TotalScoreRes$plotData,AllPepsData = ChrPath$all))
         
@@ -289,7 +313,6 @@ start.qc <-
       
       MailList <- list.files(path.package("mqqc"),pattern = "MailList.txt",recursive=T,full.name = T)
       if(length(MailList) > 0&SendMail){
-        print("WRITING MAIL")
         MailList  <- read.table(MailList,sep = "\t",colClasses = "character",stringsAsFactors = F)
         MailList 	<- apply(MailList,2,as.character)
         MailList <- MailList[!is.na(MailList[,1]),]
@@ -309,7 +332,9 @@ start.qc <-
             }
             MailID <- grep("@",MailID,fixed = T,value = T)[1]
             for(Mail in MailID){
-              PrepareMail(Title = paste("MQQC",data.frame(export)$Name,data.frame(export)$msms.count,"Peptides"),Message = flatFile,recipient=gsub("@","\\@",as.character(Mail),fixed = T))
+              # PrepareMail("Hiho","Ich freue mich, dass diese eMail ankommt!",recipient = "henrik.zauber@mdc-berlin.de",MailSecurity = NULL)
+              
+              PrepareMail(Title = paste("MQQC",data.frame(export)$Name,data.frame(export)$msms.count,"Peptides"),Message = flatFile,recipient=gsub("@","@",as.character(Mail),fixed = T),MailSecurity = NULL)
             }
           }
         }
@@ -317,6 +342,8 @@ start.qc <-
       list.collect[a]     <- qc.prepare.data
       a <- a+1
     }
+    
+    
     
     names(list.collect) <- rep.v
     if(show.path){
@@ -326,7 +353,8 @@ start.qc <-
       
     }
     setwd(.path) 
-    #try(return(list(qc = qc.prepare.data)))
+    cat("Finished QC Analysis")
+    #try(return(list(qc = are.data)))
     #try(system("open ."))
   }
 # start.qc()

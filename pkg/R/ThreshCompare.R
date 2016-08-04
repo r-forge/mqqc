@@ -24,6 +24,8 @@ function(sig,ref,cat = "high",type = "single",log = T){ # cat = "fixed"|"high"|l
   }
 if(cat == "low" & type == "quantile"){
   if(log){
+    sig <<- sig
+    ref <<- ref
     signorm <- sig - ref[3]
     refnorm <- ref[1] - ref[3]
     res <- signorm/refnorm

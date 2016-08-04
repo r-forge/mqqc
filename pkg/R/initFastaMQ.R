@@ -121,7 +121,7 @@ function(newFasta = T,db =NULL,MQ=NULL,SpeciesTable = F, default = "auto",fastaI
       }
       if(length(db)== 0& !loopDB){
         tkmessageBox(message= "No db loaded, please rerun mqqc and set a proper database for MQ search.")
-        stop("no db loaded")
+        # stop("no db loaded")
       }
       db <- path.convert(db)
       xmlNew<- xml.replace("fastaFiles",db ,xmlTemplate)  

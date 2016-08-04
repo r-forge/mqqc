@@ -232,9 +232,6 @@ it.a <- it.a+1 # Counter for Names
 }
 }
 	graphics.off()
-#stop()
-	 # system(paste("open", pdfName))
-	
 }
 options(warn = unlist(os))
 }

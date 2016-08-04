@@ -1,6 +1,10 @@
 plot.scores <-
-function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSACheck = F,colType = c("greenblue"))
+function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSACheck = F,colType = c("greenblue"))
 {
+  
+  
+  
+  
   #TODO:   
 
   cat("\rplotting scores",rep(" ",100))
@@ -46,7 +50,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   )
   
   if(pdfOut){
-    pdf(.pdf<- paste(pdf.name,".pdf",sep = ""),width = 16.5,height = 7.7,pointsize = 20)
+    pdf(.pdf<- paste(pdf.name,".pdf",sep = ""),width = 15.5,height = 7.7,pointsize = 20)
     # plot scores
   }
   real.data 		<- summary.data
@@ -85,13 +89,18 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   extra <- 0
   totalFill 	<- nrowVal* ncolVal
   
+  # profileSpace <- matrix(c(rep(1,(nrowVal-1)),2,rep(3,(nrowVal-1)),4),ncol = 2,nrow = nrowVal)
   profileSpace <- matrix(c(rep(1,(nrowVal-1)),2,rep(3,(nrowVal-1)),4),ncol = 2,nrow = nrowVal)
+  profileSpace <- matrix(c(rep(1,(nrowVal-2)),2,5,rep(3,(nrowVal-2)),4,4),ncol = 2,nrow = nrowVal)
+  
+  
   #any(summary.data$msmsQuantile != 0)& 
   if(  1==0){
     scoreSpace 	 <- matrix(c(6,6,rep(5,(2*(ncolVal-3)-2)),7,7),ncol =(ncolVal-2),nrow = 2 )	
     addNum <- 1
   }else{
-    scoreSpace 	 <- matrix(c(rep(5,(ncolVal-2)),rep(6,(ncolVal-2))),ncol =(ncolVal-2),nrow = 2 )	
+    mf <- max(profileSpace)
+    scoreSpace 	 <- matrix(c(rep(mf+1,(ncolVal-2)),rep(mf+2,(ncolVal-2))),ncol =(ncolVal-2),nrow = 2 )	
     addNum <- 0
     
   }
@@ -106,7 +115,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
     leftSpace <- leftSpace + addNum
   }else{
     leftSpace	 	<- (nrowVal-2)*(ncolVal-2)/2
-    leftSpace 		<- seq(from = 7,to = (leftSpace+6))
+    leftSpace 		<- seq(from = max(scoreSpace)+1,to = (leftSpace+max(scoreSpace)))
     n <- length(leftSpace) / (ncolVal-2)
     to <- (ncolVal-2)
     leftSpaceM <- c()
@@ -126,25 +135,55 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   
   totalSpace 		<- cbind(profileSpace,rbind(scoreSpace,leftSpace))
   
-  
-  layout(totalSpace,width = c(2.3,0.3,0.5,0.5,0.5,0.5,0.5,0.5))
+  hi = 1.3
+  ho = 2
+  layout(totalSpace,width = c(2,0.3,0.5,0.5,0.5,0.5,0.5,0.5),heights = c(hi,ho,hi,ho,hi,ho))
   par(mai = c(0,1,0.1,0))
   
   if(any(grep.col("calibrated.retention.time.start",data.i) == 0|grep.col("calibrated.retention.time.finish",data.i) == 0)){
     dots <- F
   }else{dots <- T}
   
-  try(plotData<- plot.profile(data.i,F,dots,BSACheck= BSACheck,plot.legend = F))
-  xVal <- 1.6
-  yVal <- 4.2
-  # vertical lines
-  lines(x = rep( xVal*4.05,2),y = c(0.59,yVal),xpd = NA,lwd = 3,col = "grey")
-  lines(x = rep(xVal,2),y = c(0.59,yVal),xpd = NA,lwd = 3,col = "grey")
-  lines(x = rep( xVal*7,2),y = c(0.59,yVal),xpd = NA,lwd = 3,col = "grey")
-  # horiz lines
-  lines(x = c(xVal,xVal*7),y = rep(yVal,2),xpd = NA,lwd = 3,col = "grey")
-  lines(x = c(xVal,xVal*7),y = rep(yVal*0.57,2),xpd = NA,lwd = 3,col = "grey")
-  lines(x = c(xVal,xVal*7),y = rep(0.59,2),xpd = NA,lwd = 3,col = "grey")
+  # plotMsFun <- function(xl = c(-1,1),type ="MS1",...){
+  #   ret <- as.numeric(msScans$Retention.time)
+  #   fun = max
+  #   sel <- ret > min(xl) & ret < max(xl)
+  #   MS1 <- aggregate(unfactor(msScans$Base.peak.intensity[sel]),list(createWindows(ret)[sel]),fun)
+  #   
+  #   ret2 <- unfactor(msmsScans$Retention.time)
+  #   sel <- ret2 > min(xl) & ret2 < max(xl)
+  #   
+  #   MS2 <- aggregate(unfactor(msmsScans$Base.peak.intensity[sel]),list(createWindows(ret2[sel]),msmsScans$Identified[sel]),fun)
+  #   
+  #   MS1$x <- MS1$x/max(MS1$x)
+  #   MS2$x <- MS2$x/max(MS2$x)
+  #   if(type != "all"){
+  #     fac = 1
+  #     yl <- c(0,1)
+  #   }else{
+  #     fac = -1
+  #     yl <- c(-1,1)
+  #   }
+  #   plot(MS1$Group.1,MS1$x,type = "n",ylim = yl,ylab = "relative Intensity",xlim = xl,frame = F,axes = F)
+  #   if(type == "MS1"|type == "all"){
+  #     plotPOL(MS1$Group.1,MS1$x,col = "grey40",border = "transparent")
+  #     
+  #   }
+  #   if(type == "MS2"|type == "all"){
+  #     plotPOL(MS2$Group.1[MS2$Group.2 == "-"],MS2$x[MS2$Group.2 == "-"]*fac,col = "grey40",border = "transparent",fun = max) 
+  #     plotPOL(MS2$Group.1[MS2$Group.2 == "+"],MS2$x[MS2$Group.2 == "+"]*fac,col = "red",border = "transparent",fun = max) 
+  #     
+  #   }
+  #   
+  # }
+  
+  
+  try(plotData<- plot.profile(data.i,F,dots,BSACheck= BSACheck,plot.legend = F,funfun = plotMsFun,msScans = msScans,msmsScans = msmsScans))
+
+
+  
+    
+
   
   #lines(x = rep(8.5,2),y = c(-5000,1000),xpd = NA,lwd = 3,col = "grey")
   
@@ -187,7 +226,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   namesData[namesData=="quanRet50ratio"] <- "ETime balance"
   namesData[namesData=="quan.duplicates.msms"] <- "Duplicates/Peptide IDs"
   namesData[namesData=="msms"] <- "Peptide ID/min"
-  namesData[namesData=="ProteinCoverage"] <- "BSA Protein Coverage in %"
+  namesData[namesData=="ProteinCoverage"] <- "BSA Protein Coverage [%]"
   
   namesData[namesData=="mass.error"]  <- "Mass error in ppm"
   namesData[namesData=="score"] <- "Andromeda Score"
@@ -215,7 +254,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   }
   
   LegString <-
-    c("File",tempLeg,"","Details", LegString[-1])
+    c("File:",tempLeg,"","Details:", LegString[-1])
   
   if(length(summary.data$missed.cleavages.percent) > 0){
     if(summary.data$missed.cleavages.percent != "not available"&all(is.na(data.list$SpecStat))){
@@ -264,6 +303,13 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
     }
   } 
   
+  
+  if(length(data.list$UniRef) > 0){
+    LegString = c(LegString,paste("Mycoplasma Proteins:",length(unique(data.list$UniRef$id))))	
+    
+  }
+  data.list <<- data.list
+  
   if(length(summary.data$DependentPeptides) > 0){
     depString <- unlist(strsplit(summary.data$DependentPeptides,"_#_"))
     depString2 <- sapply(depString,function(x){
@@ -289,6 +335,25 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   legend("top",legend ="",bty = "n",title = "MQQC Result")
   
   legend("left",legend =LegString,bty = "n",cex =0.8)
+  
+  
+  
+#----------------
+# Frame Lines
+  xVal <- c(-0.02,1.04,2.1)
+  yVal <- c(-2.18,-0.1)
+  # vertical lines
+  lines(x = rep( xVal[1],2),y = yVal,xpd = NA,lwd = 3,col = "grey")
+  lines(x = rep(xVal[2],2),y =yVal,xpd = NA,lwd = 3,col = "grey")
+  lines(x = rep( xVal[3],2),y = yVal,xpd = NA,lwd = 3,col = "grey")
+  # horiz lines
+  lines(x = range(xVal),y = rep(yVal[1],2),xpd = NA,lwd = 3,col = "grey")
+  lines(x = range(xVal),y = rep(yVal[2],2),xpd = NA,lwd = 3,col = "grey")
+  lines(x = range(xVal),y = rep(mean(yVal),2),xpd = NA,lwd = 3,col = "grey")
+  
+  # lines(x = c(xVal,xVal*7),y = rep(yVal*0.57,2),xpd = NA,lwd = 3,col = "grey")
+  # lines(x = c(xVal,xVal*7),y = rep(0.59,2),xpd = NA,lwd = 3,col = "grey")
+  
   
   par(mai = c(0.5,1,0.3,0.5))
   
@@ -349,7 +414,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   #empty.plot()
   
   # plot real data
-  par(mai = c(0.27,1,0.5,0.2),bg = "lightblue")
+  par(mai = c(0.27,1,0.5,0.2),mgp = c(2.5,0.5,0),bg = "lightblue")
   plot.quans <- function(temp.plot,log2,xlab ="",ylab = "",ref.data,thresh.auto = T,bg ="lightblue",fg.col = 1 ,main = "",ylim = range(temp.plot),temp.col = c(1,2,2),axesOn = T){
     # if fg.vol is 0 
     if(length(fg.col) == 0){fg.col <- 1}
@@ -360,7 +425,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
     temp.plot <- na.inf.fun(temp.plot)
     
     #boxplot(temp.plot,type = "n",xlim = c(1:2),axes = F,frame = T,xlab = xlab,ylab = ylab,lwd = 5,las = 2,fg = fg.col,bty = "n",ylim = ylim, boxwex = 2)
-    boxplot(temp.plot,range = 0,col = "transparent",xlab = "",ylab = "",type = "n",axes = F,border = "transparent",axes = axesOn)
+    boxplot(temp.plot,range = 0,col = "transparent",xlab = "",ylab = "",type = "n",axes = F,border = "transparent",axes = axesOn,medcol = "grey30")
     
     mtext(xlab,1,line = 1)
     mtext(main,3,line = 0.3,cex = 0.7)
@@ -382,10 +447,10 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
       
     }
     if(axesOn){
-    axis(2,las = 2,fg = 1,lwd = 2)
+    axis(2,las = 2,fg = 1,lwd = 2,tck = -0.2)
     }
     box(lwd = 4,fg = fg.col)
-    boxplot(temp.plot,range = 0,col = fg.col,xlab = xlab,ylab = ylab,type = "n",axes = F,add = T)
+    boxplot(temp.plot,range = 0,col = fg.col,xlab = xlab,ylab = ylab,type = "n",axes = F,add = T,medcol = "white",medlwd = 2)
     
     
   }
@@ -415,7 +480,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
     if(length(col.dir) == 0){col.dir <- col.temp[col.sel*100]}
     
     max(c(x,thresh))
-    barplot(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35,xpd = F,names.arg = "")
+    barplot(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35,xpd = F,names.arg = "",tck = -0.2)
     #abline(h=thresh,lwd = 2,col = "grey")
     abline(h=thresh,lwd = 3,col = MaxCol)
     box(lwd = 4,fg = col.dir)
@@ -431,7 +496,13 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   if(length(thresholds$MSID.min) == 0){
     thresholds$MSID.min <- c(500)
   }
-  trytest <- try(plot.stat(summary.data$MSID.min,thresholds$MSID.min, name.val = "Features [ID/min]",main = "MS", col.dir = col.temp[round.spec(score$MSID.min)]))
+  if(length(summary.data$Isotope.patterns.min) == 0){
+  trytest <- try(plot.stat(summary.data$MSID.min,thresholds$MSID.min, name.val = "Features [1/min]",main = "MS", col.dir = col.temp[round.spec(score$MSID.min)]))
+  }else{
+    trytest <- try(plot.stat(summary.data$Isotope.patterns.min ,thresholds$MSID.min, name.val = "Isotope patterns [1/min]",main = "MS", col.dir = col.temp[round.spec(score$Isotope.patterns.min)]))
+  }
+  
+  
   if(class(trytest) == "try-error"){
     empty.plot()
   }
@@ -455,11 +526,11 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   if(class(trytest) == "try-error"){
     empty.plot()
   }else{
-    mtext("Uncalibrated",2,line = 3,cex = 0.65)
+    mtext("Uncalibrated",2,line = 3.3,cex = 0.65)
     
     #mtext("log10(Intensities)",2,line = 2,cex = 0.65)
     
-    mtext("Mass error [ppm]",2,line = 2,cex = 0.65)
+    mtext("Mass error [ppm]",2,line = 2.5,cex = 0.65)
     
   }
   
@@ -490,7 +561,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   ## 
   
   trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$ret.width),fg.col = col.temp[round.spec(score$ret.width)],main = "nLC",ylim = range(summary.data$ret.width[1:4]),axesOn = F))
-  axis(2,at = pretty(summary.data$ret.width),label = round(10^pretty(summary.data$ret.width)),las = 2)
+  axis(2,at = pretty(summary.data$ret.width),label = round(10^pretty(summary.data$ret.width)),las = 2,tck = -0.2)
   
   
   
@@ -508,7 +579,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
     trytest <- 	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MSMS", col.dir = col.temp[round.spec(score$ProteinCoverage)]))
     
   }else{
-    trytest <- try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "PSMs [ID/min]",main = "MSMS", col.dir = col.temp[round.spec(score$msms)]))
+    trytest <- try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "PSMs [1/min]",main = "MSMS", col.dir = col.temp[round.spec(score$msms)]))
   }
   # trytest <- try(plot.stat(summary.data$msmsEff,thresholds$msmsEff,name.val = "Identification efficiency [%]",main = "MSMS",col = col.temp[round.spec(score$msmsEff)]))
   if(class(trytest) == "try-error"){
@@ -573,7 +644,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   
   par(mai = c(0.17,1,0.5,0.2),bg = "white")
   
-  hu <-barplot(0.8,las = 2,col ="grey",ylab = "Single Value Metric",ylim = c(0,1.2),bg = "transparent",angle = 45,density = 35,xpd = F,names.arg = "")
+  hu <-barplot(0.8,las = 2,col ="grey",ylab = "Single Value Metric",ylim = c(0,1.2),bg = "transparent",angle = 45,density = 35,xpd = F,names.arg = "",tck = -0.25)
   abline(h=1,lwd = 3,col = MaxCol)
   text(hu*1.4,1,"Best",xpd = NA,col = MaxCol,pos = 4)
   box(lwd = 4,fg = "grey")
@@ -583,7 +654,7 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
   
   
   
-  empty.plot(ylimVec = c(1,5))
+  empty.plot(ylimVec = c(1,5),xlim = c(0.5,1.5))
   abline(h = c(1.5,3,4.5),col = c(2,1,2),lwd = 2,lty = c(11,"solid",11))
   boxplot(c(1,2,3,4,5),add = T,col = "white",frame = F,axes = F,border = "grey",lwd = 1)
   box(lwd = 4,fg = "white")
@@ -655,7 +726,8 @@ function (data.i,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSAC
 
 return(list(TotalScore = SCVecs,TotalScoreColor = ColScore,plotData = plotData))
 }
-# tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
+
+# tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,msScans = msScans,msmsScans= msmsScans,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 
 # tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,data.list = qc.prepare.data,pdf.name = i, open.doc = F,pdfOut = pdfOut, BSACheck = BSACheck)))
 

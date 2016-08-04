@@ -43,7 +43,7 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
   s2 <- as.numeric(as.character(xTimeT[,2]))
   PieInfo <- c(sum(s1,na.rm = T),sum(s2,na.rm = T))
   names(PieInfo) <- c("Unassigned","Identified")
-  
+  filename <<- filename
   pdf(pdfname <- paste(dirname(filename),"/","chromatogram_",basename(filename),".pdf",sep = ""),width = 15,height= 6)
   par(mai = c(1,1,0.5,0.3))
   #spfit <- spline(xTimeS[,1],log10(xTimeS[,2]))
@@ -139,8 +139,8 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
 
       BSAx <- x[BSAgrep,]
       #tempBSAx <- rbind(cbind(0,BSAx$Retention.time-BSAx$Retention.Length/2),cbind(BSAx$Intensity,BSAx$Retention.time),cbind(0,BSAx$Retention.time+BSAx$Retention.Length/2))
-      BSAxt <- aggregate(BSAx$Intensity,list(round(BSAx$Retention.time,sumfun)),fun)
-      BSAxtMass <- aggregate(BSAx$m.z,list(round(BSAx$Retention.time,sumfun)),max)
+      BSAxt <- aggregate(unfactor(BSAx$Intensity),list(round(BSAx$Retention.time,sumfun)),fun)
+      BSAxtMass <- aggregate(unfactor(BSAx$m.z),list(round(BSAx$Retention.time,sumfun)),max)
       try(BSAxtMass[sort(BSAxt[,2],decreasing = T)[16] > BSAxt[,2],2]<- NA,silent = T)
       BSAxt[,1] <- jitter(BSAxt[,1],factor = jitfac)
       
@@ -322,20 +322,26 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
     MPIEout <- MPIEout[order(as.numeric(MPIEout[,2]),decreasing = T),]
     MPIEout <- MPIEout[as.numeric(MPIEout[,3]) > 1,]
     MPIEoutLabel <- t(sapply(strsplit(MPIEout[,1],"##"),unlist))
-    MPIEoutLabelPeps <- MPIEout[MPIEoutLabel[,2] == "Peptide",]
-    MPIEoutLabelOther <- MPIEout[MPIEoutLabel[,2] != "Peptide",]
+    if(is.vector(MPIEoutLabel)){
+      MPIEoutLabel <- t(as.matrix(MPIEoutLabel))
+    }
+    try(MPIEoutLabelPeps <- MPIEout[MPIEoutLabel[,2] == "Peptide",])
+    try(MPIEoutLabelOther <- MPIEout[MPIEoutLabel[,2] != "Peptide",])
 
     try(MPIEoutLabelPeps <- PieCut(MPIEoutLabelPeps))
     try(MPIEoutLabelOther <- PieCut(MPIEoutLabelOther))
     
     MPIEoutLabelPeps <- MPIEoutLabelPeps[!is.na(MPIEoutLabelPeps[,2]),]
     MPIEoutLabelOther <- MPIEoutLabelOther[!is.na(MPIEoutLabelOther[,2]),]
+    if(is.vector(MPIEoutLabelOther)){
+      MPIEoutLabelOther <- t(as.matrix(MPIEoutLabelOther))
+    }
     
     if(dim(MPIEoutLabelPeps)[1] > 0){
-    pie(as.numeric(MPIEoutLabelPeps[,2]),labels =paste(gsub("##Peptide","",MPIEoutLabelPeps[,1]),"n:",as.numeric(MPIEoutLabelPeps[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelPeps)[1]),border = "white",main = "Potential Protein contaminants by MS1\nCumulative Intensities")
-    symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[2],lwd = 3)
-    pie(as.numeric(MPIEoutLabelOther[,2]),labels =paste(MPIEoutLabelOther[,1],"n:",as.numeric(MPIEoutLabelOther[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelOther)[1]),border = "white",main = "Non Peptide Contaminants by MS1\nCumulative Intensities")
-    symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[1],lwd = 3)
+    try(pie(as.numeric(MPIEoutLabelPeps[,2]),labels =paste(gsub("##Peptide","",MPIEoutLabelPeps[,1]),"n:",as.numeric(MPIEoutLabelPeps[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelPeps)[1]),border = "white",main = "Potential Protein contaminants by MS1\nCumulative Intensities"),silent = T)
+    try(symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[2],lwd = 3))
+    try(pie(as.numeric(MPIEoutLabelOther[,2]),labels =paste(MPIEoutLabelOther[,1],"n:",as.numeric(MPIEoutLabelOther[,3])),radius = 0.4,cex = 0.7,lwd = 0.5,col = colorRampPalette(cbPalette)(dim(MPIEoutLabelOther)[1]),border = "white",main = "Non Peptide Contaminants by MS1\nCumulative Intensities"),silent = T)
+    try(symbols(0,0,circles = 0.4,add = T,ylim = c(0,1),xlim = c(0,1),inches = F,fg = contcol[1],lwd = 3))
     }
   }
 #abline(h=0,col = "grey",lwd = 0)
@@ -347,9 +353,11 @@ if(showpdf){
 sumall <- sum(as.numeric(unlist(PieInfo)),na.rm = T)
   return(list(all = xTimeS,identified = xTimeT,contaminantsProfile = ForConPlotAgg,contaminants = M,Int = PieInfo,IntPerc=sapply(PieInfo,function(x){as.numeric(x)/sumall*100})))
 }
+
+# try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = "test",BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
+
 # try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
 
-# stop()
 # try(ChrPath <- WriteChromatogram(x = tempAllPeptides,filename = i,jitfac = 0,showpdf = T))
 
 
