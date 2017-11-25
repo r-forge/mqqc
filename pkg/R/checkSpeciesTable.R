@@ -30,7 +30,7 @@ checkSpeciesTable <-
         	try(speciesTK(species))	
         	 if(exists("mqqcSpeciesSet",envir = .GlobalEnv)){
         		species$Fasta <- .GlobalEnv$mqqcSpeciesSet
-              write.txt(species,file =paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),quote = F, row.names = F,sep = "\t")
+        		write.table(species,file =paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),quote = F, row.names = F,sep = "\t")
         	}
         }
        

@@ -37,14 +37,12 @@ FunChange <- function(Species){
 		Files <- as.character(x[, dataCol])
 		Files <- basename(Files)
 		Files <- paste(AllChange,basename(Files),sep = "/")
-		#print(length(			print(listtboxK[[i]])))
-	
+
 	apply(cbind(1:length(Files), Files),1,function(y){
 					tkconfigure(listtboxK[[as.numeric(y[1])]],text =  y[2])
 					.GlobalEnv$mqqcSpeciesSet[as.numeric(y[1])] <- y[2]
 	})	
-				#print(listtboxK[[i]])
-		
+
 }
 CDes <- tk2button(tt2,text = "ChangeAll",command = FunChange)
 BDes <- tk2button(tt2,text = "Done",command = function(){tkdestroy(tt2)})

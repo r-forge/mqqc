@@ -47,7 +47,12 @@ mq.fun <-
       
       regEx <- sapply(species$Abbreviation,function(x){gsub(placeholder,x, templateFasta$REpar,fixed = T)})
       #regEx <-  paste(regEx,"_",sep = "")
-      SearchString <- basename(filePath)
+       (fil <-paste(dirname(filePath),"RawFileName.txt",sep = "/"))
+      if(file.exists(fil)){
+        SearchString <- readLines(fil)[1]
+      }else{
+        SearchString  <- basename(filePath)
+      }
       SearchString 	<-  gsub(".raw$","_raw", SearchString)
       temp   	<-as.logical(sapply(regEx,grep, x = SearchString))
       temp[is.na(temp)] <- FALSE
@@ -82,8 +87,8 @@ mq.fun <-
           speciesUsed <- NULL
         }
       }	
-      print("HUI")
-      print(speciesUsed)
+      # print("HUI")
+      # print(speciesUsed)
       if(length(speciesUsed) > 0){
         
         if(dim(speciesUsed)[1] > 1){
@@ -135,7 +140,7 @@ mq.fun <-
           print("SKIP")
           
         }else{
-          print("FOR")
+          # print("FOR")
           if(length(GenDB) == 0){
             GenDB <-NA 
             try(GenDB <- GenericDBPath)

@@ -178,7 +178,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   # }
   
   
-  try(plotData<- plot.profile(data.i,F,dots,BSACheck= BSACheck,plot.legend = F,funfun = plotMsFun,msScans = msScans,msmsScans = msmsScans))
+  try(plotData<- plot.profile(data.i=data.i,layout = F,linePlot = dots,BSACheck= BSACheck,plot.legend = F,funfun = plotMsFun,msScans = msScans,msmsScans = msmsScans))
 
 
   
@@ -329,11 +329,11 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
       depStringFin[1:(length(depStringFin)-1)] <- paste(depStringFin[1:(length(depStringFin)-1)],"-",sep = "")
       
     }
-    legend("bottom",c("DepPep:",depStringFin),bty = "n",cex = 0.5)
+    legend("bottomleft",paste("   ",c("Modifications:",depStringFin)),bty = "n",cex = 0.5)
     
   }
   legend("top",legend ="",bty = "n",title = "MQQC Result")
-  
+  LegString <<- LegString
   legend("left",legend =LegString,bty = "n",cex =0.8)
   
   

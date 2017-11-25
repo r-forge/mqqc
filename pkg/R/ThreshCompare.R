@@ -41,8 +41,7 @@ if(cat == "low" & type == "quantile"){
 }
   if(cat == "fixed" & type == "quantile"){
     if(log){
-      print(sig)
-      print(ref)
+
       ref <<- ref
       sig <<- sig
       if(sig < ref[1]){
@@ -67,9 +66,3 @@ if(cat == "low" & type == "quantile"){
   return(0)
 }
 
-# ThreshCompare(-2.9,(thresholds$mass.error.cal),type = "quantile",cat = "fixed")
-
-#print(ThreshCompare(1,c(0.3,0,1),type = "quantile",cat = "low",log = T)
-#)
-#print(score$peak.shape   <- ThreshCompare(log2(summary.Data$ret.peak.shape[3]),thresholds$ret.peak.shape,type = "quantile",cat = "fixed")
-#)

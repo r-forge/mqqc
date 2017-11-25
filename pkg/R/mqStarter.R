@@ -17,7 +17,8 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,...){
 	}
 	setwd(folder)
 	dir.create(folder.name)
-	tryError <- class(try(file.rename(basename(temp.batch.n),path.file <-   paste(getwd(),folder.name,temp.batch.n,sep = "/")),silent = T))
+	write(temp.batch.n,paste(folder.name,"RawFileName.txt",sep = "/"))
+	tryError <- class(try(file.rename(basename(temp.batch.n),path.file <-   paste(getwd(),folder.name,"temp.raw",sep = "/")),silent = T))
 	Sys.sleep(0.1)
 	if(tryError != "try-error"){
 	vec <- c(path.file,0,0,0,0)

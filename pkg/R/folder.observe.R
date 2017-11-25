@@ -1,19 +1,24 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org",TabOrd = "source"){
+function(folder = NULL,MQ = NULL,MSFRAGGERpath = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org",TabOrd = "source"){
+#------
+# Prescript 
   .GlobalEnv$MQQCRestartNow <- "no"
   try(tkControl(htmloutPath = htmloutPath))
-  for(packagename in c("txtplot","tcltk2","mailR")){
+  for(packagename in c("txtplot","tcltk2","mailR","data.table","wordcloud")){
     if(length(grep(packagename,library())) == 0){
       cat("installing",packagename,"\n")
       
       install.packages(packagename, repos = source)
+      # try(library(packagename))
     }else{
       cat("found",packagename,"\n")
+      # try(library(packagename))
+      
     }
   }
 
 
-  
+  library(data.table)
   
 
   ## Fox SpeciesTable
@@ -133,6 +138,7 @@ if(automatedStart){
   }
 
 }
+    
 StandardIDs = c(Param$StdIDhigh,Param$StdIDlow)
 if(file.exists(as.character(Param$MQ))){
   write(Param$MQ,paste(path.package("mqqc"),"data","MQpath",sep ="/")) 
@@ -255,9 +261,9 @@ if(file.exists(as.character(Param$MQ))){
 		files <- files[! files == temp.name]
 
 	}
-
+	#------
+	# Loop 
 	print("Starting Loop")
-	print("")
 
 	loop <<- T
 	funlastLoop <<- 0
@@ -268,6 +274,8 @@ while(loop){
 	####
 	setwd(folder)
 	funlastLoop  <<- funlastLoop +1
+	#------
+	# MQ Initiation 
 	
 	#####
 	# Initiation of MQ runs, if new Raw File in Folder was detected
@@ -277,15 +285,16 @@ while(loop){
 		try(ThreadControl(folder),silent = T)
 	#evidenceToProcess <- checkMqqcInfo(folder)
  	 
-  	evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
-	if(length(evidenceToProcess) > 0){
+  evidenceToProcess <- evidenceCheck(folder,sucFolder = sucFolder)  # Takes long with many undeleted folders
+	
+  if(length(evidenceToProcess) > 0){
 		for(i in 1:length(evidenceToProcess)){
 			try(SizeChecked <- checkSize(evidenceToProcess[i])==0)
 			if(!exists("SizeChecked")){SizeChecked <- F}
       if(SizeChecked){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...", htmloutPath = htmloutPath)
 			  tempI 				  <- evidenceToProcess[i]
-			  try(qcResults 	<- start.qc(tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID))
+			  try(qcResults 	<- start.qc(DataEvidence = tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID))
       }
 		}
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
@@ -295,25 +304,93 @@ while(loop){
 			cat("\r Searching for MQ Results done")
 
 	} # funlastLoop
+	
+	#---------
+	# MSFragger Runs
+	MSFRAGGERpath <- MSF
+	
+	if(length(MSFRAGGERpath) > 0){
+	  if(file.exists(MSFRAGGERpath)){
+      MsfraggerCandidate <- list.files(folder,pattern = "Combining_apl_files_for_main_search",recursive = T,full.names = T)
+      MsfraggerCandidate <- grep("_RmqqcFile_",MsfraggerCandidate,fixed = T,invert = T,value = T) 
+    	# Exclude msfragger Results
+    	msfragger_started <- sapply(MsfraggerCandidate,function(x){
+    	  x <- x
+    	  list.files(dirname(x),pattern = "msfragger_started")
+    	})
+    	msfragger_finished <- sapply(MsfraggerCandidate,function(x){
+    	  x <- x
+    	  list.files(dirname(x),pattern = "msfragger_finished")
+    	})
+    	MsfraggerCandidateFinal <- MsfraggerCandidate[lengths(msfragger_started) == 0]
+    	MsfraggerCandidateCheck <- MsfraggerCandidate[lengths(msfragger_started) != 0]
+    	
+    	MsFraggerAnalysisLimit <- 20 # minutes
+    	MSFRAGACTIVE_Control <- sapply(MsfraggerCandidate,function(x){
+    	  # x <<- x
+    	  started <- file.exists(paste(dirname(x),"msfragger_started",sep= "/"))
+    	  ended   <- file.exists(paste(dirname(x),"msfragger_finished",sep= "/"))
+    	  
+    	  if(!ended&started){
+    	    return(1)
+    	  }else{
+    	    return(0)
+    	  }
+    	})
+    	if(length(MSFRAGACTIVE_Control) == 0){
+    	  MSFRAGACTIVE_Control <- 0
+    	}
+    	if(all(MSFRAGACTIVE_Control==0)){
+    	  MSFRAGACTIVE <- F
+    	}else{
+    	  MSFRAGACTIVE <- T
+    	  
+    	}
+    	if(length(MsfraggerCandidateFinal) > 0&!MSFRAGACTIVE){
+    	  sapply(MsfraggerCandidateFinal[order(file.info(MsfraggerCandidateFinal)$mtime,decreasing = T)][1],function(x){
+    	    x <<- x 
+    	    # stop()
+    	    andromeda <- paste(dirname(dirname(x)),"andromeda",sep = "/")
+    	    mqpar <- readLines(paste(dirname(dirname(dirname(x))),"mqpar.xml",sep = "/"))
+    	    fasta <- grep("fasta</string>",mqpar,value = T)
+    	    DB  <- strsplit(fasta,"..string.")[[1]][2]
+    	    if(!MSFRAGACTIVE){
+    	      MSFRAGACTIVE <- T
+    	      #write("msfragger_started",paste(dirname(x),"msfragger_started",sep = "/"))
+    	      
+    	      write(rscript_msf(),msfpath<-paste(dirname(x),"msfragger_rscript.R",sep= "/"))
+    	      Rscript_system<- "rscript"
+    	      system(paste(Rscript_system,msfpath,MSFRAGGERpath,DB,andromeda,MSFcores,dirname(x)),wait=F)
 
-if(funlastLoop %% 2 == 0){
-#		hi<- file.info(list.files())
-#	hu<- 	order(hi[,4])
- 	cat("\r Cleaning Folder")
-   
-  htmloutPath <<- htmloutPath
-  	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
-	sucFolder <<- sucFolder
-
- 	cat("\r Updating Table")
-					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs,ordertype = TabOrd,maxReport = Param$ListLength))
-		
-  
+    	      
+    	    }
+    	    
+    	    
+    	    
+    	  })
+    	}
+  	}
 	}
-if(funlastLoop %% 20 == 0){
-  try(PIDhtmltable(htmloutPath))
-}
-setwd(folder)		
+	# MSfragger ends -------
+	#------
+  if(funlastLoop %% 2 == 0){
+  #		hi<- file.info(list.files())
+  #	hu<- 	order(hi[,4])
+   	cat("\r Cleaning Folder")
+     
+    htmloutPath <<- htmloutPath
+    	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
+  	sucFolder <<- sucFolder
+  
+   	cat("\r Updating Table")
+  					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs,ordertype = TabOrd,maxReport = Param$ListLength))
+  		
+    
+  	}
+  if(funlastLoop %% 20 == 0){
+    try(PIDhtmltable(htmloutPath))
+  }
+  setwd(folder)		
 		
 		catFun(paste(Sys.time(),"Status: Observing", folder))
 		#Sys.sleep(5)
@@ -326,9 +403,9 @@ setwd(folder)
 
 		# exclude _RmqqcFile_ and use exclusively raw txt
 		obs.files			  <- list.files(folder,full.name = T)
-   	obs.files      		 <- obs.files[!file.info(obs.files)[,2]]
+   	obs.files      	<- obs.files[!file.info(obs.files)[,2]]
 		temp.obs 			  <- grep("^_RmqqcFile_",obs.files)
-	#	temp.obs 			  <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
+	  #	temp.obs 			  <- c(temp.obs,grep("raw$|txt$",list.files(),invert = T))
 		temp.obs 			  <- unique(temp.obs)
 		obs.files 			<- grepSubsetControl(temp.obs, obs.files)
 		obs.files 			<- grep("raw$|txt$",obs.files,value = T, ignore.case = T)

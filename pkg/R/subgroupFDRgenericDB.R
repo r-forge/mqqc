@@ -34,7 +34,7 @@ hus<-sapply(uniNa,function(x){
   if(length(Rev) >0){ 
     re <<- 0
     le <<- 1
-    print("SGFDR")
+    # print("SGFDR")
     hu <-  (1:length(Rev))/Rev
     FinFDR <- c()
     for(ih in 1:length(hu)){
@@ -64,7 +64,7 @@ hus<-sapply(uniNa,function(x){
     
     
   }else{
-    print("NO")
+    # print("NO")
     
     SubGroupFDRSelect[xu] <- SubGroupFDRSelect[xu]|F
   }

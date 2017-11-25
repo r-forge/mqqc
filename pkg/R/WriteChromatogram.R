@@ -196,7 +196,7 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
     
   })
   if(exists("Contaminants")){
-    xSep <- x[x$Sequence == " ",]
+    xSep <- x[x$Sequence == " "|x$Sequence == "",]
     xCon <- round(Contaminants$Monoisotopic.ion.mass..singly.charged.,ContPrec)
     xSepMass <- round(xSep$Mass,ContPrec)
     ConSum <- aggregate(xSep$Intensity,list(xSepMass),sum,na.rm = T)

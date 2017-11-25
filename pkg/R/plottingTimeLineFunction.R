@@ -1,6 +1,21 @@
-plottingTimeLineFunction <- function(AllData,finalMQQC,TargetVec = "ECstd",PDF = F,lwdfac = 1, RESettings = RESettings, TLname = ""){
+plottingTimeLineFunction <- function(AllData,finalMQQC,TargetVec = "ECstd",PDF = F,lwdfac = 1, RESettings = RESettings, TLname = "",pdfShow = F){
+  
+  # Loading Distribution Cutoffs
+  ECquan <- list.files(paste(folder,"_RmqqcFile_Quantiles",sep = "/"),pattern = TargetVec,full.names =  T)
+  if(length(ECquan) == 1){
+    try(rm("Quan"),silent = T)
+    load(ECquan)
+    names(Quan)[names(Quan) == "Isotope.patterns.min" ] <- "MSID.min"
+  }
+  
+  AllData <<- AllData
+  NameInfo <- stringSplitter(AllData$Name,RESettings = RESettings)
+  NameInfo <- as.data.frame(NameInfo)
+  NameInfo$TimeTag <- paste(substr(NameInfo$TimeTag,1,4),substr(NameInfo$TimeTag,5,6),substr(NameInfo$TimeTag,7,8),sep = "-")
   os <-   options("warn")
-
+  AllData$System.Time.s <- as.numeric(as.POSIXct(NameInfo$TimeTag, format="%Y-%m-%d"))
+  AllData$System.Time <- NameInfo$TimeTag#as.numeric(as.POSIXct(NameInfo$TimeTag, format="%Y-%m-%d"))
+  
   options(warn = -1)
   #AllData <- backup
 uniSample <- AllData[grep(TargetVec, AllData$Name),]
@@ -26,7 +41,7 @@ DensMatrixTemplate <- rbind(
   c("msmsMassCount.50.","MSMS Median Fragment Counts",F,"MSMS"),
   #nlc
   c("LCcombiScore","LC profile symmetry",F,"LC"),
-  c("ret.width.50.","Retention Time [min]",F,"LC"),
+  c("ret.width.50.","log10 Retention Time [s]",F,"LC"),
   c("ret.peak.shape.50.","Peak shape",T,"LC"))
 
 Vec.Test <- DensMatrixTemplate[,1]
@@ -76,7 +91,6 @@ colnames(ColMQQCTLPLOTTING) <- Vec.Test
 unim <- unique(UniMachine)
 # unim <- "Gladys"
 for(i in unim){
-  # print(i)
 	dir.create(paste(finalMQQC ,"TimeLines",sep = "/"),showWarnings = F)
 if(PDF){
 	inputName <- paste("TimeLine",TLname,".pdf",sep = "")
@@ -98,6 +112,10 @@ if(PDF){
 	
 it.a <- 1	
 for(a in Vec.Test){
+  
+  
+
+  
 	Vec.Test <<- Vec.Test
 	
 	MacLine <- ColMQQCTLPLOTTING[rownames(ColMQQCTLPLOTTING) == i,make.names(colnames(ColMQQCTLPLOTTING)) == make.names(a)]
@@ -175,7 +193,6 @@ for(a in Vec.Test){
 		rangeVal <- range(c(Count[!is.infinite(Count)]),na.rm = T)
 
 	}
-	# print(rangeVal)
 	#if(rangeVal[1] > 0){rangeVal[1] <- 0}
 if(!is.na(BestV) & a != grep("mass.error",(Vec.Test),value =T )){
 	if(rangeVal[2] < BestV)
@@ -190,8 +207,22 @@ y <- y[xYear]
 if(!any(c(all(is.na(x)),all(is.na(y))))){
 
 plot(x, y,axes = F,type = "n",lwd = 3,xlab = "",ylab = NameTemp,main = paste(i, paste(TypeQC[it.a],NameTemp,sep = ": "),sep = "\n"),cex.main =2.25,cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
-grid()
-
+abline(v = pretty(x),col = "grey",lty = "dotted")
+  
+if(exists("Quan")){
+  if(any(names(Quan) == a)){
+  QuanA <- Quan[names(Quan) == a][[1]]
+  if(is.matrix(QuanA)){
+    QuanA <- QuanA[,colnames(QuanA) == i]
+  }
+  or <- order(as.numeric(gsub("%","",names(QuanA))))
+  try(abline(h=QuanA[or], lty = "dotted",col = colorRampPalette(rev(grad.cols.vec))(5)[or],lwd = 1 ))
+  try(text(hui<<-rep(par()$usr[2],length(QuanA)),hui2 <<- as.numeric(QuanA),names(QuanA),pos = 3,cex = 0.5,xpd = NA))
+  }
+}
+if(it.a == 1){
+  mtext(Sys.Date(),3,adj = 0,line = 3,cex = 0.5)
+}
 it.a <- it.a+1 # Counter for Names
 
 	if(BordPlot){
@@ -232,9 +263,18 @@ it.a <- it.a+1 # Counter for Names
 }
 }
 	graphics.off()
+	if(pdfShow){
+	  try(system(paste("open",pdfName)))
+	}
 }
 options(warn = unlist(os))
+
 }
+# try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high",pdfShow = T),silent = F)
+
+# collectList <- read.csv("/Users/henno/temp/mqqc/_RmqqcFile_Processed/LISTCOLLECT_ABACUS/list_collect.csv",stringsAsFactors = F)
+# try(plottingTimeLineFunction(AllData = collectList,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high"),silent = T)
+
 # LoadSettings( AllData= collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high")
 # (plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high"))
 

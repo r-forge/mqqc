@@ -78,7 +78,6 @@ if(plotstuff){
   rat[is.na(rat)] <- FALSE
   jic[is.infinite(jic)] <- NA
   texCex <- rep(0.1,length(jic))
-  # print(alpha)
   ps <<- ps
   texCex[ps > -log10(alpha)&rat] <- 0.5
   

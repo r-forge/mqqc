@@ -48,6 +48,5 @@ if(length(MailSettings) > 0){
 
 }
 
-# PrepareMail("Hiho","Ich freue mich, dass diese eMail ankommt!",recipient = "henrik.zauber@mdc-berlin.de",MailSecurity = NULL)
 
 

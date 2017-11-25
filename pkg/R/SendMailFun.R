@@ -5,7 +5,7 @@ function(Message = "",title = "",filename = "",SendMail = T,placeholder = "PLACE
 if(length(RESettings) > 0){
 MailList <- list.files(path.package("mqqc"),pattern = "MailList.txt",recursive=T,full.name = T)
 if(length(MailList) > 0&SendMail){
-  print("WRITING MAIL")
+  # print("WRITING MAIL")
   MailList  <- read.table(MailList,sep = "\t",colClasses = "character",stringsAsFactors = F)
   MailList 	<- apply(MailList,2,as.character)
   MailList <- MailList[!is.na(MailList[,1]),]

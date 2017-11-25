@@ -2,7 +2,6 @@ PlotTwoFun <-
 function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xColumn,ylab = yColumn,legPos = "bottomright", plotpoints = T, axesplot = T, logPlot = "n",leg = T,shiftPlot = F,ShiftVal = c(0.14,0.1),Machines = Machines,UniMachine = UniMachine,lwdjpg = 1,PDF = T,... ){
   a <- as.numeric(unlist(tempListOne[xColumn]))
   b <- as.numeric( unlist(tempListOne[yColumn]))
-  #print(UniMachine)
   if(logPlot == "y"){
     b <- log10(b)
     ylab <- paste("log10",ylab)
@@ -24,8 +23,8 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
   
   Exclude <- is.na(a)|is.na(b)|a == 0|b == 0
   
-  yrange <- range(quantile(b[!Exclude],probs = c(0,1)),na.rm = T)
-  xrange <- range(quantile(a[!Exclude],probs = c(0,1)),na.rm = T)
+  yrange <- range(quantile(b[!Exclude],probs = c(0,0.99)),na.rm = T)
+  xrange <- range(quantile(a[!Exclude],probs = c(0,0.99)),na.rm = T)
   pranx <- pretty(xrange)
   prany <- pretty(yrange)
   
@@ -47,7 +46,7 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
     axesplot <- F
   }
   
-  plot(a[! Exclude],b[!Exclude],pch = 20,type = "n", xlab = xlab,ylab = ylab,frame = F,mgp = c(1.5,0.5,0),axes = axesplot,ylim = yrange,xlim=xrange)
+  plot(a[! Exclude],b[!Exclude],pch = 20,type = "n", xlab = xlab,ylab = ylab,frame = F,mgp = c(1.5,0.5,0),axes = axesplot,ylim = yrange,xlim=xrange,xpd = NA)
   #grid()
   
   if(shiftPlot){
@@ -61,7 +60,7 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
     
   }
   
-  rainbowCol <- rainbow(length(unique(UniMachine)),alpha = 0.4,v = 0.8) 
+  rainbowCol <- rainbow(length(unique(UniMachine)),alpha = 0.2,v = 0.8) 
   rainbowColFull <- rainbow(length(unique(UniMachine)),alpha = 1,v = 0.8) 
   box()
   List <- list()
@@ -103,7 +102,20 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
     b <<- b
     Exclude <<- Exclude
     error <- try(temp <- lowess(a[! Exclude],b[! Exclude]),silent = T)
-    if(class(error) == "try-error"){temp <- list(x = 0,y = 0)}
+    if(class(error) == "try-error"){temp <- list(x = 0,y = 0)}else{
+      # testing slope detection
+      testfun <- temp
+      testfun$x <- testfun$x/max(testfun$x)
+      testfun$y <- testfun$y/max(testfun$y)
+      
+      mFU <- sapply(1:length(temp$x),function(x){
+        diff(c(testfun$y[x],testfun$y[x+1]))/diff(c(testfun$x[x],testfun$x[x+1]))
+      })
+      mFUsat  <- temp$x[mFU > -0.1 & mFU< 0.1]
+      mFUsat <- quantile(mFUsat,na.rm = T,probs = c(0.1,0.9))
+      yl <- temp$y[abs(temp$x-mFUsat[1]) == min(abs(temp$x-mFUsat[1]),na.rm = T)]
+      # text(mFUsat[1],yl[1], ">",cex = 2,col = 1,xpd = NA)
+    }
     TempSel <- tempListOneMac$SourceTime[!Exclude]
     TempSel  <- TempSel == max(TempSel,na.rm = T)
     TempSel[is.na(TempSel)] <- F
@@ -236,3 +248,9 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
   
   return(list(Mac = UniMachines,col = rainbowColFull,lty = 1:Mac,lwd = 1.5*lwdjpg,pch =1 : Mac))
 }
+# UniMachine  <- grepRE(as.character(tempListOne$Name),RESettings$REmac)
+
+# try(PlotTwoFun(tempListOne = tempListOne,"MSID.min","Coverage","Isotopic Patterns [1/min]","Coverage [%]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = 1,PDF =T),silent = F)
+
+
+# try(ECquan <- CompareComplexStdFromTable(tempListOne = collectList[BSA,],RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[2],PDF = T, Machines = Machines,StandardIDs = StandardIDs,pdfShow = T),silent = F)

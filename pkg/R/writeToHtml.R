@@ -439,7 +439,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 					 ", endHtml,"</html>")
 write(disclaimer,file =paste(dirname(path),"disclaimer.html",sep = "/"))
 
-#print(path)
 # system(paste("open",path))
 }
 #try(  FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))

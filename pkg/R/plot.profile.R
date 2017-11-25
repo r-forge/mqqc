@@ -65,7 +65,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	axis(2,tck = -0.015)
 	axis(1,labels = F,tck = -0.015)
 	uniqueSeq 	<- length(unique(data.i$sequence))
-	intens 		<- quantile(data.i$intensity[!is.na(data.i$intensity)])
+	intens 		<- quantile(as.numeric(data.i$intensity[!is.na(data.i$intensity)]))
 	intens 		<- paste("Q 0.5-1 Intensities:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
 	
   if(BSACheck){
@@ -158,7 +158,9 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
   if(!densityRescale){
     nofa <- 1
   }
+  
 	dens.crt <- class(try(temp <- density(DAT <<- data.i$retention.time,na.rm = T)))
+	tempCON <- NULL
   dens.con <- class(try(tempCON <- density(CON <<- data.i$retention.time[data.i$potential.contaminant == "+"],na.rm = T)))
   temp$y <- temp$y/max(temp$y,na.rm = T)*nofa
   tempCON$y <- tempCON$y/max(tempCON$y,na.rm = T)
@@ -219,7 +221,7 @@ if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
 		plotPOL(names(dens.conA),dens.conA/max(dens.crtA),col = "#fca50280",type = "l",border = "transparent")
 				
 	}else{
-    print(ConFAC)
+    # print(ConFAC)
     ConFAC <<- ConFAC
     if(log2(ConFAC) > -4){
 	  # try(points(tempCON$x,tempCON$y,type = "l",col = "#fca502",lwd = 2,lty = "dotted"))

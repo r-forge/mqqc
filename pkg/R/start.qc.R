@@ -1,6 +1,8 @@
 start.qc <-
-  function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769",serverinput = "from the html output or in the _RmqqcFile_Processed folder")
+  function(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769",serverinput = "from the html output or in the _RmqqcFile_Processed folder",rfn = NULL)
   {
+    require(data.table)
+# PreScript -----
     #DataEvidence <- NULL
     require(tcltk)  
     #tk_choose.files(multi = F,caption = "select your evidence.txt",filters = matrix(c("Text",".txt","All files","*"),2,2,byrow = T))50  
@@ -12,14 +14,22 @@ start.qc <-
     cat("\rLoading data",rep(" ",100))
     #    data(NameCounts)
 
-    
     if(!is.null(DataEvidence)){
       if(is.vector(DataEvidence)){
         SourceTime <- file.info(DataEvidence)$ctime
         .path <- dirname(DataEvidence)
         .name <- basename(DataEvidence)
+
+        
+        
         evidence.path <- DataEvidence
-        tryError <- class(try(DataEvidence <- read.csv(DataEvidence,sep = "\t",stringsAsFactors = F)))
+        # tryError <- class(try(DataEvidence <- fread(DataEvidence,sep = "\t",stringsAsFactors = F,data.table = F,check.names = T)))
+        tryError <- class(try(DataEvidence <- read.csv(DataEvidence,sep = "\t",stringsAsFactors = F,check.names = T)))
+        
+        if(file.exists(RP <- paste(dirname(dirname((.path))),"RawFileName.txt",sep = "/"))){
+          rfn <- readLines(RP)
+          rfn <-  gsub(".raw$","",rfn)
+        }
       }else{
         .path <- getwd()
         .name <- "unknown"
@@ -29,8 +39,9 @@ start.qc <-
       library(tcltk)
       evidence.path <- file.choose()
       SourceTime <- file.info(evidence.path)$ctime
+      #tryError <- class(try(DataEvidence <- fread(evidence.path,sep = "\t",colClasses = "character",stringsAsFactors = F,data.table = F,check.names = T)))
+      tryError <- class(try(DataEvidence <- read.csv(evidence.path,sep = "\t",stringsAsFactors = F,check.names = T)))
       
-      tryError <- class(try(DataEvidence <- read.csv(evidence.path,sep = "\t",stringsAsFactors = F)))
       .path <- dirname(evidence.path)
       .name <- basename(evidence.path)
 
@@ -79,25 +90,24 @@ start.qc <-
     
     
     list.collect <- list(length=length(rep.v))
-    a <- 1
     #### Test Preread Tables, should fasten readout
 
     check <- file.exists(peppath<- paste(.path,"peptides.txt",sep = "/"))
     if(check){
       cat("\rLoading peptides",rep(" ",100))
-      Peptides <- read.csv(peppath,sep = "\t")
+      Peptides <- fread(peppath,sep = "\t",data.table  = F,check.names = T) 
     }else{Peptides <- NULL}
     # AllPeptides 
     check <- file.exists(peppath<- paste(.path,"allPeptides.txt",sep = "/"))
     if(check){    
       cat("\rLoading AllPeptides",rep(" ",100))
-      AllPeptides <- read.csv(peppath,sep = "\t",stringsAsFactors = F)
+      AllPeptides <- fread(peppath,sep = "\t",stringsAsFactors = F,data.table = F,check.names = T)
     }else{AllPeptides = NULL}
     # MSMS 
     check <- file.exists(peppath<- paste(.path,"msms.txt",sep = "/"))
     if(check){
      
-      MSMS <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+      MSMS <- fread(peppath,stringsAsFactors = F,data.table = F,sep = "\t",header = T,check.names = T)
       
     }else{
       MSMS <- NULL
@@ -107,7 +117,7 @@ start.qc <-
     
     if(check){
       
-      msScans <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+      msScans <- fread(peppath,sep = "\t",stringsAsFactors = F,data.table = F,check.names = T)
       
     }else{
       msScans <- NULL
@@ -116,13 +126,19 @@ start.qc <-
     
     if(check){
       
-      msmsScans <- read.table(peppath,colClasses = "character",sep = "\t",comment.char = "",header = T)
+      msmsScans <- fread(peppath,sep = "\t",stringsAsFactors = F,data.table = F,check.names = T)
       
     }else{
       msmsScans <- NULL
     }
-    
-    
+    check <- file.exists(peppath<- paste(.path,"summary.txt",sep = "/"))
+    if(check){
+      file.copy(peppath,"summary.txt")
+    }
+    check <- file.exists(peppath<- paste(.path,"parameters.txt",sep = "/"))
+    if(check){
+      file.copy(peppath,"parameters.txt")
+    }
     cat("MSMS",dim(MSMS),"ALLP",dim(AllPeptides),"Peptides",dim(Peptides))
     try(data(NameCounts) ) 
     
@@ -169,13 +185,34 @@ start.qc <-
     # plotPOL(MS1$Group.1,MS1$x,col = "grey40",border = "transparent")
     # plotPOL(MS2$Group.1[MS2$Group.2 == "-"],MS2$x[MS2$Group.2 == "-"]*-1,col = "grey40",border = "transparent",fun = max) 
     # plotPOL(MS2$Group.1[MS2$Group.2 == "+"],MS2$x[MS2$Group.2 == "+"]*-1,col = "red",border = "transparent",fun = max) 
-    
-    
-    
+
+    if(length(rfn) > 0){
+      DataEvidence$Raw.file <- rfn
+      MSMS$Raw.file <- rfn
+      msmsScans$Raw.file <- rfn
+      msScans$Raw.file <- rfn
+      AllPeptides$Raw.file <-rfn
+      temp <- read.table("summary.txt",sep = "\t",stringsAsFactors = F,header = T,check.names = F)
+      temp$`Raw file` <- rfn
+      write.table(temp,"summary.txt",sep = "\t",quote = F,row.names = F)
+      rep.v <- rfn
+    }
    
-    
+  # final Script ------  
+    msf <- NULL
+    if(length(rep.v)== 1){
+      #msf <- list.files(dirname(dirname(.path)),pattern = "msfragger.txt",recursive = T,full.names = T)
+      msf <- paste(dirname(.path),"andromeda/msfragger.txt",sep = "/")
+      if(file.exists(msf)){
+        msf <- PrepareMSFres(path = msf)
+        try(plot(msf,show.plot = F,pdfname = paste("MSF_",rep.v,".pdf",sep = "")),silent = F)
+      }else{msf <- NULL}
+      
+    }
     i = rep.v
+    at = 1
     for(i in rep.v){
+      
       ####
       # Subset evidence
       ####
@@ -195,9 +232,26 @@ start.qc <-
       ####
  
       
-      LoadSettings(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)
+      LoadSettings(Data = temp.DataEvidence,msmsScans = msmsScans,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS,rfn = i)
       # msScans <<- msScans
-      tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
+      tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence,msmsScans = msmsScans,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS,rfn = i)))
+      if(length(msf) > 0){
+        tabi <- msf$Labels
+        if(dim(tabi)[1]>4){
+          tabi <- tabi[order(as.numeric(tabi[,4]),decreasing = T),][1:4,]
+          
+          
+        }
+        
+        ant <- msf$MassShifts
+        ant <- ant[ant != 1] 
+        sel <- names(ant) < 0.5 & names(ant) >-0.5
+        
+        percent <- sum(ant)#sum(ant[sel],na.rm = T)
+        qc.prepare.data$sd$DependentPeptides <- paste(tabi[,1],paste(round(as.numeric(tabi[,4])/percent*100,1),"%"),sep = "##",collapse = "_#_")
+      }
+        
+      
       export 	  <- unlist(qc.prepare.data$sd)
       
       ChrPath <- ""
@@ -210,7 +264,7 @@ start.qc <-
         } 
       }
       # graphics.off()
-      add.vec <- c(rep.v[a],as.numeric(Sys.time()),make.names(Sys.time()))
+      add.vec <- c(rep.v[at],as.numeric(Sys.time()),make.names(Sys.time()))
       names(add.vec) <- c("Name","System.Time.s","System.Time")
       export <- t(as.matrix(c(add.vec ,export)))
       
@@ -273,7 +327,7 @@ start.qc <-
       # export <- cbind(export,t(as.matrix(ScoreAdd)))
       
       if(length(exitPath) > 0){
-        exitPath  <-  paste(exitPath,paste(Sys.Date(),gsub(".raw$","raw",rep.v[a]),"folder",sep = "_"),paste(rep.v[a],".csv",sep = ""),sep = "/")
+        exitPath  <-  paste(exitPath,paste(Sys.Date(),gsub(".raw$","raw",rep.v[at]),"folder",sep = "_"),paste(rep.v[at],".csv",sep = ""),sep = "/")
         names(exitPath) <- "filePath"
         SourceTime <- as.numeric(SourceTime)
         names(SourceTime) <- "SourceFileTime"
@@ -285,8 +339,8 @@ start.qc <-
         
       }
       
-      try(write.csv(export,paste(rep.v[a],".csv",sep = ""),quote = F,row.names = F))
-      try(save(qc.prepare.data, TotalScoreRes ,file = paste(rep.v[a],".Rdata",sep = ""),quote = F,row.names = F))
+      try(write.csv(export,paste(rep.v[at],".csv",sep = ""),quote = F,row.names = F))
+      try(save(qc.prepare.data, TotalScoreRes ,file = paste(rep.v[at],".Rdata",sep = ""),quote = F,row.names = F))
       
       
       flatFile <- t(export)
@@ -339,8 +393,8 @@ start.qc <-
           }
         }
       }
-      list.collect[a]     <- qc.prepare.data
-      a <- a+1
+      list.collect[at]     <- qc.prepare.data
+      at <- at+1
     }
     
     
@@ -357,6 +411,9 @@ start.qc <-
     #try(return(list(qc = are.data)))
     #try(system("open ."))
   }
+# DataEvidence <- "/Volumes/SSD/MQQC/20181111_HZ_ECstd_2raw_folder/combined/txt/evidence.txt"
+# start.qc(DataEvidence)
+# start.qc()
 # start.qc()
 # LoadSettings(DataEvidence = NULL,RawBased = T,n=NA, show.path = F,open.doc = F,pdfOut = T, SpeciesTable = T,placeholder = "PLACEHOLDER", RESettings =list(REpar = "PLACEHOLDER"),SendMail = T, exitPath = NULL, BSAID = "P02769")
 # Param <- mqqcGUI()
@@ -376,4 +433,5 @@ start.qc <-
 # start.qc("/Users/henno/temp/mqqc/Neuer Ordner/txt2/evidence.txt")
 # tempI <- "/Users/henno/temp/mqqc/ERIKTEST/txt/evidence.txt"
  #try(qcResults 	<- start.qc(tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID))
+# start.qc(DataEvidence <- "/Users/henno/temp/Gladys_12345678_HZ_ECstd_blaRaw_folder/combined/txt/evidence.txt")
 

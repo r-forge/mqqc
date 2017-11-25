@@ -125,6 +125,18 @@ successDelete <-
                 }
                 
               }
+              
+              ## Combine Original MQ summary:
+              
+              baSummary <- paste(dirname(ba),"summary.txt",sep = "/")
+              writeNameSum <- paste(hotFolder,sucFolder,"Summaries.txt",sep = "/")
+              
+              if(!exists(writeNameSum)){
+                file.copy(baSummary,writeNameSum)
+              }else{
+                su <- readLines(writeNameSum,n = 2)
+                write(su[2],writeNameSum,append = T)
+              }
             }
             # start renaming      
             if(any(list.files(dirname(tempmqqcInfo))  == "mqqcProcessed")& any(basename(tempmqqcInfo)  != "mqqcProcessed")){

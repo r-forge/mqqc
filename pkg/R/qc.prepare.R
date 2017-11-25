@@ -1,5 +1,5 @@
 qc.prepare <- 
-function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769",selectedFile = 1,RESettings = RESettings,Peptides = NULL,AllPeptides = NULL,MSMS = NULL,msSC = NULL,msmsScans = NULL,ProtFDR = 0.01){
+function(Data, SpeciesTable,placeholder,templateFasta,path = "./", filename = NULL,BSAID = "P02769",selectedFile = 1,RESettings = RESettings,Peptides = NULL,AllPeptides = NULL,MSMS = NULL,msSC = NULL,msmsScans = NULL,ProtFDR = 0.01,rfn = ""){
 
 score <- list()
 
@@ -62,6 +62,21 @@ if(SpeciesTable){
 		    temp[is.na(temp)] <- FALSE
         
 		if(any(temp)){
+		  
+		# Testing using MachineSpecific thredsholds based on distribution
+		# DisPath <- paste(folder,"_RmqqcFile_Quantiles",paste(species$Abbreviation[temp],"_quan.rda",sep = ""),sep = "/")
+		# if(file.exists(DisPath)){
+		#   load(DisPath)
+		#   
+		#   NewThresholds<- sapply(Quan,function(x){
+		#     x <<- x
+		#     names(x)
+		#     fufi <- gregexpr(RESettings$REmac,RawFile)[[1]]
+		#     mac <- substr(RawFile,fufi,(fufi+attributes(fufi)$match.length-2))
+		#     return(x[,colnames(x)==mac][c(1,2,3)])
+		#   })
+		#   
+		# }
 		speciesUsed <- species[temp,]
 		thresholds	<- as.list(speciesUsed[1,])
 		thresholds <- lapply(thresholds,function(x){
@@ -273,10 +288,11 @@ if(length(UNIREF) > 0){
   Iuniref <- Iuniref/dim(Data.i)[1]
   SCuniref <- UNIREFP$score
   Sequniref <- UNIREFP$sequence
+  Pepuniref <- UNIREFP$pep
   
-  UniRef <- list(id = Puniref,intensities = Iuniref,score = SCuniref,sequence = Sequniref,Rev = PunirefRev)
+  UniRef <- list(id = Puniref,intensities = Iuniref,score = SCuniref,sequence = Sequniref,Rev = PunirefRev,PEP = Pepuniref)
 }else{
-  UniRef <- list(id = NA,intensities = NA,score = NA,sequence = NA,Rev = NA)
+  UniRef <- list(id = NA,intensities = NA,score = NA,sequence = NA,Rev = NA,PEP = NA)
 }
 # MSMS
 
@@ -424,7 +440,7 @@ ValExclude <- grep("^intensity$",colnames(Data),ignore.case = T)
 vals <- setdiff(vals,ValExclude)
 }	
 Int <- Data.i.quant[, vals]
-Int <- as.vector(Int)
+Int <- as.vector(unfactor(Int))
 Int <- Int[Int != 0]
 IntQuan <- quantile(Int,na.rm = T)
 summary.Data$Intensity <- IntQuan
@@ -458,7 +474,8 @@ if(file.exists(peppath<- paste(path,"peptides.txt",sep = "/"))|length(Peptides) 
 summary.Data$missed.cleavages.percent =as.character(rat)
 MSMSsel <- match(Data.i.quant$ms.ms.scan.number,MSMS$Scan.number)
 
-try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed,quant.range = range(quant.range),MSMS.Import = MSMS[MSMSsel,]),silent = F)
+try(msmsInfo <- msmsPlot(path = path, RawFilesUsed=  RawFilesUsed,quant.range = range(quant.range),MSMS.Import = MSMS[MSMSsel,]),silent = T)
+
 if(!exists("msmsInfo")){
 	msmsInfo <- rep(0,5)
 	msmsInfo <-	list(MSMSint = "nodata",MSMSn = "nodata")
@@ -541,6 +558,10 @@ if(length(msSC) > 0){
   summary.Data$Peaks.s <- quantile(as.numeric(as.character(msSCquant$Peaks...s)),na.rm = T)
   summary.Data$MS.MS.identification.rate <- quantile(as.numeric(as.character(msSCquant$MS.MS.identification.rate....)),na.rm = T)
   summary.Data$Cycle.time <- quantile(as.numeric(as.character(msSCquant$Cycle.time)),na.rm = T)
+  summary.Data$Total.ion.current <- quantile(as.numeric(as.character(msSCquant$Total.ion.current)),na.rm = T)
+  summary.Data$Total.ion.current <- quantile(as.numeric(as.character(msSCquant$Total.ion.current)),na.rm = T)
+  summary.Data$RawOvFtT <- quantile(unfactor(msSCquant$RawOvFtT),na.rm = T)
+  
   
   rettimePlots <- function(x,feature,logfun = log10,plotfun = plot ,...){
     y <- x[,colnames(x) == feature]
@@ -557,17 +578,17 @@ if(length(msSC) > 0){
   }
 
   
-  pdf("RetPlots.pdf",height = 4)
+  pdf(paste("RetPlots_",rfn,".pdf",sep = ""),height = 4)
   par(mfrow = c(2,3),mai = c(0.6,0.6,0.2,0.1))
   unfactor <- function(x){as.numeric(as.character(x))}
   retfun <-  function(x){return(x)}
-  rettimePlots(msSC,"Ion.injection.time",ylab = "log10 Ion injection time",type = "l",xlab = "Retention time in min")
-  rettimePlots(msSC,"MS.MS.identification.rate....",type = "l",logfun =retfun,ylab = "MS2 identification rate [%]",xlab = "Retention time in min")
-  rettimePlots(msSC,"Cycle.time",type = "l",logfun = retfun,xlab = "Retention time in min",ylab = "Cycle time")
-  rettimePlots(msSC,"Peaks...s",type = "l",xlab = "Retention time in min",logfun = retfun,ylab = "Peaks [1/s]")
-  rettimePlots(msSC,"Single.peaks...s",type = "l",plotfun = points,logfun = retfun,lty = "dashed",xlab = "Retention time in min")
-  rettimePlots(msSC,"Isotope.patterns...s",type = "l",logfun = retfun,plotfun = plot,lty = "solid",xlab = "Retention time in min",ylab = "Isotope patterns / s")
-  rettimePlots(msSC,"Isotope.pattern.length",type = "l",logfun = retfun,plotfun = plot,lty = "dashed",xlab = "Retention time in min",ylab = "Isotope pattern length")
+  try(rettimePlots(msSC,"Ion.injection.time",ylab = "log10 Ion injection time",type = "l",xlab = "Retention time in min"),silent = T)
+  try(rettimePlots(msSC,"MS.MS.identification.rate....",type = "l",logfun =retfun,ylab = "MS2 identification rate [%]",xlab = "Retention time in min"),silent = T)
+  try(rettimePlots(msSC,"Cycle.time",type = "l",logfun = retfun,xlab = "Retention time in min",ylab = "Cycle time"),silent = T)
+  try(rettimePlots(msSC,"Peaks...s",type = "l",xlab = "Retention time in min",logfun = retfun,ylab = "Peaks [1/s]"),silent = T)
+  try(rettimePlots(msSC,"Single.peaks...s",type = "l",plotfun = points,logfun = retfun,lty = "dashed",xlab = "Retention time in min"),silent = T)
+  try(rettimePlots(msSC,"Isotope.patterns...s",type = "l",logfun = retfun,plotfun = plot,lty = "solid",xlab = "Retention time in min",ylab = "Isotope patterns / s"),silent = T)
+  try(rettimePlots(msSC,"Isotope.pattern.length",type = "l",logfun = retfun,plotfun = plot,lty = "dashed",xlab = "Retention time in min",ylab = "Isotope pattern length"),silent = T)
   dev.off()
   # system("open RetPlots.pdf")
   summary.Data$Isotope.patterns.min <- sum(msSCquant$Isotope.patterns,na.rm = T)/diff(range(msSCquant$Retention.time))
@@ -578,6 +599,19 @@ if(length(msSC) > 0){
   
   
 }else{summary.Data$Isotope.patterns.min <- NA}
+
+if(length(msmsScans) >0){
+  msmsScans$Retention.time <- as.numeric(as.character(msmsScans$Retention.time))
+  rs <- msmsScans$Retention.time*60
+  # msmsScans$Isotope.patterns <- c(1,diff(rs))*unfactor(msmsScans$Isotope.patterns...s)
+  
+  msmsScansquant <- msmsScans[msmsScans$Retention.time >= min(quant.range)&msmsScans$Retention.time<= max(quant.range,na.rm = T)& msmsScans$Identified == "+",]
+  summary.Data$Ion.injection.time.MSMS <- quantile(as.numeric(as.character(msmsScansquant$Ion.injection.time)),na.rm = T)
+  summary.Data$Collision.energy.msms <- quantile(as.numeric(as.character(msmsScansquant$Collision.energy)),na.rm = T)
+  summary.Data$AGC.Fill <- quantile(as.numeric(as.character(msmsScansquant$AGC.Fill)),na.rm = T)
+  summary.Data$Cycle.time.MSMS <- quantile(as.numeric(as.character(msmsScansquant$Ion.injection.time)),na.rm = T)
+  summary.Data$Total.ion.current.MSMS <- quantile(as.numeric(as.character(msmsScansquant$Total.ion.current)),na.rm = T)
+}
 score$Isotope.patterns.min <-   ThreshCompare(summary.Data$Isotope.patterns.min,thresholds$MSID.min )
 
 
@@ -602,7 +636,9 @@ if(length(AllPeptides) > 0){
   
   sel       <- AllPeptides$Retention.time > min(quant.range) & AllPeptides$Retention.time < max(quant.range)
   allMSMS   <- (AllPeptides$Sequence[sel] != " ")
-  Features  <-length(sel[sel])
+  allnotIdentifiedMSMS   <- (AllPeptides$Sequence[sel] != " ")
+  
+  Features  <- length(sel[sel])
   #allMSMST  <- allMSMS[allMSMS]
   #allMSMSF  <- allMSMS[!allMSMS]
   
@@ -613,7 +649,14 @@ if(length(AllPeptides) > 0){
   summary.Data$MSID.min <- tempMSIDMIN 
   score$MSID.min <-   ThreshCompare(summary.Data$MSID.min,thresholds$MSID.min )
   
-}else{score$MSID.min <- NA;summary.Data$MSID.min <- NA}
+  summary.Data$AllPeptides  <- dim(AllPeptides)[1]
+  summary.Data$AllPeptidesIdentified <- length(AllPeptides$Score[AllPeptides$Sequence!= " "])
+  summary.Data$AllPeptides_QuantileWindow <- length(sel[sel])
+  summary.Data$AllPeptidesIdentifiedMSMS_QuantileWindow <- length(allnotIdentifiedMSMS[allnotIdentifiedMSMS])
+  
+  
+  
+}else{score$MSID.min <- NA;summary.Data$MSID.min <- NA;summary.Data$AllPeptidesIdentified <- NA;summary.Data$AllPeptides <- NA}
 
 
 #else{
@@ -682,6 +725,7 @@ parID <- speciesUsed$Abbreviation
 if(length(parID) == 0){
   parID <- "not detected"
 }
+save(UniRef,file = "UniRef.rda")
 return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein,parID = parID,SpecStat = MostProperSpecies,UniRef = UniRef))
 }
 # tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))

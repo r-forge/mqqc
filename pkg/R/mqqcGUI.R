@@ -27,11 +27,13 @@ if(!exists("output")|outputError){
 	}else{
 		output <- list(	
 		MQ = "",
+		MSF = "",
 		folder ="",
 		fastaFile = "",
 		htmloutPath = "",
 		DeleteFiles = 0,
 		cores = 1 ,
+		MSFcores = 1,
 		SpeciesTable = T,
 		REpar = "\\D*_\\d*_[^_]*_PLACEHOLDER_",
 		REmac = "^\\D*_",
@@ -57,10 +59,10 @@ exportRdata <- function(){
 
 
 
-  checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
-if(length(checkMQ)> 0){
-	MQpath <- tclVar(readLines(checkMQ))
-}else{MQpath <- tclVar("MQ-path")}
+#   checkMQ <- list.files(paste(path.package("mqqc"),"data",sep ="/"),pattern = "MQpath",full.name = T)
+# if(length(checkMQ)> 0){
+# 	MQpath <- tclVar(readLines(checkMQ))
+# }else{MQpath <- tclVar("MQ-path")}
 
 
 col <- c("#FFFFFF","#426787")
@@ -120,9 +122,14 @@ tt3 <- tk2notetab(nb, Tabs[2])
 
 ttf1 <- tk2frame(tt2)
 ttf2 <- tk2frame(tt2)
+ttf3 <- tk2frame(tt2)
+
 tkLFtable <- tk2labelframe(ttf2,text = "MQQC Parameter Table")
 tk2tip(ttf2,"Set here required settings for MaxQuant and Quality Control analysis.")
 init <- "/home"
+
+
+# MAXQUANT -----
 MQpath    <- tclVar(output$MQ)
 if(output$MQ != ""){init <- output$MQ}
 
@@ -136,14 +143,44 @@ dirFrame <- tk2labelframe(ttf1,text = "MaxQuant Folder")
         tclvalue(MQpath) <- File
         } 
         }
-    browseButton <- buttonRcmdr(dirFrame, text=gettext("Browse", domain="R-Rcmdr"), command=onBrowse, 	borderwidth=3)
+  browseButton <- buttonRcmdr(dirFrame, text=gettext("Browse", domain="R-Rcmdr"), command=onBrowse, 	borderwidth=3)
     
 
-    locationField <- tk2entry(dirFrame, textvariable=MQpath,justify = "right")        
-    tkgrid(browseButton,locationField,sticky = "NSWE",padx = 1,pady = 1)
+  locationField <- tk2entry(dirFrame, textvariable=MQpath,justify = "right")        
+  tkgrid(browseButton,locationField,sticky = "NSWE",padx = 1,pady = 1)
 	tkgrid(dirFrame,sticky = "NSWE",padx = 3,pady = c(5,3))
 	tk2tip(dirFrame,"Path to MaxQuant Folder.\nCurrent supported version is 1.3.0.5.\nLater version might work as well.")
+
+# # msfragger------
+# 	print("HUMP")
+	MSF <- tclVar("")
+	if(length(output$MSF)== 0){
+	  output$MSF <- ""
+	}
+	try(MSFpath    <- tclVar(output$MSF))
 	
+	if(output$MSF != ""){init <- output$MSF}
+
+	dirFrame <- tk2labelframe(ttf1,text = "MSFragger Folder")
+	buttonRcmdr3 <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
+	onBrowse3 <- function(init){
+
+	  File <- (tk_choose.files(caption = "MSFragger Folder",default  = init,multi = F,filters = matrix(c(".jar",".jar"),nrow = 1)))
+	  if(File != ""){
+	    tclvalue(MSFpath) <- File
+	  }
+	}
+
+	browseButton3 <- buttonRcmdr(dirFrame, text=gettext("Browse", domain="R-Rcmdr"), command=onBrowse3, 	borderwidth=3)
+
+
+	locationField <- tk2entry(dirFrame, textvariable=MSFpath,justify = "right")
+	tkgrid(browseButton3,locationField,sticky = "NSWE",padx = 1,pady = 1)
+	tkgrid(dirFrame,sticky = "NSWE",padx = 3,pady = c(5,3))
+	tk2tip(dirFrame,"Path to MSFragger.jar. Requires java.")
+
+
+	#------
 	
 StandardFasta <- tclVar(output$fastaFile)
 dirFrame <- tk2labelframe(tt2,text = "Standard Fasta")
@@ -239,7 +276,16 @@ dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
 	tb1.val.pep.duplicates 				<- tclVar()  
 	tclvalue(tb1.val.pep.duplicates) 	<- (output$cores)
 	comboBox 							<- tk2combobox(TKMisc,values=tb1.duplicates.var,textvariable = tb1.val.pep.duplicates,width = 17,state = "readonly",width = 6)
-	tk2label <- tk2label(TKMisc,text = "Threads")
+	tk2label <- tk2label(TKMisc,text = "Threads MQ")
+	tkgrid(tk2label,comboBox,pady = 2,sticky = "NSWE")
+	tk2tip(tk2label,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads.")
+	
+	# Threads MSFragger
+	tb1.MSFthreads.var 					<- c("auto",1:200)
+	tb1.val.pep.MSFthreads 				<- tclVar()  
+	tclvalue(tb1.val.pep.MSFthreads) 	<- (output$MSFcores)
+	comboBox 							<- tk2combobox(TKMisc,values=tb1.MSFthreads.var,textvariable = tb1.val.pep.MSFthreads,width = 17,state = "readonly",width = 6)
+	tk2label <- tk2label(TKMisc,text = "Threads MSF")
 	tkgrid(tk2label,comboBox,pady = 2,sticky = "NSWE")
 	tk2tip(tk2label,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads.")
 	
@@ -600,16 +646,18 @@ write(trk ,paste(path.package("mqqc"),"data/mailSettings",sep = "/"))
 rm(trk,trk1,trk2,trk3,trk4)
 
 cores <- tclvalue(tb1.val.pep.duplicates)
-if(cores == "auto"){cores <- NULL}
 
+if(cores == "auto"){cores <- NULL}
 output <- list(	
 		MQ = tclvalue(MQpath),
+		MSF = tclvalue(MSFpath),
 		folder = tclvalue(Analysis.Folder),
 		fastaFile = tclvalue(StandardFasta),
 		htmloutPath = tclvalue(HTML),
 		DeleteFiles = as.logical(as.numeric(tclvalue(cbVar))),
 		Debug		 = as.logical(as.numeric(tclvalue(cbVar2))),
 		cores = cores ,
+		MSFcores = tclvalue(tb1.val.pep.MSFthreads),
 		SpeciesTable = T,
 		REpar = tclvalue(tb2.Par.GE),
 		REmac = tclvalue(tb2.Machine.GE),
@@ -656,15 +704,17 @@ if(.GlobalEnv$aborttt2){
 return(output)
 
 }
-
+# 
 # Param <- mqqcGUI()
- # print(Param)^
-	# while(.GlobalEnv$MQQCRestartNow == "yes"){
-  	#	 Param <- mqqcGUI()
-	#}
-	# # print(Param)
+# print(Param$MQ)
+# print(Param$MSF)
+# stop()
+# while(.GlobalEnv$MQQCRestartNow == "yes"){
+#  Param <- mqqcGUI()
+# }
+# # print(Param)
 # RESettings <- Param[grep("^RE",names(Param))]
 # #save(Param, RESettings,file =  "MQQCGUIsetting.Rdata")
-
-
+# 
+# library(mqqc)
 #Param <- mqqcGUI()
