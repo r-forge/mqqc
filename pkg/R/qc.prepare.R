@@ -49,15 +49,21 @@ thresholds$Intensities 			<- c(8,6.5,9.5) # log10 int
 thresholds$ProteinCoverage <- 30
 thresholdsBA <- thresholds
 thresholds$MSID.min <- 2000
-if(SpeciesTable){
-		colnames(Data) <- tolower(colnames(Data))
+colnames(Data) <- tolower(colnames(Data))
 
-	      species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
+if(SpeciesTable){
+
+	      species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t",stringsAsFactors = F)
         if(length(species) == 1){
-        species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
+        species 	<- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t",stringsAsFactors = F)
         }
+	      species$Protein[is.na(species$Protein)] <- ""
+	      
 	      RawFile <- unique(Data$raw.file)[1]
+	      # RawFile <<- RawFile
+	      # templateFasta <<- templateFasta
 	      regEx 	<- sapply(species$Abbreviation,function(x){gsub(placeholder,x, 	templateFasta,fixed = T)})			
+	      # regEx <<- regEx
 	      temp   	<- as.logical(sapply(regEx,grep, x = RawFile))
 		    temp[is.na(temp)] <- FALSE
         
@@ -149,8 +155,8 @@ raw.files <- grep.col("raw.file",Data)
 
 # to make sure that only one file is processed
 Data$reverse[is.na(Data$reverse)] <- ""
-Data.i  <<- Data[unique(Data[,raw.files])[selectedFile] == Data[,raw.files],]
-Data.iall  <<- Data.i#[Data.i$reverse == "+",]
+Data.i  <- Data[unique(Data[,raw.files])[selectedFile] == Data[,raw.files],]
+Data.iall  <- Data.i#[Data.i$reverse == "+",]
 Data.i  <- Data.i[Data.i$reverse != "+",]
 #Data.i <<- Data.i
 RawFilesUsed <- unique(Data.i$raw.file)
@@ -266,9 +272,9 @@ fu <- unlist(apply(cbind(hum,RevP),1,function(x){return(rep(x[2],x[1]))}))
 if(length(fu) > 0){
   
 PL <- length(fu[fu < ProtFDR])
-fu <<- fu
-pepPr <<- pepPr
-sele <<- pepPr[fu < 0.05,]
+# fu <- fu
+# pepPr <<- pepPr
+sele <- pepPr[fu < 0.05,]
 }else{
   PL <- length(fu)
   sele <- pepPr
@@ -279,8 +285,8 @@ UNIREF <- grep("^UniRef90|^REV_UniRef",Data.iall$proteins)
 
 
 if(length(UNIREF) > 0){
-  sele <<- sele
-  UNIREFP <<- Data.iall[UNIREF,]
+  # sele <<- sele
+  UNIREFP <- Data.iall[UNIREF,]
   UNIREFP <- UNIREFP[!is.na(match(strsplitslot(UNIREFP$proteins),sele[,1])),]
   Puniref <- grep("^REV_",UNIREFP$proteins,value = T,invert = T)
   PunirefRev <- length(grep("^REV_",UNIREFP$proteins,value = T,invert = F))
@@ -304,7 +310,7 @@ uniPepCount 	<- length(unique(seq))
 summary.Data$uniPepCount <- uniPepCount
 
 rm(msSCH)
-msSCH <<- msSC
+msSCH <- msSC
 # Ret.time
 reten.ident 	<- Data.i[,grep.col("retention.time", Data.i)]
 reten.start 		<- reten.ident[,grep.col("start",reten.ident)]
@@ -728,6 +734,7 @@ if(length(parID) == 0){
 save(UniRef,file = "UniRef.rda")
 return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein,parID = parID,SpecStat = MostProperSpecies,UniRef = UniRef))
 }
+
 # tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS)))
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data =  temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID)))
 #tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =AllPeptides,MSMS = MSMS)))

@@ -116,9 +116,9 @@ if(file.exists(collectListPath)){
   
 	if(!exists("funlastLoop", envir = .GlobalEnv)){funlastLoop <<- 2}
   	if(funlastLoop %% 10 == 0| funlastLoop == 2){
-  		BSA <<- BSA
-  		ECstd <<- ECstd
-  		Normal <<- Normal
+  		# BSA <<- BSA
+  		# ECstd <<- ECstd
+  		# Normal <<- Normal
     if(AnalysisType == "both"|AnalysisType == "high" ){
     quanDir <- paste(folder,"_RmqqcFile_Quantiles",sep = "/")
     dir.create(quanDir,showWarnings = F)
@@ -162,7 +162,7 @@ if(file.exists(collectListPath)){
 	collectList$SourceTime[is.na(collectList$SourceTime)] <- collectList$System.Time.s[is.na(collectList$SourceTime)]
   
 	for(iList in InitList){
-		tempListOne <<- collectList[iList,]
+		tempListOne <- collectList[iList,]
 		collectListSorted <- c()
 		collectListSortedLife <- c()
 		
@@ -222,7 +222,7 @@ if(file.exists(collectListPath)){
 			
 			HotLinkCol[iNames==Machines] <- tempList$TotalScoreColor.Total[1]
 			days <- abs(as.numeric(tempList$System.Time.s)-as.numeric(Sys.time()))/(60*60*24)
-			tempList <<- tempList
+			# tempList <<- tempList
       if(!is.na(days)){
 			if(days > dayThresh){
 					HotLinkCol[iNames==Machines] <- "#797979"
@@ -309,7 +309,7 @@ ToMove <- unique(pathPdf)[ToMove]
 
 if(any(!file.exists(dirname(ToMove)))){
   FixedPath <- sapply(strsplit(ToMove,paste(sucFolder,"/",sep = ""),fixed = T),function(x){
-    x <<- x
+    # x <<- x
     return(paste(folder,sucFolder,x[2],sep = "/"))
   }) 
   ToMove <- FixedPath
@@ -372,18 +372,18 @@ substr(collectListSorted$System.Time , 11, 12) <- " "
 if(length(pathPdf) >0){
 #tempPathsMsMs <-as.vector(as.matrix(tempPaths)[2,])
   tempPaths <- tempPaths
-tempPathsLog <- file.exists(Hui <<- paste(finalMQQC,gsub("^./","",tempPaths),sep = "/"))
+tempPathsLog <- file.exists(Hui <- paste(finalMQQC,gsub("^./","",tempPaths),sep = "/"))
 tempPaths <- paste("<a href ='", tempPaths,"' target ='_blank' >QC</a>",sep = "")
 tempPaths[!tempPathsLog] <- ""
 #tempPaths[!tempPathsLog] <- ""
 # DP pie paths
 tempPathsDepPepPie2 <- tempPathsDepPepPie2
-tempPathsDepPepPie2Log <<-file.exists(paste(finalMQQC,gsub("^./","",tempPathsDepPepPie2),sep = "/"))
+tempPathsDepPepPie2Log <-file.exists(paste(finalMQQC,gsub("^./","",tempPathsDepPepPie2),sep = "/"))
 tempPathsDepPepPie2 <- paste("<a href ='", tempPathsDepPepPie2,"'  target ='_blank' >MD</a>",sep = "")
 tempPathsDepPepPie2[!tempPathsDepPepPie2Log] <- ""
 
 pathMSF2 <- pathMSF2
-pathMSF2Log <<-file.exists(paste(finalMQQC,gsub("^./","",pathMSF2),sep = "/"))
+pathMSF2Log <-file.exists(paste(finalMQQC,gsub("^./","",pathMSF2),sep = "/"))
 pathMSF2 <- paste("<a href ='", pathMSF2,"'  target ='_blank' >MD</a>",sep = "")
 pathMSF2[!pathMSF2Log] <- ""
 
@@ -410,23 +410,23 @@ try(collectListSorted <- cbind(	colorCode ,
 													collectListSorted$score.50., CoverageVec, tempPaths,tempPathsChrom2,pathMSF2))
 
 try(colnames(collectListSorted) <- c("",colsTemp,"Time","Peptides","MSMS/min","mass_error_[ppm]","Score_M","Coverage","QC","Chrom","MD"))
-alignVec <<- c("center","left",rep("center",(dim(collectListSorted)[2]-2)))
+alignVec <- c("center","left",rep("center",(dim(collectListSorted)[2]-2)))
 
 #collectListSorted  <- collectListSorted[order(collectListSorted[,7]),]
 names(collectListSorted)[is.na(names(collectListSorted))] <- "..."
 collectListSorted <- collectListSorted[!is.na(collectListSorted$MS),]
 if(length(collectListSorted) == 0){collectListSorted <- matrix(c(rep("NO DATA",length(alignVec))),byrow = T,1)}
 if(it ==1){
-	 try(tableHtml2 <-HtmlTable(c2<<- collectListSorted[hum<<-!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design2"))
+	 try(tableHtml2 <-HtmlTable(c2<- collectListSorted[hum<-!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design2"))
 	if(!exists("tableHtml2")){tableHtml2 <- NULL}
 }
 if(it ==2){
-		 try(tableHtml <- HtmlTable(c1<<-collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})],  tableDesign = "table-design"))
+		 try(tableHtml <- HtmlTable(c1<-collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})],  tableDesign = "table-design"))
 		 if(!exists("tableHtml")){tableHtml <- NULL}
 		 
 	}
 if(it ==3){
-	 try(tableHtml3 <-HtmlTable(c3<<-collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design3"))
+	 try(tableHtml3 <-HtmlTable(c3<-collectListSorted[!apply(collectListSorted,2,function(x){all(is.na(x))})], tableDesign = "table-design3"))
 	if(!exists("tableHtml3")){tableHtml3 <- NULL}
 	
 }
@@ -454,10 +454,10 @@ if(length(insertText) > 0){
 it <- it+1
 
 }
-	tableHtml2 <<- tableHtml2
-	if(!exists("tableHtml")){tableHtml 	<<- "NO DATA"}  
-	if(!exists("tableHtml2")){tableHtml2 <<- "NO DATA"}  
-	if(!exists("tableHtml3")){tableHtml3 <<- "NO DATA"}  
+	# tableHtml2 <<- tableHtml2
+	if(!exists("tableHtml")){tableHtml 	<- "NO DATA"}  
+	if(!exists("tableHtml2")){tableHtml2 <- "NO DATA"}  
+	if(!exists("tableHtml3")){tableHtml3 <- "NO DATA"}  
 #tableHtml <<- tableHtml # EC
 #tableHtml2 <<- tableHtml2 # sample data
 #tableHtml3 <<- tableHtml3 # BSA
@@ -477,7 +477,8 @@ cat("\rfinished FUNFINAL function")
 # if(!exists("Param")){
 # Param <- mqqcGUI()
 # folder <- Param$folder
-#  RESettings <- Param[grep("^RE",names(Param))]
+# Param <- mq
+ # RESettings <- Param[grep("^RE",names(Param))]
 #   StandardIDs = c("","");placeholder = "PLACEHOLDER"
 #   LoadSettings(withinlastyear = T,maxReport = 10,sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_",ordertype = "system")
 #     LoadSettings(RESettingsSep = "_", placeholder = "PLACEHOLDER" )

@@ -158,8 +158,8 @@ if(file.exists(as.character(Param$MQ))){
     dir.create(dbPath)
   }
     cat("Setting up Generic Database")
-    GenericDBPathCounts <<- paste(dbPath,"NameCounts.rda",sep = "/")
-    GenericDBPath <<- paste(dbPath,"GenericDB.fasta",sep = "/")
+    GenericDBPathCounts <- paste(dbPath,"NameCounts.rda",sep = "/")
+    GenericDBPath <- paste(dbPath,"GenericDB.fasta",sep = "/")
     if(!file.exists(GenericDBPath)){
     data(ArtificDB)
     data(NameCounts)
@@ -265,7 +265,7 @@ if(file.exists(as.character(Param$MQ))){
 	# Loop 
 	print("Starting Loop")
 
-	loop <<- T
+	loop <- T
 	funlastLoop <<- 0
 while(loop){
 		
@@ -294,7 +294,7 @@ while(loop){
       if(SizeChecked){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...", htmloutPath = htmloutPath)
 			  tempI 				  <- evidenceToProcess[i]
-			  try(qcResults 	<- start.qc(DataEvidence = tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID))
+			  try(qcResults 	<- start.qc(DataEvidence = tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID,SpeciesTable = T))
       }
 		}
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
@@ -348,7 +348,7 @@ while(loop){
     	}
     	if(length(MsfraggerCandidateFinal) > 0&!MSFRAGACTIVE){
     	  sapply(MsfraggerCandidateFinal[order(file.info(MsfraggerCandidateFinal)$mtime,decreasing = T)][1],function(x){
-    	    x <<- x 
+    	    # x <<- x 
     	    # stop()
     	    andromeda <- paste(dirname(dirname(x)),"andromeda",sep = "/")
     	    mqpar <- readLines(paste(dirname(dirname(dirname(x))),"mqpar.xml",sep = "/"))
@@ -395,7 +395,7 @@ while(loop){
 		catFun(paste(Sys.time(),"Status: Observing", folder))
 		#Sys.sleep(5)
     for(xSleepTime in 1:10){
-      xSleepTime <<- xSleepTime
+      xSleepTime <- xSleepTime
       Sys.sleep(1)
       cat("\rSleeping",xSleepTime,"s")
       

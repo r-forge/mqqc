@@ -66,7 +66,7 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 	axis(1,labels = F,tck = -0.015)
 	uniqueSeq 	<- length(unique(data.i$sequence))
 	intens 		<- quantile(as.numeric(data.i$intensity[!is.na(data.i$intensity)]))
-	intens 		<- paste("Q 0.5-1 Intensities:",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
+	intens 		<- paste("Intensities Q 0.5-1 :",format(intens[3],digits = 3, scientific = T),format(intens[5],digits =3, scientific = T))
 	
   if(BSACheck){
     name.file <- c(as.character(name.file), paste("BSA peptides:",length(grep("MSMS",BSAEVI$type)),", all peptides:",length(grep("MSMS",data.i$type))),intens)
@@ -104,8 +104,8 @@ name.file <- unique(data.i$raw.file)#"Elutionprofile"
 			Finish		<- data.i$calibrated.retention.time.finish[temp.i.sel]
 			tempBorderi <- tempBorder[temp.i.sel]
 			
-			x <<- x
-			y <<- y
+			# x <<- x
+			# y <<- y
 			if(any(length(Start)== 0|length(Finish) == 0)){
 				Start <- y -1
 				Finish <- y +1
@@ -151,7 +151,7 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
 	}
   data.i$potential.contaminant[is.na(data.i$potential.contaminant)] <- ""
   dens.conA  <- createWindows(data.i$retention.time[data.i$potential.contaminant == "+"])$full
-  dens.crtA  <<- createWindows(data.i$retention.time[data.i$potential.contaminant != "+"])$full
+  dens.crtA  <- createWindows(data.i$retention.time[data.i$potential.contaminant != "+"])$full
   dens.crtA0 <- dens.crtA[dens.crtA !=0]
   nofa <- max(medwin(as.numeric(names(dens.crtA0)),dens.crtA0/max(dens.crtA0))$y)
   densityRescale <- T
@@ -159,9 +159,9 @@ yPoly <- c(x[4],x[4]+mFac,x[4],x[4]-mFac,x[4])
     nofa <- 1
   }
   
-	dens.crt <- class(try(temp <- density(DAT <<- data.i$retention.time,na.rm = T)))
+	dens.crt <- class(try(temp <- density(DAT <- data.i$retention.time,na.rm = T)))
 	tempCON <- NULL
-  dens.con <- class(try(tempCON <- density(CON <<- data.i$retention.time[data.i$potential.contaminant == "+"],na.rm = T)))
+  dens.con <- class(try(tempCON <- density(CON <- data.i$retention.time[data.i$potential.contaminant == "+"],na.rm = T)))
   temp$y <- temp$y/max(temp$y,na.rm = T)*nofa
   tempCON$y <- tempCON$y/max(tempCON$y,na.rm = T)
  
@@ -222,7 +222,7 @@ if(dens.crt  == "try-error"){temp <- list(x=0,y=0)}
 				
 	}else{
     # print(ConFAC)
-    ConFAC <<- ConFAC
+    # ConFAC <<- ConFAC
     if(log2(ConFAC) > -4){
 	  # try(points(tempCON$x,tempCON$y,type = "l",col = "#fca502",lwd = 2,lty = "dotted"))
       plotPOL(names(dens.conA),dens.conA/max(dens.crtA),col = "#fca50280",type = "l",border = "transparent")
@@ -289,7 +289,7 @@ Inner <- temp$x <= quantiles[4] & temp$x >= quantiles[2]
 	
 	if(log2(ConFAC) > -4){
 	  # try(points(tempCON$x,tempCON$y,type = "l",col = "#fca502",lwd = 2,lty = "dotted"))
-	  try(plotPOL(a <<- unfactor(dens.mzCA/max(c(dens.mzA,dens.mzCA))),b <<- as.numeric(names(dens.mzCA)),col = "#fca50280",type = "p",border = "transparent"))
+	  try(plotPOL(a <- unfactor(dens.mzCA/max(c(dens.mzA,dens.mzCA))),b <- as.numeric(names(dens.mzCA)),col = "#fca50280",type = "p",border = "transparent"))
 	  # points(dens.mzA/max(c(dens.mzA,dens.mzCA)),as.numeric(names(dens.mzA)),col = "#99999990",type = "h",border = "transparent")
 	  
 	  
@@ -297,7 +297,7 @@ Inner <- temp$x <= quantiles[4] & temp$x >= quantiles[2]
 	  # try(legend("topright",legend = c("contaminants"),col = c("grey"),lty = "dotted",lwd = 3,bty = "n"))
 	}
 	
-	try(plotPOL(a <<- unfactor(dens.mzA/max(c(dens.mzA,dens.mzCA))),b <<- as.numeric(names(dens.mzA)),col = "#99999990",type = "p",border = "transparent"))
+	try(plotPOL(a <- unfactor(dens.mzA/max(c(dens.mzA,dens.mzCA))),b <- as.numeric(names(dens.mzA)),col = "#99999990",type = "p",border = "transparent"))
 	
 	# axis(2,xpd = NA,labels = F,padj = 0.5,tck = 0.04)
 	

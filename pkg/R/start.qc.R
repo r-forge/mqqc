@@ -204,10 +204,17 @@ start.qc <-
       #msf <- list.files(dirname(dirname(.path)),pattern = "msfragger.txt",recursive = T,full.names = T)
       msf <- paste(dirname(.path),"andromeda/msfragger.txt",sep = "/")
       if(file.exists(msf)){
-        msf <- PrepareMSFres(path = msf)
-        try(plot(msf,show.plot = F,pdfname = paste("MSF_",rep.v,".pdf",sep = "")),silent = F)
+        er <-try(msf <- PrepareMSFres(path = msf))
+        if(class(er) == "try-error"){
+          msf <- NULL
+        }
+        if(length(msf) > 0){
+          try(plot(msf,show.plot = F,pdfname = paste("MSF_",rep.v,".pdf",sep = ""),name = paste("Mass Difference Results\n",rep.v)),silent = F)
+          
+        }
       }else{msf <- NULL}
-      
+      try(msfDat <- as.data.frame(msf$MassShifts[msf$MassShifts > 10]))
+      try(write.table(msfDat,"MassDifference.txt",sep = "\t",quote = F,row.names = F))
     }
     i = rep.v
     at = 1
@@ -232,9 +239,9 @@ start.qc <-
       ####
  
       
-      LoadSettings(Data = temp.DataEvidence,msmsScans = msmsScans,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS,rfn = i)
+      # LoadSettings(Data = temp.DataEvidence,msmsScans = msmsScans,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS,rfn = i)
       # msScans <<- msScans
-      tryError1 <- class(try(qc.prepare.data <<- qc.prepare(Data = temp.DataEvidence,msmsScans = msmsScans,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS,rfn = i)))
+      tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence,msmsScans = msmsScans,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS,rfn = i)))
       if(length(msf) > 0){
         tabi <- msf$Labels
         if(dim(tabi)[1]>4){
@@ -248,7 +255,7 @@ start.qc <-
         sel <- names(ant) < 0.5 & names(ant) >-0.5
         
         percent <- sum(ant)#sum(ant[sel],na.rm = T)
-        qc.prepare.data$sd$DependentPeptides <- paste(tabi[,1],paste(round(as.numeric(tabi[,4])/percent*100,1),"%"),sep = "##",collapse = "_#_")
+        qc.prepare.data$sd$DependentPeptides <- gsub(",",".",paste(tabi[,1],paste(round(as.numeric(tabi[,4])/percent*100,1),"%"),sep = "##",collapse = "_#_"),fixed = T) 
       }
         
       
@@ -268,7 +275,7 @@ start.qc <-
       names(add.vec) <- c("Name","System.Time.s","System.Time")
       export <- t(as.matrix(c(add.vec ,export)))
       
-      if(ChrPath != ""){
+      if(ChrPath[1] != ""){
       IntensityPercentages <- round(ChrPath$IntPerc,1)[-1]
       IntensityPercentagesN <- c("Identified",        "Non Peptide Contaminants","Peptide Contaminants","Dependent")
       IntensityPercentages <- IntensityPercentages[merge.control(names(IntensityPercentages),IntensityPercentagesN)]

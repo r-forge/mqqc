@@ -55,12 +55,12 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   }
   real.data 		<- summary.data
   ref.data 		<- thresholds
-  score.data 	<<- score
+  score.data 	<- score
   ms.col <- unlist(color.blind[c(5,6,1)])
   nc.col <- unlist(color.blind[c(3,4,2)])
   sum.scores <- c(sum(unlist(score.data[1:3])),sum(unlist(score.data)[4:6]))
   
-  TotalScore <<- unlist(score.data) 
+  TotalScore <- unlist(score.data) 
   TotalScore[TotalScore > 1] <- 1
   #TotalScore <- as.data.frame(t(as.data.frame(TotalScore)))
   
@@ -262,7 +262,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
       LegString = c(LegString,paste("missed cleavages:",mc,"%"))	
     }else{
       if(!all(is.na(data.list$SpecStat))){
-      SPEC <<- data.list$SpecStat
+      SPEC <- data.list$SpecStat
       SPEC <- SPEC[order(SPEC[,3],decreasing = T),]
       SPEC$Enrichment.p.BH[is.na(SPEC$Enrichment.p.BH)] <- 1
       SPECs <- SPEC[SPEC$Enrichment.p.BH == min(SPEC$Enrichment.p.BH,na.rm = T) ,]
@@ -304,11 +304,14 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   } 
   
   
-  if(length(data.list$UniRef) > 0){
-    LegString = c(LegString,paste("Mycoplasma Proteins:",length(unique(data.list$UniRef$id))))	
-    
-  }
-  data.list <<- data.list
+  # if(length(data.list$UniRef) > 0){
+  #   LegString = c(LegString,paste("Mycoplasma Proteins:",length(unique(data.list$UniRef$id))))	
+  #   
+  # }
+  LegString = c(LegString,paste("MS IIT Q 0.25 0.5 0.75:",paste(round(data.list$sd$Ion.injection.time[2:4],1),collapse = " ")))	
+  LegString = c(LegString,paste("MSMS IIT Q 0.25 0.5 0.75:",paste(round(data.list$sd$Ion.injection.time.MSMS[2:4]),collapse = " ")))	
+  
+  # data.list <<- data.list
   
   if(length(summary.data$DependentPeptides) > 0){
     depString <- unlist(strsplit(summary.data$DependentPeptides,"_#_"))
@@ -333,7 +336,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     
   }
   legend("top",legend ="",bty = "n",title = "MQQC Result")
-  LegString <<- LegString
+  # LegString <<- LegString
   legend("left",legend =LegString,bty = "n",cex =0.8)
   
   
@@ -372,7 +375,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     names(ColScore) <- namesData
     names(SCVecs) <- namesData
     temp.pos 	<- barplot(SCVecs,beside = T,col = ColScore ,horiz = F,names.arg = namesData ,las = 1,border = "transparent",xpd = F,ylim = c(0,1.2),ylab = "MQQC Score")
-    ColUse 		<<- cbind(c(col.temp[round.spec(unlist(CombiScores))]),names(score.data),namesData)
+    ColUse 		<- cbind(c(col.temp[round.spec(unlist(CombiScores))]),names(score.data),namesData)
     
     #text(temp.pos,0,c("peptide ID","mass error","score","peak shape","elution time","dupl. peptide IDs"),las = 2,srt = 90,adj = c(1.1,1),xpd =NA,srt = 45)
     mtext("System Performance",3,line = 0,cex = 0.6)
@@ -509,8 +512,8 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   ####
   # Intensity
   ####
-  thresholds <<- thresholds
-  logInt <<- thresholds$Intensities#[c(2,1,3)]
+  # thresholds <<- thresholds
+  logInt <- thresholds$Intensities#[c(2,1,3)]
   #logInt <- c(min(logInt)- diff(logInt), logInt)
   #logInt <<- c(logInt,min(logInt) * 0.5,max(logInt) * 1.5)
   trytest <- try(plot.quans(log10(summary.data$Intensity),F,"","log10 Intensity",logInt,fg.col = col.temp[round.spec(score$Intensity)],main = "MS"))
@@ -559,10 +562,14 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   ##
   # peak width
   ## 
-  
+
+  # trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$ret.width),axesOn = F))
   trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$ret.width),fg.col = col.temp[round.spec(score$ret.width)],main = "nLC",ylim = range(summary.data$ret.width[1:4]),axesOn = F))
-  axis(2,at = pretty(summary.data$ret.width),label = round(10^pretty(summary.data$ret.width)),las = 2,tck = -0.2)
+  # axis(2,at = pretty(summary.data$ret.width),label = round(10^pretty(summary.data$ret.width)),las = 2,tck = -0.2)
+  axis(2,at = summary.data$ret.width[-3],label = round(10^summary.data$ret.width)[-3],las = 2,tck = -0.2,col.axis = "grey50",cex.axis = 0.8)
+  axis(2,at = summary.data$ret.width[3],label = round(10^summary.data$ret.width)[3],las = 2,tck = -0.2)
   
+  box(lwd = 4, fg = col.temp[round.spec(score$ret.width)])
   
   
   if(class(trytest) == "try-error"){
@@ -706,7 +713,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     if(!is.na(data.list$SpecStat)){
       par(bg = "white",mai = c(1.5,2,0.5,0.2))
       layout(matrix(1:2,1,2),width = c(0.6,1))
-      fr <<- data.list$SpecStat
+      fr <- data.list$SpecStat
       
       try(plot(data.list$SpecStat))
     }
