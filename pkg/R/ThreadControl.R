@@ -4,14 +4,8 @@ function(folder,maxHours = 2,tableTC =  "_RmqqcFile_ThreadControl"){
   try(TL1 <- system("tasklist", intern = T),silent = T)
   if(!is.na(TL1)){
     wd <- getwd()
-    TL <- grep("MaxQuantCmd.exe", TL1, ignore.case = T)
-    if (length(TL) == 0) {
-      TL <- grep(pattern <- "MaxQuantTask.exe", TL1, ignore.case = T)
-    }
-    if (length(TL) == 0) {
-      TL <- grep(pattern <- "MAXQUA~1.EXE", TL1, ignore.case = T)
-    }
-    setwd(folder)
+
+    try(TL <- tasklistCheck())
     
     
    if(length(TL) > 0){

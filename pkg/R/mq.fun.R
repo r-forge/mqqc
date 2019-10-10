@@ -1,5 +1,5 @@
 mq.fun <-
-  function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = list(REpar = "._.*_.*_PLACEHOLDER_"),placeholder = "PLACEHOLDER",skipUnknown = T,UseOwnXML = F, StandardIDs = c("BSA","ECstd"),GenDB = NULL,testFun = F,MQfilter = "all"){
+  function(filePath,folder,cores=1,SpeciesTable = T,templateFasta = list(REpar = "._.*_.*_PLACEHOLDER_"),placeholder = "PLACEHOLDER",skipUnknown = T,UseOwnXML = F, StandardIDs = c("BSA","ECstd"),GenDB = NULL,testFun = F,MQfilter = "all",GenericDBPath = NULL,MSFRAGGERpath = MSFRAGGERpath,MSFcores = MSFcores,case_sensitive_matching= F,MSFraggerFactor = 1,...){
     RunFile <- T
     continue = T
     filePath <<- filePath
@@ -54,7 +54,7 @@ mq.fun <-
         SearchString  <- basename(filePath)
       }
       SearchString 	<-  gsub(".raw$","_raw", SearchString)
-      temp   	<-as.logical(sapply(regEx,grep, x = SearchString))
+      temp   	<- as.logical(sapply(regEx,grep, x = SearchString,ignore.case = !case_sensitive_matching)) #  
       temp[is.na(temp)] <- FALSE
       continue = F
       if(MQfilter == "all"){continue = T}
@@ -81,8 +81,15 @@ mq.fun <-
       }else{
         if(continue){
           speciesUsed <- species[species$Abbreviation == "default",]
-          speciesUsed$Fasta <- GenericDBPath
-          GenDB <- GenericDBPath
+          if(is.na(speciesUsed$Fasta)){
+            speciesUsed$Fasta <- "THISISARANDOMPATHTHATSHOULDNTEXIST"
+          }
+          if(!file.exists(as.character(speciesUsed$Fasta))){
+            speciesUsed$Fasta <- GenericDBPath
+            GenDB <- GenericDBPath
+          }else{
+            GenDB <- speciesUsed$Fasta
+          }
         }else{
           speciesUsed <- NULL
         }
@@ -179,7 +186,7 @@ mq.fun <-
     }
     if(length(mqpar.name)!=0){
       mqpar   			<- 	readLines(as.character(mqpar.name))
-      xmlNEW         <- xml.replace(c("filePaths"),path.convert(filePath),mqpar)
+      xmlNEW         <- xml.replace(parent = c("filePaths"),insert = path.convert(filePath),mqpar)
       
       
       if(length(speciesUsed$DependentPeptides) > 0){
@@ -232,10 +239,10 @@ mq.fun <-
         
       } 
     }
-    if(speciesUsed$Abbreviation == "default"){
+    if(speciesUsed$Abbreviation == "default"&!file.exists(as.character(speciesUsed$Fasta))){
       xmlNEW<- gsub("<proteinFdr>.*.</proteinFdr>","<proteinFdr>1</proteinFdr>",xmlNEW)
       xmlNEW<- gsub("<peptideFdr>.*.</peptideFdr>","<peptideFdr>0.5</peptideFdr>",xmlNEW)
-      grep("peptideFdr",xmlNEW,value = T)
+      #grep("peptideFdr",xmlNEW,value = T)
     }
     if(RunFile){
       write(xmlNEW,xml.path  <- paste(dirname(filePath),"mqpar.xml",sep = "/"))
@@ -257,12 +264,39 @@ mq.fun <-
       cores <- as.numeric(cores)
       if(is.na(cores[1])){cores <- 1;print("Warning, set number of threads to 1.")}
       print(db)
+      
+      
+      if(file.exists(MSFRAGGERpath)){
+        MSFcmd <- ""
+        try({
+          DB <- db # taken from MQstarter
+          andromeda <- dirname(filePath) # path with temp.raw, script will select all  rawfiles
+          write(rscript_msf(),msfpath<-paste(dirname(filePath),"msfragger_rscript.R",sep= "/"))
+          Rscript_system<- "rscript"
+          MSFcmd <- paste(Rscript_system,msfpath,MSFRAGGERpath,DB,andromeda,MSFcores,dirname(filePath))
+          write(MSFcmd,paste(dirname(filePath),"msfragger_cmd",sep= "/"))
+          # system(MSFcmd,wait=F)
+        })
+        MQcmd <- paste(MQcmd,MSFcmd,sep= "###")
+        
+      }else{
+        print("MSFRAGGER not found. No open search.")
+      }
+      
+      
+      
       if(continue){
-        try(MQmanager(MQcmd,folder,cores =cores))
+        try(MQmanager(MQcmd,folder,cores =cores,msfraggerFactor = MSFraggerFactor))
       }
       
       try(   	write(MQcmd,paste(dirname(filePath),"MQQC_MQcmd.txt",sep = "/")))
       
+      #initialize MSFRAGGERRUN:
+      
+      #write("msfragger_started",paste(dirname(x),"msfragger_started",sep = "/"))
+      # MSFRAGGERpath
+      # MSFcores
+
       
     }else{
       print("Error in MQ start. No XML provided.")

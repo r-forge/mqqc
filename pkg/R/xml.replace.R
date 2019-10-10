@@ -2,7 +2,8 @@ xml.replace <-
 function(parent,insert,xml,start.string = "<string>",end.string = "</string>" ) {
 	
 	for(a in parent){
-		temp.xml 		<- xml.mod(a,xml)
+		temp.xml 		<- xml.mod(template = a,xml = xml)
+		xml <- temp.xml$xml
 		temp.range 		<- temp.xml$template
 		temp.substr		<- (temp.range[1]+1):(temp.range[2]-1)
 		if(length(temp.substr) > 0 ){

@@ -34,8 +34,9 @@ initHtml <- paste("
 <html lang=\"en\">
 <head>
 <meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\">
-<title>MQQC</title>
+<meta http-equiv=\"expires\" content=\"0\">
 
+<title>MQQC</title>
 <script type=\"text/javascript\" src=\"html/tabber.js\"></script>
 <script type=\"text/javascript\" src=\"html/jquery.js\"></script> 
 <script type=\"text/javascript\" src=\"html/tablesorter/jquery.tablesorter.js\"></script> 
@@ -82,7 +83,7 @@ $(function() {
 <div id=\"header\" style=\"background-color:#426787\">
 <h1 style=\"margin-bottom:0;color:#ffffff\">MQQC - MaxQuant Quality Control ",packageVersion("mqqc"),"</h1></div>
 
-<div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> Last update: ",Sys.time(), "<br>MQ Threads: <a href = \"./MqqcRunningFileInfo.html\" target ='_blank'  >",mqqcRunningMQ,"
+<div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> Last update: ",Sys.time(), "<br>Active Threads: <a href = \"./MqqcRunningFileInfo.html\" target ='_blank'  >",mqqcRunningMQ,"
 
   <form NAME=\"spaceform\" STYLE=\"margin: 0px; padding: 0px;\"><input type=button value=\"Refresh\" onClick=\"history.go(0)\"></form>
 
@@ -354,13 +355,22 @@ if(length(ComparisonFiles) > 0){
   Order <- sapply(c("^DensityEstimates_Complex","^DensityEstimates_LowComplex","^DensityEstimates_Normal"),grep, ComparisonFiles)
   ComparisonFiles <- paste(".","TimeLines", ComparisonFiles,sep = "/")
   collVecDensCo <- c()
+  metricsBP <- c("./timelines/MachineComparisonHighComplexStd.pdf","./timelines/MachineComparisonLowComplexStd.pdf","")
   for(i in 1:length(Order)){
     if(length(unlist(Order[i])) > 0){
       tempI 			<- ComparisonFiles[unlist(Order[i])]
       nameComp 	<- "Platzhalter"
-      if(i == 1){nameComp <- "High complex standard"}
-      if(i == 2){nameComp <- "Low complex standard"}
-      if(i == 3){nameComp <- "Samples"}
+      if(i == 1){nameComp <- "High complex standard"
+      metricsBPi <- metricsBP[1]
+      }
+      if(i == 2){nameComp <- "Low complex standard"
+      metricsBPi <- metricsBP[2]
+      
+      }
+      if(i == 3){nameComp <- "Samples"
+      metricsBPi <- "nodata"
+      }
+      metricsBPihtml<- paste("<a href=",metricsBPi,">MachineComparisons</a> <br>",sep ="")
       
       header 			<- paste("<h1>",nameComp,"</h1>")
       pdfPath	<- paste("<embed src=\"", tempI,"\" width = \"",width,"\" height = \"",height , "\">",sep = "")
@@ -368,7 +378,7 @@ if(length(ComparisonFiles) > 0){
       
       PdfLink <- paste("<a href=\"", tempI,"\" target=\"_blank\">", jpgPath,"</a>",sep = "")
       
-      hui 				<- paste(header, PdfLink ,sep = "\n")
+      hui 				<- paste(header, PdfLink ,metricsBPihtml,sep = "\n")
       collVecDensCo 	<- paste(collVecDensCo,hui,sep = "\n")
     }
   }
@@ -378,7 +388,7 @@ if(length(ComparisonFiles) > 0){
 tabTopDensCo <- paste("
 
      <div class=\"tabbertab\">
-	  <h2> Machine Metrics Readback </h2>")
+	  <h2> Machine Metrics Distributions </h2>")
 
 tabDensCo <- paste(tabTopDensCo, collVecDensCo,"</div>",sep = "\n")
 #====================================================================================

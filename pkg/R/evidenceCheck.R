@@ -1,9 +1,9 @@
 evidenceCheck <- 
   function(hotFolder, matchType = "evimsms", sucFolder)
   {
-    collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
+    collectListPath <- paste(hotFolder,sucFolder,"list_collect.sqlite",sep = "/")
     if( file.exists(collectListPath)){
-      collectList	<- 	read.csv(collectListPath, check.names = F,stringsAsFactors = F)
+      collectList	<- 	dbreadfile(collectListPath)
       imported 		<- collectList[,dim(collectList)[2]]
       processed  <- unlist(lapply(strsplit(as.character(imported),"/combined"),function(x){return(x[1])}))
     }
@@ -60,7 +60,6 @@ evidenceCheck <-
           if(length(tempmqqcInfo)==0){
             mqqcInfo    <- c(mqqcInfo,tempI[i])
           }else{
-            # cat("\rEvidence",tempI[i],"already processed")
           }
         }
         # mqqcInfo 	<- mqqcInfo[file.info(mqqcInfo)$isdir]

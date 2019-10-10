@@ -1,13 +1,12 @@
 ThreshCompare <- 
 function(sig,ref,cat = "high",type = "single",log = T){ # cat = "fixed"|"high"|lower
-  sig <- sig
+  sig <- unfactor(sig)
   if(length(sig) == 0){return(0)}
   if(is.na(sig)){return(0)}
   if(type == "single"){
 #     sig <<- sig
 #     ref <<- ref
 #     cato <<- cat
-#     typo <<- type
 #     
     retVal <- sig/ref
     if(length(retVal) == 0){retVal <- NA}
@@ -29,6 +28,7 @@ if(cat == "low" & type == "quantile"){
     signorm <- sig - ref[3]
     refnorm <- ref[1] - ref[3]
     res <- signorm/refnorm
+    if(is.na(res)){return(0)}
     if(res < 0){return(0)}
     return(res)
   }

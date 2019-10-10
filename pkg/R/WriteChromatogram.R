@@ -1,12 +1,12 @@
 WriteChromatogram <- 
-function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","tomato3"),fun = max,log10 = F,filename= "./chromatogram.pdf",BSAID = NULL,jitfac = 1,contcol = c("orange","pink3"),showpdf = F,ContPrec = 1){
+function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","tomato3"),fun = max,log10 = F,filename= "./chromatogram.pdf",BSAID = NULL,jitfac = 1,contcol = c("orange","pink3"),showpdf = F,ContPrec = 1,AllPeptides= NULL, Peptides= NULL, PG = NULL, DataEvidence= NULL, msScans= NULL, msmsScans= NULL){
+
   cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","tomato3")
   ForConPlotAgg = NULL
   M = NULL
   x <- x
   if(length(msmsSC) > 0){
   x <- msmsSC
-  # print("HUI")
   # x$Intensity <- x$
   x$Intensity <- x$Base.peak.intensity
   # x <<- x
@@ -86,7 +86,6 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
     tsf <- (tsf/max(tsf,na.rm = T))*-0.025
     for( i in 1:length(xTimeD[,1])){
       try(rug(xTimeD[i,1],ticksize = tsf[i],col =testcol[i]))
-      
     }
     try(PieInfo <- c(PieInfo,sum(xTimeD[,2],na.rm = T)))
     names(PieInfo)[length(PieInfo)] <- "Dependent"
@@ -101,7 +100,6 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
   testcol <- densCols(xTimeT[,1],colramp = colorRampPalette(c("grey",colvec[2])))
   }else{testcol <- colvec[2]}
   for( i in 1:length(xTimeT[,1])){
-    #print(tsf[i])
     try(  rug(jitter(xTimeT[i,1],factor = jitfac),ticksize=as.numeric(as.character(tsf[i])),col = testcol[i]),silent = T)
   
   }
@@ -149,7 +147,6 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
       testcol <- colvec[4]
       try(testcol <- densCols(BSAxt[,1],colramp = colorRampPalette(c("grey",colvec[4]))))
       for( i in 1:length(BSAxt[,1])){
-        #print(tsf[i])
         try(  rug((BSAxt[i,1]),ticksize=as.numeric(as.character(tsf[i])),col = testcol[i]),silent = T)
         
       }
@@ -345,7 +342,9 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
     }
   }
 #abline(h=0,col = "grey",lwd = 0)
-
+  par(mai = c(1,1,0.5,0.1))
+  try(mqplotFun(paste(path.package("mqqc"),"data",sep = "/"),msapep=AllPeptides,mspep = Peptides,msprot = PG ,msev = DataEvidence,msscans = msScans,msmsscans = msmsScans))
+  
     dev.off()
 if(showpdf){
   system(paste("open",pdfname))
@@ -354,7 +353,8 @@ sumall <- sum(as.numeric(unlist(PieInfo)),na.rm = T)
   return(list(all = xTimeS,identified = xTimeT,contaminantsProfile = ForConPlotAgg,contaminants = M,Int = PieInfo,IntPerc=sapply(PieInfo,function(x){as.numeric(x)/sumall*100})))
 }
 
-# try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = "test",BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
+
+# try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans))
 
 # try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
 
@@ -407,7 +407,6 @@ sumall <- sum(as.numeric(unlist(PieInfo)),na.rm = T)
 # sumall <- sum(as.numeric(unlist(keep$Int)),na.rm = T)
 # 
 # # try to match Contaminants
-# print(sum(keep$Int)-sum(as.numeric(x$Intensity),na.rm = T))
 # keep$Int
 #funhu <-spline(xTimeS[,1],xTimeS[,2])
 #txtplot(xTimeS[,1],xTimeS[,2],width = 150)

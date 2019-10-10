@@ -1,5 +1,5 @@
 mqqcGUI <- 
-function(){
+function(mqpath = NULL,UseDifferentMQ = F,MSFpath = NULL){
 library(tcltk)
 library(tcltk2)
 require("widgetTools")
@@ -106,8 +106,9 @@ tt <- tktoplevel(bg =col[1])
 
 
 
-	tkwm.title(tt,"MQQC")
-tkgrid(tk2label(tt,text = "MQQC",font = fontHeading,background = col[1], foreground = col[2]),columnspan = 3)
+	tkwm.title(tt,paste("MQQC",packageVersion("mqqc")))
+tkgrid(tk2label(tt,text = "MaxQuant Quality Control - Settings",font = fontHeading,background = col[1], foreground = col[2]),columnspan = 3)
+
 tkwm.resizable(tt, "FALSE","FALSE")	
 
 Tabs <- c("General Settings", "Advanced")
@@ -130,42 +131,73 @@ init <- "/home"
 
 
 # MAXQUANT -----
-MQpath    <- tclVar(output$MQ)
-if(output$MQ != ""){init <- output$MQ}
+buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
+onBrowse <- function(init){
+  
+  File <- tclvalue(tkchooseDirectory(parent = tt2,title = "MaxQuant Folder",initialdir = init))
+  if(File != ""){
+    tclvalue(MQpath) <- File
+  } 
+}
 
-dirFrame <- tk2labelframe(ttf1,text = "MaxQuant Folder")
 
-	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
-	onBrowse <- function(init){
-	      
-        File <- tclvalue(tkchooseDirectory(parent = tt2,title = "MaxQuant Folder",initialdir = init))
-        if(File != ""){
-        tclvalue(MQpath) <- File
-        } 
-        }
+if(length(mqpath) == 0){
+  MQpath    <- tclVar(output$MQ)
+  if(output$MQ != ""){init <- output$MQ}
+  
+  dirFrame <- tk2labelframe(ttf1,text = "MaxQuant Folder")
   browseButton <- buttonRcmdr(dirFrame, text=gettext("Browse", domain="R-Rcmdr"), command=onBrowse, 	borderwidth=3)
-    
+  
 
   locationField <- tk2entry(dirFrame, textvariable=MQpath,justify = "right")        
   tkgrid(browseButton,locationField,sticky = "NSWE",padx = 1,pady = 1)
-	tkgrid(dirFrame,sticky = "NSWE",padx = 3,pady = c(5,3))
-	tk2tip(dirFrame,"Path to MaxQuant Folder.\nCurrent supported version is 1.3.0.5.\nLater version might work as well.")
+  tkgrid(dirFrame,sticky = "NSWE",padx = 3,pady = c(5,3))
+  tk2tip(dirFrame,"Path to MaxQuant Folder.\nCurrent supported version is 1.3.0.5.\nLater version might work as well.")
+}
+
+# AnalysisFolder -------
+Analysis.Folder <- tclVar(output$folder)
+dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
+
+buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
+onBrowse <- function(init){
+  File <- tclvalue(tkchooseDirectory(parent = tt2,title = "Analysis Folder",initialdir = init))
+  if(File != ""){
+    tclvalue(Analysis.Folder) <- File
+  } 
+}
+browseButton <- buttonRcmdr(dirFrame, text=gettext("Browse", domain="R-Rcmdr"), command=onBrowse, 	borderwidth=3)
+
+
+locationField <- tk2entry(dirFrame, textvariable=Analysis.Folder,justify = "left")        
+tkgrid(browseButton,locationField,sticky = "NSWE",padx = 1,pady = 1)
+tkgrid(dirFrame, sticky = "WENS",padx = 2,pady = c(2,2))
+tk2tip(dirFrame,"MQQC Main Folder. \nNew raw files, dropped here, will be analyzed by MQQC.")
+
 
 # # msfragger------
 # 	print("HUMP")
+
 	MSF <- tclVar("")
 	if(length(output$MSF)== 0){
 	  output$MSF <- ""
 	}
+if(output$MSF== ""&length(MSFpath)>0){
+  print("HWEUFHWIUFHIUH")
+  output$MSF <- MSFpath
+  MSF <- tclVar(MSFpath)
+}
+	output <<- output
+	
 	try(MSFpath    <- tclVar(output$MSF))
 	
 	if(output$MSF != ""){init <- output$MSF}
 
-	dirFrame <- tk2labelframe(ttf1,text = "MSFragger Folder")
+	dirFrame <- tk2labelframe(ttf1,text = "MSFragger jar")
 	buttonRcmdr3 <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
 	onBrowse3 <- function(init){
 
-	  File <- (tk_choose.files(caption = "MSFragger Folder",default  = init,multi = F,filters = matrix(c(".jar",".jar"),nrow = 1)))
+	  File <- (tk_choose.files(caption = "MSFragger jar",default  = init,multi = F,filters = matrix(c(".jar",".jar"),nrow = 1)))
 	  if(File != ""){
 	    tclvalue(MSFpath) <- File
 	  }
@@ -202,24 +234,7 @@ dirFrame <- tk2labelframe(tt2,text = "Standard Fasta")
 	#tkgrid(dirFrame,padx = 5,pady = 5)
 
 
-Analysis.Folder <- tclVar(output$folder)
-dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
 
-	buttonRcmdr <- function(..., borderwidth, fg, foreground, relief) ttkbutton(...)
-	onBrowse <- function(init){
-        File <- tclvalue(tkchooseDirectory(parent = tt2,title = "Analysis Folder",initialdir = init))
-          if(File != ""){
-        tclvalue(Analysis.Folder) <- File
-        } 
-        }
-    browseButton <- buttonRcmdr(dirFrame, text=gettext("Browse", domain="R-Rcmdr"), command=onBrowse, 	borderwidth=3)
-    
-    
-    locationField <- tk2entry(dirFrame, textvariable=Analysis.Folder,justify = "left")        
-    tkgrid(browseButton,locationField,sticky = "NSWE",padx = 1,pady = 1)
-	tkgrid(dirFrame, sticky = "WENS",padx = 2,pady = c(2,2))
-	tk2tip(dirFrame,"MQQC Main Folder. \nNew raw files, dropped here, will be analyzed by MQQC.")
-	
 
 	TKMisc <- tk2labelframe(ttf2,text = "Misc")
 	
@@ -254,7 +269,7 @@ dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
 	tk2labelTaOr <- tk2label(TKMisc,text = "Table Sorting")
 	tkgrid(tk2labelTaOr,comboBox,pady = 2,sticky = "NSWE")
 	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
-	tk2tip(tk2labelTaOr,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads and uses n-1 for MQQC analysis.")
+	tk2tip(tk2labelTaOr,"Defines the date used for table sorting. System time is the time when the MQQC run was processed and source the time when the rawfile was created.")
 	
 	
 	tb1.MQFilter.var 					<- c("all","db","std")
@@ -276,18 +291,19 @@ dirFrame <- tk2labelframe(ttf1,text = "Analysis Folder")
 	tb1.val.pep.duplicates 				<- tclVar()  
 	tclvalue(tb1.val.pep.duplicates) 	<- (output$cores)
 	comboBox 							<- tk2combobox(TKMisc,values=tb1.duplicates.var,textvariable = tb1.val.pep.duplicates,width = 17,state = "readonly",width = 6)
-	tk2label <- tk2label(TKMisc,text = "Threads MQ")
+	tk2label <- tk2label(TKMisc,text = "Max Threads")
 	tkgrid(tk2label,comboBox,pady = 2,sticky = "NSWE")
-	tk2tip(tk2label,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads.")
+	tk2tip(tk2label,"Maximal Number of threads MQQC is allowed to use. This includes MQ and MSFragger runs.\nIf MSFragger is installed and running, the minimal number MQQC will use, is 2, even if >Max Threads< is set to 1. 
+	       \"auto\" tries to identify the maximal number of possible threads.")
 	
 	# Threads MSFragger
-	tb1.MSFthreads.var 					<- c("auto",1:200)
+	tb1.MSFthreads.var 					<- c(1:200)
 	tb1.val.pep.MSFthreads 				<- tclVar()  
 	tclvalue(tb1.val.pep.MSFthreads) 	<- (output$MSFcores)
 	comboBox 							<- tk2combobox(TKMisc,values=tb1.MSFthreads.var,textvariable = tb1.val.pep.MSFthreads,width = 17,state = "readonly",width = 6)
 	tk2label <- tk2label(TKMisc,text = "Threads MSF")
 	tkgrid(tk2label,comboBox,pady = 2,sticky = "NSWE")
-	tk2tip(tk2label,"Number of threads MQQC is allowed to use. \"auto\" tries to identify available threads.")
+	tk2tip(tk2label,"Number of threads MSFragger is allowed to use.")
 	
 	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
 	######
@@ -648,8 +664,13 @@ rm(trk,trk1,trk2,trk3,trk4)
 cores <- tclvalue(tb1.val.pep.duplicates)
 
 if(cores == "auto"){cores <- NULL}
+if(length(mqpath) != 0){
+  MQ <- mqpath
+}else{MQ<- tclvalue(MQpath)}
+
 output <- list(	
-		MQ = tclvalue(MQpath),
+		# MQ = tclvalue(MQpath),
+    MQ = MQ,
 		MSF = tclvalue(MSFpath),
 		folder = tclvalue(Analysis.Folder),
 		fastaFile = tclvalue(StandardFasta),
@@ -702,10 +723,9 @@ if(.GlobalEnv$aborttt2){
 }
 
 return(output)
-
 }
-# 
-# Param <- mqqcGUI()
+# Param <- mqqcGUI(mqpath = "HUIh")
+
 # print(Param$MQ)
 # print(Param$MSF)
 # stop()

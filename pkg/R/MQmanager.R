@@ -1,5 +1,5 @@
 MQmanager <- 
-function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1, StandardIDs = c("ECstd","BSA")){
+function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1, StandardIDs = c("ECstd","BSA"),msfraggerFactor = 1){
   
   # Checking cores, if cores is NULL
   if(length(cores) == 0 & .Platform$OS.type == "windows"){
@@ -16,14 +16,8 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1, Stand
   
   # checking for task txt
   setwd(folder)
-  TL1 <- system("tasklist",intern = T)
-  TL <- grep("MaxQuantCmd.exe", TL1, ignore.case = T)
-  if (length(TL) == 0) {
-    TL <- grep(pattern <- "MaxQuantTask.exe", TL1, ignore.case = T)
-  }
-  if (length(TL) == 0) {
-    TL <- grep(pattern <- "MAXQUA~1.EXE", TL1, ignore.case = T)
-  }
+  
+  try(TL <- tasklistCheck(MSFRAGGERfactor = msfraggerFactor))
   
   if(!exists("TL")){TL <- NULL}
    mqqcRunningMQ <<- paste("",length(TL),"/",cores)
@@ -73,7 +67,13 @@ function(MQcmd = NULL,folder,File = "_RmqqcFile_Manager.tMQcmd",cores = 1, Stand
 
         	
         }
-        system(tempSys, wait = F)
+        MQcmd <- strsplitslot(tempSys,1,"###")
+        MSFcmd <- strsplitslot(tempSys,2,"###")
+        
+        system(MQcmd, wait = F)
+        if(MSFcmd !="NA"){
+          system(MSFcmd, wait = F)
+        }
         tempi <- tempi[-1]
         
         

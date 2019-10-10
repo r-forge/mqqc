@@ -9,10 +9,10 @@ function(msScans = NULL,msmsScans = NULL,xl = c(-1,1),type ="MS1"){
   if(length(msScans) > 0){
     ret <- as.numeric(msScans$Retention.time)
     fun = max
-    sel <- ret > min(xl) & ret < max(xl)
+    sel <- ret > min(xl,na.rm = T) & ret < max(xl,na.rm = T)
     # wifu <-createWindows(ret)
     # MS1 <- aggregate(unfactor(msScans$Base.peak.intensity[sel]),list(wifu$windowsnames[sel]),fun)
-    MS1  <- createWindows(ret[sel],otherValue = msScans$Base.peak.intensity[sel],win = 600)$aggRes
+    MS1  <- createWindows(ret[sel],otherValue = as.numeric(msScans$Base.peak.intensity)[sel],win = 600)$aggRes
     # MS1 <- MS1v[,2]
     # names(MS1) <- MS1v[,1]
       # MS1 <- match()
@@ -23,7 +23,7 @@ function(msScans = NULL,msmsScans = NULL,xl = c(-1,1),type ="MS1"){
     sel <- ret2 > min(xl) & ret2 < max(xl)
     
     # MS2 <- aggregate(unfactor(msmsScans$Base.peak.intensity[sel]),list(createWindows(ret2)$windows[sel],msmsScans$Identified[sel]),fun)
-    MS2 <- createWindows(ret2[sel],otherValue = msmsScans$Base.peak.intensity[sel],win = 600)$aggRes
+    MS2 <- createWindows(ret2[sel],otherValue = as.numeric(msmsScans$Base.peak.intensity)[sel],win = 600)$aggRes
     # MS2 <- MS2v[,2]
     # names(MS2) <- MS2v[,1]
     # 
@@ -58,6 +58,7 @@ function(msScans = NULL,msmsScans = NULL,xl = c(-1,1),type ="MS1"){
     }
   }else{empty.plot()}
 }
+# tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,msScans = msScans,msmsScans= msmsScans,data.list = qc.prepare.data,pdf.name = i, open.doc = open.doc,pdfOut = pdfOut, BSACheck = BSACheck)))
 
 # tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,msScans = msScans,msmsScans= msmsScans,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 

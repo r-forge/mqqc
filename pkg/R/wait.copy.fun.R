@@ -22,7 +22,7 @@ if(type == "tryRead"){
 require(tools)
 loop <- T
 while(loop){	
-	temp <- class(try(readLines(x),n = 1))
+	temp <- class(try(readLines(x,n = 1)))
 	Sys.sleep(1)
 		if(temp != "try-error"){
 		

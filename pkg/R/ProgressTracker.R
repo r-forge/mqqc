@@ -1,5 +1,5 @@
 ProgressTracker <-
-function(folders){
+function(folders,htmloutPath= "~/"){
 
 Delete <-list.files(folders,pattern = "DeleteTag",full.name = T)
 Enter <-list.files(folders,pattern = "MQEnterTag",full.name = T)
@@ -18,16 +18,90 @@ Finished <- paste(Finished,"DeleteTag" ,sep = "/")
 All <- list(Pending,Running,Finished)
 
 InfoFile <- lapply(All,function(x){
-	xi <- file.info(x)
+  x <<- x
+  print(x)
+  MSFres <- "No Data"
+  
+	FI <- file.info(list.files(dirname(x),pattern = "MQStartTag",full.names = T))$ctime
+
+	
+	MSFraggerLinks <- sapply(x,function(y){
+	  namevec <- ""
+	  try({namevec <- readLines(list.files(dirname(y),pattern = "RawFileName",full.names = T))},silent = T)
+	  
+	  MSF <- list.files(dirname(y),pattern = "MSfragger_Result.pdf",full.names = T)
+	  
+	  if(length(MSF) > 0){
+	    MSF <- MSF
+	    namevec <- namevec
+	    namevec <- gsub(".raw$","_MSF.pdf",namevec)
+	    htmloutPath <<- htmloutPath
+	    try({MSFres <- read.table(paste(dirname(MSF),"MSF_results.txt",sep = "/"),skip = 1)[1,1]},silent = T)
+	    MSFres <- as.character(MSFres)
+	    
+	    if(all(list.files(dirname(MSF)) != "msfragger_copied") & any(list.files(dirname(MSF)) ==("MSF_Finished"))){
+	      MSF <<- MSF
+	      file.copy(MSF,paste(htmloutPath,"files",namevec,sep = "/"),overwrite = T)
+	      write("",paste(dirname(MSF),"msfragger_copied",sep = "/"))
+	    }
+	  }else{namevec <- ""}
+	    
+	  return(c(namevec,MSFres))
+	})
+	MSFraggerLinks <<- MSFraggerLinks
+	if(any(MSFraggerLinks[1,]!="")){
+	  MSFraggerLinks[1,MSFraggerLinks[1,]!=""] <- paste("<a href ='./files/",MSFraggerLinks[1,],"' target ='_blank' >",MSFraggerLinks[2,],"</a>",sep = "")[MSFraggerLinks[1,]!=""]
+	  
+	}
+	MSFraggerLinks[1,MSFraggerLinks[1,]==""] <- "No Data"
+	MSFraggerLinks <- MSFraggerLinks[1,]
+
 	addInfo <- sapply(dirname(x),function(x){
 	  inf <- file.info(list.files(paste(x,"/combined/proc/",sep = ""),full.name = T))
 	  inf <- inf[grep("runningTimes.txt",rownames(inf),invert = T) ,]
 	  out <- paste(gsub(".txt$","",basename(rownames(inf)[inf$mtime == max(inf$mtime)])),sep = "",collapse = ";")
+	  timevec <- inf$mtime[inf$mtime == max(inf$mtime)]
+	  return(c(out,as.character(timevec)[1]))
 	})
+	if(is.matrix(addInfo)){
+	  addTime <- (addInfo[2,])
+	  addTime[is.na(addTime)] <- ""
+	  addInfo <- addInfo[1,]
+	}
+
 	addInfo[addInfo == ""] <- "unknown"
-	x <- cbind(gsub("raw_folder$","",basename(dirname(x))), as.character(xi$mtime))
+	unit <- ""
+	
+	if(length(addTime) != length(addInfo)){
+	  FI <- ""
+	  dif <- ""
+	}else{
+	  dif <- ""
+	  addTime <- addTime
+	  FI <- FI
+	  # HOMPS <<- difftime(as.POSIXct(addTime),FI,units = "mins")
+	  try(dif <- (difftime(as.POSIXct(addTime),FI,units = "mins")),silent = T)
+	  try(unit <- rep("min",length(dif)),silent = T)
+	  try({
+	    
+	  
+	  dif <- abs(as.numeric(dif))
+	  if(any(dif> 60)){
+	    print(dif)
+	    print(unit)
+	    sel <- dif> 60
+	    dif[sel] <- dif[sel]/60
+	    unit[sel] <- "h"
+	  }
+	  })
+	  
+	}
+	
+	
+	x <- cbind(gsub("raw_folder$","",basename(dirname(x))),as.character(FI), addTime,paste(round(as.numeric(dif),1),unit),MSFraggerLinks)
+	
   try(x <- cbind(x,addInfo))
-	try(colnames(x) <- c("File","Time","Status")[1:dim(x)[2]])
+	try(colnames(x) <- c("File","MQ Start","Step Time","Duration","MSFragger","Status")[1:dim(x)[2]])
   if(!all(is.na(x[,2] ))){
   if(is.vector(x)){ x <- t(as.matrix(t))}
   x <- x[order(x[,2],decreasing = T),]
@@ -74,5 +148,14 @@ endHtml <- "</div>
 write(c(HtmlHeader,Tables, endHtml),paste(htmloutPath,"MqqcRunningFileInfo.html",sep = "/"))
 #system(paste("open ",paste(htmloutPath,"MqqcRunningFileInfo.html",sep = "/")))
 }
-#ProgressTracker(folders)
-
+# 
+# # 
+# # htmloutPath <- "~/"
+# hotFolder <- "/Volumes/mqqc"
+# # hotFolder <-"/Users/henno/temp/MQQC"
+# folders <- listFolders(hotFolder)
+# folders <- folders[grep("^_RmqqcFile",basename(folders),invert = T)] # Exclude _RmqqcFile_ Folders
+# test <- ProgressTracker(folders,htmloutPath = "/Users/henno/Documents/vbox/MQQC/_RmqqcFile_html/")
+# # # # # # # #ProgressTracker(folders)
+# # # # # # # MqqcRunningFileInfo.html
+# system("open /Users/henno/Documents/vbox/MQQC/_RmqqcFile_html/MqqcRunningFileInfo.html")

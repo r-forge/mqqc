@@ -1,5 +1,5 @@
 mqStarter <-
-function(temp.batch.n, InfoString = "_RmqqcFile_",folder,...){
+function(temp.batch.n, InfoString = "_RmqqcFile_",folder,GenericDBPath = NULL,MSFRAGGERpath = MSFRAGGERpath,MSFcores = MSFcores,MSfraggerFactor=1,...){
   
  
   
@@ -28,7 +28,7 @@ function(temp.batch.n, InfoString = "_RmqqcFile_",folder,...){
 		try(write.table(t(as.matrix(vec)),file = paste(folder,paste(InfoString,"Info.txt",sep = ""),sep = "/"),append = T,quote = F,sep = "\t",row.names = F,col.names = F),silent = T)
 	}
 	# MQ function plus XML stuff
-	mq.fun(filePath = path.file ,folder,...)
+	mq.fun(filePath = path.file ,folder,GenericDBPath = GenericDBPath,MSFRAGGERpath = MSFRAGGERpath,MSFcores = MSFcores,MSFraggerFactor = MSfraggerFactor,...)
 	}
 	return(path.file)	
 }

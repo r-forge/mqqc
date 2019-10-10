@@ -33,16 +33,16 @@ DensMatrixTemplate <- rbind(
   #MS
   c("MSID.min","Features/min",F,"MS"),
   c("Intensity.50.","MS Median Intensity",T,"MS"),
-  c("mass.error.uncal.50.","Mass Error in [ppm]",F,"MS"),
+  c("precision.50.","Mass precision [ppm]",F,"MS"),
  # c("Coverage","Coverage",F,"MS"),
   #MSMS
   c("quan.msms.min","IDs/min",F,"MSMS"),
   c("msmsQuantile.50.","MSMS Median Intensity",T,"MSMS"),
   c("msmsMassCount.50.","MSMS Median Fragment Counts",F,"MSMS"),
   #nlc
-  c("LCcombiScore","LC profile symmetry",F,"LC"),
+  c("LCcombiScore","LC profile distribution",F,"LC"),
   c("ret.width.50.","log10 Retention Time [s]",F,"LC"),
-  c("ret.peak.shape.50.","Peak shape",T,"LC"))
+  c("ret.peak.shape.abs.50.","Peak symmetry",T,"LC"))
 
 Vec.Test <- DensMatrixTemplate[,1]
 Names <- DensMatrixTemplate[,2]
@@ -65,7 +65,7 @@ nouse <-lapply(make.names(Vec.Test),function(x){
 	tempVal <-make.names(tempVal)	 == make.names(tolower(x))
 	checkty <- uniSample[,tempVal]
 	checktyS <- is.infinite(checkty)
-	if("mass.error.cal.50%" == x){
+	if("precision.50." == x){
 	test<- aggregate(checkty[!checktyS],list(UniMachine[!checktyS]),min,na.rm = T)
 		
 	}else{ 
@@ -127,7 +127,7 @@ for(a in Vec.Test){
 	tempI <- tempI[order(tempI$System.Time.s),]
 	TimeI <- tempI$System.Time	
 	
-	if(a == grep("mass.error",Vec.Test,value = T)){
+	if(a == grep("precision",Vec.Test,value = T)){
 	
 	BestV <- MinV[make.names(names(MinV)) == make.names( a)] 
 
@@ -155,7 +155,7 @@ for(a in Vec.Test){
 	TimeI <- gsub("^X","", TimeI)
 	deleteTimeVec <- duplicated(substr(TimeI[,1],1,7))
 	Count <- tempI[,make.names(colnames(tempI)) == make.names(a)]
-	
+	Count[is.infinite(Count)] <- NA
 
 	y <- as.numeric(as.character(Count))
   
@@ -172,8 +172,17 @@ for(a in Vec.Test){
     BestV <- log10(BestV)
     NameTemp <- paste("log10",NameTemp)
     
-  } 	
-
+  } 
+	if(exists("CountUp")){
+	  CountUp[is.infinite(CountUp)] <- NA
+	}
+	if(exists("CountLo")){
+ 	CountLo[is.infinite(CountLo)] <- NA
+	}
+	if(exists("Count")){
+	  
+	Count[is.infinite(Count)] <- NA
+	}
  	# if(a == Vec.Test[5]){
 
   # y <- log10(y)
@@ -186,7 +195,7 @@ for(a in Vec.Test){
   if(all(is.na(y))){y[is.na(y)] <- 0;Count[is.na(Count)] <- 0}
 	if(length(x) == length(y) & length(y) > 0 & any(!is.na(Count))){
 		
-	if(BordPlot&0){
+	if(BordPlot){
 		rangeVal <- range(c(Count,CountUp,CountLo),na.rm = T)
 		
 	}else{
@@ -194,30 +203,33 @@ for(a in Vec.Test){
 
 	}
 	#if(rangeVal[1] > 0){rangeVal[1] <- 0}
-if(!is.na(BestV) & a != grep("mass.error",(Vec.Test),value =T )){
+if(!is.na(BestV) & a != grep("precision",(Vec.Test),value =T )){
 	if(rangeVal[2] < BestV)
 	rangeVal[2] <- BestV
 
 }
 
-xYear <- x > (max(x)-31536000)	
-x <- x[xYear]
-y <- y[xYear]
+xYear <- x > (max(x,na.rm = T)-31536000)	
+x <<- x[xYear]
+y <<- y[xYear]
 
 if(!any(c(all(is.na(x)),all(is.na(y))))){
 
-plot(x, y,axes = F,type = "n",lwd = 3,xlab = "",ylab = NameTemp,main = paste(i, paste(TypeQC[it.a],NameTemp,sep = ": "),sep = "\n"),cex.main =2.25,cex.lab = 2,ylim = rangeVal,xlim = c(min(x),as.numeric(Sys.time())))
+plot(x, y,axes = F,type = "n",lwd = 3,xlab = "",ylab = NameTemp,main = paste(i, paste(TypeQC[it.a],NameTemp,sep = ": "),sep = "\n"),cex.main =2.25,cex.lab = 2,ylim = rangeVal,xlim = c(min(x,na.rm = T),as.numeric(Sys.time())))
 abline(v = pretty(x),col = "grey",lty = "dotted")
+if(exists("Quan") ){
+  names(Quan)[is.na(names(Quan))] <- "PLACEHOLDER"
   
-if(exists("Quan")){
   if(any(names(Quan) == a)){
   QuanA <- Quan[names(Quan) == a][[1]]
   if(is.matrix(QuanA)){
     QuanA <- QuanA[,colnames(QuanA) == i]
   }
   or <- order(as.numeric(gsub("%","",names(QuanA))))
+  grad.cols.vec <-  c("black","#D55E00", "#F0E442", "#009E73")
+  
   try(abline(h=QuanA[or], lty = "dotted",col = colorRampPalette(rev(grad.cols.vec))(5)[or],lwd = 1 ))
-  try(text(hui<<-rep(par()$usr[2],length(QuanA)),hui2 <<- as.numeric(QuanA),names(QuanA),pos = 3,cex = 0.5,xpd = NA))
+  try(text(hui<<-rep(par()$usr[2],length(QuanA)),hui2 <<- as.numeric(QuanA),names(QuanA),pos = 3,cex = 0.5,xpd = NA),silent = T)
   }
 }
 if(it.a == 1){
@@ -270,9 +282,8 @@ it.a <- it.a+1 # Counter for Names
 options(warn = unlist(os))
 
 }
-# try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high",pdfShow = T),silent = F)
+# try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high",pdfShow = F),silent = F)
 
-# collectList <- read.csv("/Users/henno/temp/mqqc/_RmqqcFile_Processed/LISTCOLLECT_ABACUS/list_collect.csv",stringsAsFactors = F)
 # try(plottingTimeLineFunction(AllData = collectList,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high"),silent = T)
 
 # LoadSettings( AllData= collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high")

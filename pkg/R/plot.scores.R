@@ -1,7 +1,7 @@
 plot.scores <-
 function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.control", open.doc = T,pdfOut = F,BSACheck = F,colType = c("greenblue"))
 {
-  
+
   
   
   
@@ -21,7 +21,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     #c("black","indianred1","yellow2",colors()[50])
   }
   
-  
+
   MaxCol <- "blue"
   colnames(data.i) <- tolower(colnames(data.i))
   summary.data   <- data.list$sd
@@ -176,11 +176,11 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   #   }
   #   
   # }
-  
-  
+
   try(plotData<- plot.profile(data.i=data.i,layout = F,linePlot = dots,BSACheck= BSACheck,plot.legend = F,funfun = plotMsFun,msScans = msScans,msmsScans = msmsScans))
 
-
+  
+  
   
     
 
@@ -230,7 +230,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   
   namesData[namesData=="mass.error"]  <- "Mass error in ppm"
   namesData[namesData=="score"] <- "Andromeda Score"
-  namesData[namesData=="peak.shape"]   <- "Peak Shape"
+  namesData[namesData=="peak.shape"]   <- "Peak Symmetry"
   namesData[namesData=="ret.width"]     <- "Peak Width"
   namesData[namesData=="msmsQuantile"] <- "MSMS Intensities"
   namesData[namesData=="msmsEff"]   <- "Efficiency MSMS"
@@ -254,12 +254,12 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   }
   
   LegString <-
-    c("File:",tempLeg,"","Details:", LegString[-1])
+    c("File:",tempLeg,"", LegString[-1])
   
   if(length(summary.data$missed.cleavages.percent) > 0){
     if(summary.data$missed.cleavages.percent != "not available"&all(is.na(data.list$SpecStat))){
       mc <- round(as.numeric(summary.data$missed.cleavages),2)
-      LegString = c(LegString,paste("missed cleavages:",mc,"%"))	
+      LegString = c(LegString,paste("Missed cleavages:",mc,"%"))	
     }else{
       if(!all(is.na(data.list$SpecStat))){
       SPEC <- data.list$SpecStat
@@ -309,7 +309,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   #   
   # }
   LegString = c(LegString,paste("MS IIT Q 0.25 0.5 0.75:",paste(round(data.list$sd$Ion.injection.time[2:4],1),collapse = " ")))	
-  LegString = c(LegString,paste("MSMS IIT Q 0.25 0.5 0.75:",paste(round(data.list$sd$Ion.injection.time.MSMS[2:4]),collapse = " ")))	
+  LegString = c(LegString,paste("MS2 IIT Q 0.25 0.5 0.75:",paste(round(data.list$sd$Ion.injection.time.MSMS[2:4]),collapse = " ")))	
   
   # data.list <<- data.list
   
@@ -335,7 +335,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     legend("bottomleft",paste("   ",c("Modifications:",depStringFin)),bty = "n",cex = 0.5)
     
   }
-  legend("top",legend ="",bty = "n",title = "MQQC Result")
+  legend("top",legend ="",bty = "n",title = "MQQC Report")
   # LegString <<- LegString
   legend("left",legend =LegString,bty = "n",cex =0.8)
   
@@ -367,7 +367,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     CombiScores <- CombiScores[order(names(CombiScores))]
     
     
-    namesData <- c("MS","MSMS","LC","Total")
+    namesData <- c("MS","MS2","LC","Total")
     
     TotalScore <- mean(CombiScores,na.rm = T)# switch dependent Score to mean Score
     ColScore <- c(col.temp[round.spec(c(CombiScores, TotalScore))])
@@ -458,7 +458,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     
   }
   
-  plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col.dir = NULL,xlimV = NULL,RampCols = c(MaxCol,"yellow","green")){
+  plot.stat <- function(x,thresh, name.val,rev = F,bg = "lightblue",main = "2",col.dir = NULL,xlimV = NULL,RampCols = c(MaxCol,"yellow","green"),levelRound = 0){
     col.temp <- (colorRampPalette(RampCols)(thresh*100))
     if(length(thresh) == 0){
       thresh <- 0
@@ -483,7 +483,9 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     if(length(col.dir) == 0){col.dir <- col.temp[col.sel*100]}
     
     max(c(x,thresh))
-    barplot(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35,xpd = F,names.arg = "",tck = -0.2)
+    hu <- barplot(x,las = 2,col =col.dir,ylab = name.val,ylim = x.range,bg = bg,angle = 45,density = 35,xpd = F,names.arg = "",tck = -0.2)
+    la <- round(x,levelRound)
+    text(hu,x,labels = la ,pos = 3,cex = 0.4,offset = 0.1)
     #abline(h=thresh,lwd = 2,col = "grey")
     abline(h=thresh,lwd = 3,col = MaxCol)
     box(lwd = 4,fg = col.dir)
@@ -496,13 +498,13 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   ##
   # Peptide ID/min
   ##
-  if(length(thresholds$MSID.min) == 0){
-    thresholds$MSID.min <- c(500)
+  if(length(thresholds$MS.IsotopicPatternsPerMin) == 0){
+    thresholds$MS.IsotopicPatternsPerMin <- c(500)
   }
   if(length(summary.data$Isotope.patterns.min) == 0){
-  trytest <- try(plot.stat(summary.data$MSID.min,thresholds$MSID.min, name.val = "Features [1/min]",main = "MS", col.dir = col.temp[round.spec(score$MSID.min)]))
+  trytest <- try(plot.stat(summary.data$MSID.min,thresholds$MS.IsotopicPatternsPerMin, name.val = "Features [1/min]",main = "MS", col.dir = col.temp[round.spec(score$MSID.min)]))
   }else{
-    trytest <- try(plot.stat(summary.data$Isotope.patterns.min ,thresholds$MSID.min, name.val = "Isotope patterns [1/min]",main = "MS", col.dir = col.temp[round.spec(score$Isotope.patterns.min)]))
+    trytest <- try(plot.stat(summary.data$Isotope.patterns.min ,thresholds$MS.IsotopicPatternsPerMin, name.val = "Isotope patterns [1/min]",main = "MS", col.dir = col.temp[round.spec(score$Isotope.patterns.min)]))
   }
   
   
@@ -513,27 +515,42 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   # Intensity
   ####
   # thresholds <<- thresholds
-  logInt <- thresholds$Intensities#[c(2,1,3)]
+  logInt <- thresholds$MS.Intensities.log10#[c(2,1,3)]
   #logInt <- c(min(logInt)- diff(logInt), logInt)
   #logInt <<- c(logInt,min(logInt) * 0.5,max(logInt) * 1.5)
-  trytest <- try(plot.quans(log10(summary.data$Intensity),F,"","log10 Intensity",logInt,fg.col = col.temp[round.spec(score$Intensity)],main = "MS"))
+  trytest <- try(plot.quans(log10(summary.data$Intensity),F,"","",logInt,fg.col = col.temp[round.spec(score$Intensity)],main = "MS",axes = F))
+  axis(2,at = log10(summary.data$Intensity[-3]),label = round(log10(summary.data$Intensity),1)[-3],las = 2,tck = -0.2,col.axis = "grey50",cex.axis = 0.8)
+  axis(2,at = log10(summary.data$Intensity[3]),label = round(log10(summary.data$Intensity),1)[3],las = 2,tck = -0.2)
+  box(lwd = 4, fg = col.temp[round.spec(score$Intensity)])
+  
   
   if(class(trytest) == "try-error"){
     empty.plot()
+  }else{
+    mtext("log10 MS1 Intensity",2,line = 2.5,cex = 0.65)
+    
   }
   
   ###
   # mass error
   ###
-  trytest <- try(plot.quans(summary.data$mass.error.uncal,F,"","",thresholds$mass.error.cal,fg.col = col.temp[round.spec(score$mass.error)],main = "MS"))
+  # summary.data <<- summary.data
+  # thresholds <<- thresholds
+  trytest <- try(plot.quans(summary.data$precision,F,"","",thresholds$MS.Precision.ppm,fg.col = col.temp[round.spec(score$precision)],main = "MS",axes =F))
+  # logbase <-exp(1)
+  axis(2,at = summary.data$precision[-3],label = round(summary.data$precision,1)[-3],las = 2,tck = -0.2,col.axis = "grey50",cex.axis = 0.8)
+  axis(2,at = summary.data$precision[3],label = round(summary.data$precision,1)[3],las = 2,tck = -0.2)
+  box(lwd = 4, fg = col.temp[round.spec(score$precision)])
+  
+  
   if(class(trytest) == "try-error"){
     empty.plot()
   }else{
-    mtext("Uncalibrated",2,line = 3.3,cex = 0.65)
+    # mtext("Uncalibrated",2,line = 3.3,cex = 0.65)
     
     #mtext("log10(Intensities)",2,line = 2,cex = 0.65)
     
-    mtext("Mass error [ppm]",2,line = 2.5,cex = 0.65)
+    mtext("Mass precision [ppm]",2,line = 2.5,cex = 0.65)
     
   }
   
@@ -544,8 +561,8 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   # ET time balance
   ## 
   
-  #try(plot.stat(log2(data.list$sd$quanRet50ratio),thresh = c(log2(data.list$th$quanRet50ratio),-1*log2(data.list$th$quanRet50ratio)),name.val = "log2 ETime balance",main = "nLC",col = ColUse[ColUse[,2] == "quanRet50ratio",1],xlimV = c(-1,1)))
-  trytest <- try(plot.stat(data.list$sc$nLCcombi, 1,name.val = "LC profile symmetry",main = "nLC",col = c(col.temp[round.spec(data.list$sc$nLCcombi)])))
+  #try(plot.stat(log2(data.list$sd$quanRet50ratio),thresh = c(log2(data.list$th$quanRet50ratio),-1*log2(data.list$th$quanRet50ratio)),name.val = "log2 ETime balance",main = "LC",col = ColUse[ColUse[,2] == "quanRet50ratio",1],xlimV = c(-1,1)))
+  trytest <- try(plot.stat(data.list$sc$nLCcombi, 1,name.val = "LC profile distribution",main = "LC",col = c(col.temp[round.spec(data.list$sc$nLCcombi)]),levelRound = 2))
   if(class(trytest) == "try-error"){
     empty.plot()
   }
@@ -554,8 +571,15 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   ##
   # peak shape
   ##
-  trytest <- try(plot.quans(log2(summary.data$ret.peak.shape),F,"","log2(Peak shape)",thresholds$ret.peak.shape,fg.col = col.temp[round.spec(score$peak.shape)],main = "nLC")
+  # score <<- score
+  trytest <- try(plot.quans((summary.data$ret.peak.shape.abs),F,"","Peak symmetry",log10(thresholds$LC.Peak.rel.Symmetry),fg.col = col.temp[round.spec(score$peak.shape.abs)],main = "LC",axes = F)
   )
+  
+  logbase <-exp(1)
+  axis(2,at = summary.data$ret.peak.shape.abs[-3],label = round(logbase^summary.data$ret.peak.shape.abs,2)[-3],las = 2,tck = -0.2,col.axis = "grey50",cex.axis = 0.8)
+  axis(2,at = summary.data$ret.peak.shape.abs[3],label = round(logbase^summary.data$ret.peak.shape.abs,2)[3],las = 2,tck = -0.2)
+  
+  box(lwd = 4, fg = col.temp[round.spec(score$peak.shape.abs)])
   if(class(trytest) == "try-error"){
     empty.plot()
   }
@@ -563,8 +587,8 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   # peak width
   ## 
 
-  # trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$ret.width),axesOn = F))
-  trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$ret.width),fg.col = col.temp[round.spec(score$ret.width)],main = "nLC",ylim = range(summary.data$ret.width[1:4]),axesOn = F))
+  # trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$LC.PeakWidth.s),axesOn = F))
+  trytest <- try(plot.quans(summary.data$ret.width,F,"","Peak width [s]",log10(thresholds$LC.PeakWidth.s),fg.col = col.temp[round.spec(score$ret.width)],main = "LC",ylim = range(summary.data$ret.width[1:4]),axesOn = F))
   # axis(2,at = pretty(summary.data$ret.width),label = round(10^pretty(summary.data$ret.width)),las = 2,tck = -0.2)
   axis(2,at = summary.data$ret.width[-3],label = round(10^summary.data$ret.width)[-3],las = 2,tck = -0.2,col.axis = "grey50",cex.axis = 0.8)
   axis(2,at = summary.data$ret.width[3],label = round(10^summary.data$ret.width)[3],las = 2,tck = -0.2)
@@ -583,12 +607,12 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   # Iden efficiency
   ##
   if(BSACheck){
-    trytest <- 	try(plot.stat(summary.data$Coverage,thresholds$ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MSMS", col.dir = col.temp[round.spec(score$ProteinCoverage)]))
+    trytest <- 	try(plot.stat(summary.data$Coverage,thresholds$MSMS.ProteinCoverage, name.val = "BSA Protein Coverage in %",main = "MS2", col.dir = col.temp[round.spec(score$ProteinCoverage)]))
     
   }else{
-    trytest <- try(plot.stat(summary.data$quan.msms.min,thresholds$quan.msms.min, name.val = "PSMs [1/min]",main = "MSMS", col.dir = col.temp[round.spec(score$msms)]))
+    trytest <- try(plot.stat(summary.data$quan.msms.min,thresholds$MSMS.PSM.per.min, name.val = "PSMs [1/min]",main = "MS2", col.dir = col.temp[round.spec(score$msms)]))
   }
-  # trytest <- try(plot.stat(summary.data$msmsEff,thresholds$msmsEff,name.val = "Identification efficiency [%]",main = "MSMS",col = col.temp[round.spec(score$msmsEff)]))
+  # trytest <- try(plot.stat(summary.data$msmsEff,thresholds$msmsEff,name.val = "Identification efficiency [%]",main = "MS2",col = col.temp[round.spec(score$msmsEff)]))
   if(class(trytest) == "try-error"){
     empty.plot()
   }
@@ -600,10 +624,13 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   #return(summary.data)
   
   #if(any(summary.data$msmsQuantile != 0)){
-  trytest <- try(plot.quans(as.numeric(log10(summary.data$msmsQuantile)),F,ref.data = thresholds$msmsQuantile,main = "MSMS",xlab = "",ylab = "",fg.col = col.temp[round.spec(score$msmsQuantile)]))
+  trytest <- try(plot.quans(as.numeric(log10(summary.data$msmsQuantile)),F,ref.data = thresholds$MSMS.Intensities.log10,main = "MS2",xlab = "",ylab = "",fg.col = col.temp[round.spec(score$msmsQuantile)],axes = F))
   #}
   mtext("Peptide Fragments",2,line = 3,cex = 0.65)
   mtext("log10(Intensities)",2,line = 2,cex = 0.65)
+  axis(2,at = log10(summary.data$msmsQuantile[-3]),label = round(log10(summary.data$msmsQuantile),1)[-3],las = 2,tck = -0.2,col.axis = "grey50",cex.axis = 0.8)
+  axis(2,at = log10(summary.data$msmsQuantile[3]),label = round(log10(summary.data$msmsQuantile),1)[3],las = 2,tck = -0.2)
+  box(lwd = 4, fg = col.temp[round.spec(score$msmsQuantile)])
   
   
   if(class(trytest) == "try-error"){
@@ -612,7 +639,11 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   
   #if(any(summary.data$msmsMassCount != 0)){
   
-  trytest <- try(plot.quans(as.numeric(summary.data$msmsMassCount),F,ref.data = thresholds$msmsCount,main = "MSMS",xlab = "",ylab = "",fg.col = col.temp[round.spec(score$msmsCount)]))
+  trytest <- try(plot.quans(as.numeric(summary.data$msmsMassCount),F,ref.data = thresholds$MSMS.MatchedFragmentsPerMSMS,main = "MS2",xlab = "",ylab = "",fg.col = col.temp[round.spec(score$msmsCount)],axes = F))
+  axis(2,at = (summary.data$msmsMassCount[-3]),label = round((summary.data$msmsMassCount))[-3],las = 2,tck = -0.2,col.axis = "grey50",cex.axis = 0.8)
+  axis(2,at = (summary.data$msmsMassCount[3]),label = round((summary.data$msmsMassCount))[3],las = 2,tck = -0.2)
+  box(lwd = 4, fg = col.temp[round.spec(score$msmsCount)])
+  
   mtext("Assigned Fragments",2,line = 3,cex = 0.65)
   mtext(" / MSMS",2,line = 2,cex = 0.65)
   
@@ -699,16 +730,16 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
   # ET time slope
   ## 
   
-  #try(plot.stat((data.list$sd$quanRetSlope),thresh = c(data.list$th$quanRetSlope,-1*data.list$th$quanRetSlope),name.val = "ETime slope",main = "nLC",col = ColUse[ColUse[,2] == "quanRetSlope",1],xlimV = c(-0.05,0.05)))
+  #try(plot.stat((data.list$sd$quanRetSlope),thresh = c(data.list$th$quanRetSlope,-1*data.list$th$quanRetSlope),name.val = "ETime slope",main = "LC",col = ColUse[ColUse[,2] == "quanRetSlope",1],xlimV = c(-0.05,0.05)))
   
   ##
   # ET time slope
   ## 
   
-  #try(plot.stat((data.list$sd$quanRetRSD),thresh = data.list$th$quanRetRSD,name.val = "ETime rSD",main = "nLC",col = ColUse[ColUse[,2] == "quanRetRSD",1]))
+  #try(plot.stat((data.list$sd$quanRetRSD),thresh = data.list$th$quanRetRSD,name.val = "ETime rSD",main = "LC",col = ColUse[ColUse[,2] == "quanRetRSD",1]))
   
   
-  ##plot.quans(summary.data$mass.error.cal,F,"mass.error","mass.error in ppm",thresholds$mass.error.cal)
+  ##plot.quans(summary.data$mass.error.cal,F,"mass.error","mass.error in ppm",thresholds$MS.Precision.ppm)
   if(length(data.list$SpecStat) !=0){
     if(!is.na(data.list$SpecStat)){
       par(bg = "white",mai = c(1.5,2,0.5,0.2))
@@ -725,7 +756,7 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
     
     graphics.off()
   }
-  cat("\r",getwd())
+  # cat("\r",getwd())
   
   if(open.doc){
     try(        try(system(paste("open ", .pdf), intern = TRUE, 				ignore.stderr = TRUE)))
@@ -733,6 +764,11 @@ function (data.i,msScans = NULL,msmsScans = NULL,data.list,pdf.name = "qc.contro
 
 return(list(TotalScore = SCVecs,TotalScoreColor = ColScore,plotData = plotData))
 }
+# start.qc("/Users/henno/temp/mqqc/test/txt/evidence.txt")
+# tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,msScans = msScans,msmsScans= msmsScans,data.list = qc.prepare.data,pdf.name = i, open.doc = open.doc,pdfOut = pdfOut, BSACheck = BSACheck)))
+
+# start.qc("/Users/henno/temp/mqqc/test/txt/evidence.txt")
+# tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,msScans = msScans,msmsScans= msmsScans,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 
 # tryError2 <- class(try(TotalScoreRes  <- plot.scores(data.i = temp.DataEvidence,msScans = msScans,msmsScans= msmsScans,data.list = qc.prepare.data,pdf.name = i, open.doc = T,pdfOut = pdfOut, BSACheck = BSACheck)))
 

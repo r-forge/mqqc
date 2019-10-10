@@ -98,9 +98,9 @@ function(tempListOne,xColumn = "msmsQuantile.50.",yColumn= "score.50.",xlab = xC
     if(plotpoints){
       #points(a[! Exclude],b[!Exclude],pch = 21,bg = rainbowCol[Mac],col = "transparent")
     }
-    a <<- a
-    b <<- b
-    Exclude <<- Exclude
+    # a <<- a
+    # b <<- b
+    # Exclude <<- Exclude
     error <- try(temp <- lowess(a[! Exclude],b[! Exclude]),silent = T)
     if(class(error) == "try-error"){temp <- list(x = 0,y = 0)}else{
       # testing slope detection

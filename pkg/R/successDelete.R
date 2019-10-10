@@ -1,12 +1,12 @@
 successDelete <- 
-  function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F,mqqcInfo = NULL)
+  function(hotFolder,sucFolder = "_RmqqcFile_Processed",destDelete = F,mqqcInfo = NULL,htmloutpath = NULL)
   {
     #grep("20131216_AD_ECst",folders)
     folders <- listFolders(hotFolder)
     folders <- folders[grep("^_RmqqcFile",basename(folders),invert = T)]
     collectListPath <- paste(hotFolder,sucFolder,"list_collect.csv",sep = "/")
  
- try(ProgressTracker(folders) )  
+ try(ProgressTracker(folders,htmloutpath) )  
     
     # Search only in folders which have not been processed, reduces search space
     if( file.exists(collectListPath)){
@@ -143,7 +143,9 @@ successDelete <-
               MovTest <- tempmqqcInfo[basename(tempmqqcInfo) !=  "mqqcProcessed" & basename(tempmqqcInfo) !=  "mqqcMoved" ]
               DelCont <- F
               if(length(MovTest) > 0){
-                	DelCont         <-  file.rename(MovTest[1],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
+                	# DelCont         <-  file.rename(MovTest[1],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"))
+                	DelCont         <-  file.copy(MovTest[1],paste(sucFolderPath,paste(Sys.Date(),folderNameVec[i],sep = "_"),sep = "/"),overwrite = T)
+                	
                 	if(DelCont){
                 	  write("",paste(dirname(tempI[i]),"mqqcMoved",sep = "/"))
                 	}

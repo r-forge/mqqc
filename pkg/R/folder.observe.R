@@ -1,10 +1,11 @@
 folder.observe <-
-function(folder = NULL,MQ = NULL,MSFRAGGERpath = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org",TabOrd = "source"){
+function(folder = NULL,MQ = NULL,MSF = NULL,MSFRAGGERpath = NULL,fastaFile = NULL,fun= mqStarter,temp.name = "test", DeleteFiles = F,cores = NULL,SpeciesTable = T,templateFasta = "._.*_.*_PLACEHOLDER",placeholder = "PLACEHOLDER",FUNLAST = FUNFINAL,sucFolder = "_RmqqcFile_Processed",htmloutPath = "D:/_RmqqcFile_mqqcHtml",gui = T,SendMail = T, automatedStart = F,Machines = c("Bibo","Kermit","Grobi","Bert","Tiffy"), StandardIDs = c("ECstd","BSA"),source = "http://cran.us.r-project.org",TabOrd = "source"){
 #------
 # Prescript 
   .GlobalEnv$MQQCRestartNow <- "no"
   try(tkControl(htmloutPath = htmloutPath))
-  for(packagename in c("txtplot","tcltk2","mailR","data.table","wordcloud")){
+
+  for(packagename in c("txtplot","tcltk2","mailR","data.table","wordcloud","RSQLite","ggseqlogo","Peptides")){
     if(length(grep(packagename,library())) == 0){
       cat("installing",packagename,"\n")
       
@@ -19,7 +20,9 @@ function(folder = NULL,MQ = NULL,MSFRAGGERpath = NULL,fastaFile = NULL,fun= mqSt
 
 
   library(data.table)
-  
+  library(RSQLite)
+  library("ggseqlogo")
+  library(Peptides)
 
   ## Fox SpeciesTable
   Spec <-list.files(paste(path.package("mqqc"),"/data",sep = ""),full.name = T) 
@@ -108,10 +111,15 @@ if(automatedStart){
 }else{
   
  	if(gui){
-	Param <- mqqcGUI()
+	#Param <- mqqcGUI(mqpath= MQ)
+ 	.GlobalEnv$MQQCRestartNow <- "yes"
+ 	  
 	while(.GlobalEnv$MQQCRestartNow == "yes"){
-  		Param <- mqqcGUI()
+	    .GlobalEnv$MQQCRestartNow <- "no"
+	  
+  		Param <- mqqcGUI(mqpath = MQ,MSFpath = MSF)
 	}
+
       print("Settings received")
 	
   	
@@ -120,7 +128,8 @@ if(automatedStart){
 	  }
 	  
 	  if(exists("REpar")){
-	  		  			  	RESettings <- Param[grep("^RE",names(Param))]
+	  	
+	    RESettings <- Param[grep("^RE",names(Param))]
 
 	  	if(length(grep(placeholder,REmac)) >0){
 	  	}
@@ -140,10 +149,16 @@ if(automatedStart){
 }
     
 StandardIDs = c(Param$StdIDhigh,Param$StdIDlow)
-if(file.exists(as.character(Param$MQ))){
+if(file.exists(as.character(Param$MQ))&length(MQ)== 0){
   write(Param$MQ,paste(path.package("mqqc"),"data","MQpath",sep ="/")) 
+}else{
+  write(MQ,paste(path.package("mqqc"),"data","MQpath",sep ="/")) 
+  
 }
 	 print("Preparing MQQC")
+	 dbpath <- paste(folder,sucFolder,"list_collect.sqlite",sep = "/")
+	 checkDB(dbpath)
+	 
     if(!file.exists(htmloutPath)){
       htmloutPath <- paste(folder,paste("_RmqqcFile_html"),sep = "/")
       dir.create(htmloutPath)
@@ -215,25 +230,25 @@ if(file.exists(as.character(Param$MQ))){
  
   if(SpeciesTable){
     
-    species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
-    dpruns <- species$DependentPeptides == 0
-    dpcounter <- sapply(species$Abbreviation[dpruns],function(x){any(grepl(x,as.character(species$Abbreviation[!dpruns])))})
-    addTab <- species[dpruns,][!dpcounter,]
-    if(dim(addTab)[1] > 0){
-      
-      addTab$DependentPeptides <- 1
-      addTab$Abbreviation <- paste(addTab$Abbreviation ,"dp",sep = "")
-      species <- rbind(species,addTab)
-      species <- species[order(species$Abbreviation),]
-      species <- unique(species)
-      write.table(species,paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),quote = F,row.names = F,sep = "\t")
-    }
-    XMLCheck <- species$Xml[file.exists(as.character(species$Xml))]
-    if(length(XMLCheck) > 0){
-      sapply(XMLCheck,function(x){
-        #try(initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable,fastaInput=x))       
-      })
-    }
+    # species <- read.csv(paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),sep = "\t")
+    # # dpruns <- species$DependentPeptides == 0
+    # # dpcounter <- sapply(species$Abbreviation[dpruns],function(x){any(grepl(x,as.character(species$Abbreviation[!dpruns])))})
+    # # addTab <- species[dpruns,][!dpcounter,]
+    # if(dim(addTab)[1] > 0){
+    #   
+    #   addTab$DependentPeptides <- 1
+    #   addTab$Abbreviation <- paste(addTab$Abbreviation ,"dp",sep = "")
+    #   species <- rbind(species,addTab)
+    #   species <- species[order(species$Abbreviation),]
+    #   species <- unique(species)
+    #   write.table(species,paste(path.package("mqqc"),"data/MQQCspecies.txt",sep = "/"),quote = F,row.names = F,sep = "\t")
+    # }
+    # XMLCheck <- species$Xml[file.exists(as.character(species$Xml))]
+    # if(length(XMLCheck) > 0){
+    #   sapply(XMLCheck,function(x){
+    #     #try(initFastaMQ(MQ=MQ,db=fastaFile,SpeciesTable = SpeciesTable,fastaInput=x))       
+    #   })
+    # }
   }
 	
 	temp.name <- "test"
@@ -243,7 +258,7 @@ if(file.exists(as.character(Param$MQ))){
 		folder <- tk_choose.dir(caption = "Please Select your")
     
 	}
-	folder <<- folder
+	folder <- folder
 	# initiation
 	setwd(folder)
 
@@ -265,7 +280,7 @@ if(file.exists(as.character(Param$MQ))){
 	# Loop 
 	print("Starting Loop")
 
-	loop <- T
+	loop <<- T
 	funlastLoop <<- 0
 while(loop){
 		
@@ -295,7 +310,9 @@ while(loop){
       			tkControl(paste(Sys.time(),"Status: Observing", folder),"Processing evidence.txt...", htmloutPath = htmloutPath)
 			  tempI 				  <- evidenceToProcess[i]
 			  try(qcResults 	<- start.qc(DataEvidence = tempI,placeholder=placeholder,RESettings= RESettings,SendMail= SendMail,exitPath = paste(folder,sucFolder,sep = "/"),BSAID = Param$BSAID,SpeciesTable = T))
-      }
+			  write("",paste((dirname(tempI)),"mqqcProcessed",sep = "/"))
+			  
+			}
 		}
 		# deletes folders with evidence.txt and mqqc, mqqc is moved to another folder
 		# update export folder   
@@ -309,8 +326,9 @@ while(loop){
 	# MSFragger Runs
 	MSFRAGGERpath <- MSF
 	
-	if(length(MSFRAGGERpath) > 0){
+	if(length(MSFRAGGERpath) > 0&0){ # old msfragger solution based on apl files conversion. Now direct Readout from RawFile
 	  if(file.exists(MSFRAGGERpath)){
+	    
       MsfraggerCandidate <- list.files(folder,pattern = "Combining_apl_files_for_main_search",recursive = T,full.names = T)
       MsfraggerCandidate <- grep("_RmqqcFile_",MsfraggerCandidate,fixed = T,invert = T,value = T) 
     	# Exclude msfragger Results
@@ -378,9 +396,9 @@ while(loop){
   #	hu<- 	order(hi[,4])
    	cat("\r Cleaning Folder")
      
-    htmloutPath <<- htmloutPath
-    	  				try(  successDelete(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder))  
-  	sucFolder <<- sucFolder
+    htmloutPath <- htmloutPath
+    	  				try(  successDeleteSQLITE(hotFolder =folder,destDelete = DeleteFiles,sucFolder = sucFolder,htmloutPath=htmloutPath))  
+  	sucFolder <- sucFolder
   
    	cat("\r Updating Table")
   					try(	FUNFINAL(finalMQQC=htmloutPath,folder =folder,sucFolder = sucFolder, RESettings = RESettings, Machines = Param$Machines, StandardIDs = StandardIDs,ordertype = TabOrd,maxReport = Param$ListLength))
@@ -412,7 +430,7 @@ while(loop){
 		obs.files.diff 		<- setdiff(obs.files,files) 
 		obs.files.minus 	<- setdiff(files,obs.files) 
     obs.files <- obs.files[grep("^_RmqqcFile_",basename(obs.files),invert = T)]
-		
+    
 		if(length(obs.files) > 0){
 		 	cat("\r Starting MQ run for", obs.files)	
 			#cat(paste("\rfound.something",obs.files.diff))
@@ -425,7 +443,10 @@ while(loop){
 			  temp.batch.n 	<- names(temp.batch)[temp.batch == 0][1]
 			  if(!is.na(temp.batch.n)){
 			    # starting Maxquant stuff
-			    tryError <- class(try(fun(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, templateFasta = RESettings, placeholder = placeholder,InfoString = "_RmqqcFile_", StandardIDs = StandardIDs,MQfilter = MQfilter)))
+			    
+			    tryError <- class(try(mqStarter(temp.batch.n=temp.batch.n,folder = folder,cores = cores, SpeciesTable = SpeciesTable, 
+			                                    templateFasta = RESettings, placeholder = placeholder,InfoString = "_RmqqcFile_", StandardIDs = StandardIDs,MQfilter = MQfilter,
+			                                    GenericDBPath = GenericDBPath,MSFRAGGERpath=MSFRAGGERpath,MSFcores=MSFcores,MSfraggerFactor = Param$MSFcores)))
 			    if(tryError == "try-error"){
 			      #	return(temp.batch.n)
 			      catFun(paste("error in file", temp.batch.n))
@@ -444,7 +465,7 @@ while(loop){
 		}else{
 		 	cat("\r Checking MQ Queue", obs.files)	      		
       		if(.Platform$OS.type == "windows"){
-		  		MQmanager(NULL,folder,cores =cores)
+		  		MQmanager(NULL,folder,cores =cores,msfraggerFactor = Param$MSFcores)
 		  	}else{
 		  		tkControl(paste(Sys.time(),"Status: Observing", folder),"", htmloutPath = htmloutPath)
 		  	}

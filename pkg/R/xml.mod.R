@@ -1,7 +1,18 @@
 xml.mod <-
 function(template,xml,gsub.string = "</string>"){
-	start 	<- grep(paste("<",template,">",sep = ""),xml,fixed = T)
-	stop	<- grep(paste("</",template,">",sep = ""),xml,fixed = T)
+	
+	 xmlpos  <- grep(template,xml)
+	 if(length(xmlpos) == 1 & any(grepl("<filePaths />",xml))){
+	  filePathsInsert <- c("   <filePaths>","<string>C:\\thisisapath\temp.raw</string>","</filePaths>")
+	  xml <- c(xml[1:(xmlpos-1)],filePathsInsert,xml[(xmlpos+1):length(xml)])
+	  
+	  
+	 }
+	 start 	<- grep(paste("<",template,">",sep = ""),xml,fixed = T)
+	 stop	<- grep(paste("</",template,">",sep = ""),xml,fixed = T)
+	if(any(start == 0|stop == 0)){
+	  warning("Error in XML file at xml.mod.R")   
+	}
 	insert.fun 	<- xml[(start+1):(stop-1)]
 	
 	insert.clean <- c()
@@ -19,6 +30,6 @@ function(template,xml,gsub.string = "</string>"){
 	}
 	
 	
-	return(list(template = c(start,stop),insert = insert.fun,insert.clean = insert.clean ))
+	return(list(template = c(start,stop),insert = insert.fun,insert.clean = insert.clean ,xml = xml))
 	
 }

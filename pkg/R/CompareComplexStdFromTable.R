@@ -50,41 +50,31 @@ par(mai = c(0.7,0.7,0.2,0.1),lwd = 3,cex =3)
 
 # Score Dependecne
 #PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","score.50.","MS Intensity","MQ Score")
-
+tempListOne <<- tempListOne
 if(TargetVec == StandardIDs[2]&TargetVec!= ""){
   try(PlotTwoFun(tempListOne = tempListOne,"MSID.min","Coverage","Isotopic Patterns [1/min]","Coverage [%]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","Coverage","MS Median Intensity","Coverage [%]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-  try(PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","Coverage","uncalibrated Mass Error [ppm]","Coverage [%]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)  
+  try(PlotTwoFun(tempListOne = tempListOne,"precision.50.","Coverage","MS Mass Precision [ppm]","Coverage [%]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)  
   try(PlotTwoFun(tempListOne = tempListOne,"msmsQuantile.50.","Coverage","MSMS Median Fragment Counts","Coverage [%]",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"msmsMassCount.50.","Coverage","MSMS/min","Coverage [%]",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"LCcombiScore","Coverage","LC Score","Coverage [%]",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"ret.width.50.","Coverage","LC Peak Width","Coverage [%]",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"ret.peak.shape.50.","Coverage","LC Peak Shape","Coverage [%]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-  #LegFun <- PlotTwoFun(tempListOne = tempListOne,"System.Time.s","quan.msms.min","Date","MSMS/min", axesplot = F,leg = F)
-  # try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","quan.msms.min","Uncalibrated mass error [ppm]","MSMS/min", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-  
+  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"ret.peak.shape.abs.50.","Coverage","LC Peak Symmetry","Coverage [%]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
+
   try(empty.plot())
   
-  # try( PlotTwoFun(tempListOne = tempListOne,"Coverage","score.50.","Coverage [%]","Andromeda Median Score",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-#   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","msmsQuantile.50.","MS Median Intensity","MSMS Median Intensity", logPlot = "xy",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-#   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","msmsMassCount.50.","MS Median Intensity","MSMS Median Fragment Counts", logPlot = "x",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-#   #  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"System.Time.s","Coverage","Date","Coverage [%]", axesplot = F,leg = F))
-#   # try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","Coverage","Uncalibrated mass error [ppm]","Coverage [%]", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines))
-#   try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"MSID.min","Coverage","Features [1/min]","Coverage [%]", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines))
-#   
-   
+  
 }else{
+
   # MSID.min
-  try(PlotTwoFun(tempListOne = tempListOne,"MSID.min","quan.msms.min","MS Isotopic Patterns [1/min]","PSMs [1/min]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
+  try(PlotTwoFun(tempListOne = tempListOne,"MSID.min","quan.msms.min","MS Isotopic Patterns [1/min]","PSMs [1/min]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = F)
   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","quan.msms.min","MS Median Intensity","PSMs [1/min]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-  try(PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","quan.msms.min","MSMS uncalibrated mass error ppm","PSMs [1/min]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)  
+  try(PlotTwoFun(tempListOne = tempListOne,"precision.50.","quan.msms.min","MS Mass Precision","PSMs [1/min]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)  
   try(PlotTwoFun(tempListOne = tempListOne,"msmsQuantile.50.","quan.msms.min","MSMS Median Fragment Intensity","PSMs [1/min]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"msmsMassCount.50.","quan.msms.min","MSMS Median Fragment Counts","PSMs [1/min]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"LCcombiScore","quan.msms.min","LC Score","PSMs [1/min]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"ret.width.50.","quan.msms.min","LC Peak Width","PSMs [1/min]",logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"ret.peak.shape.50.","quan.msms.min","LC Peak Shape","PSMs [1/min]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
-#LegFun <- PlotTwoFun(tempListOne = tempListOne,"System.Time.s","quan.msms.min","Date","MSMS/min", axesplot = F,leg = F)
-  # try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"mass.error.uncal.50.","quan.msms.min","Uncalibrated mass error [ppm]","MSMS/min", axesplot = T,leg = F,logPlot = "n",shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
+  try(LegFun <- PlotTwoFun(tempListOne = tempListOne,"ret.peak.shape.abs.50.","quan.msms.min","LC Peak Symmetry","PSMs [1/min]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = F)
   try(empty.plot())
   
 
@@ -116,16 +106,16 @@ DensMatrixTemplate <- rbind(
   #MS
   c("Isotope.patterns.min","Features/min",F,"MS"),
   c("Intensity.50.","log10 MS Median Intensity",T,"MS"),
-  c("mass.error.uncal.50.","Mass Error in [ppm]",F,"MS"),
+  c("precision.50.","Mass precision [ppm]",F,"MS"),
   c("Coverage","Coverage",F,"MS"),
   #MSMS
   c("quan.msms.min","IDs/min",F,"MSMS"),
   c("msmsQuantile.50.","log10 MSMS Median Intensity",T,"MSMS"),
   c("msmsMassCount.50.","MSMS Median Fragment Counts",F,"MSMS"),
   #nlc
-  c("LCcombiScore","LC profile symmetry",F,"LC"),
+  c("LCcombiScore","LC profile distribution",F,"LC"),
   c("ret.width.50.","Retention Time [min]",F,"LC"),
-  c("ret.peak.shape.50.","log10 Peak shape",T,"LC"))
+  c("ret.peak.shape.abs.50.","log10 Peak symmetry",T,"LC"))
 
 
 if(TargetVec == StandardIDs[2]&TargetVec!= ""){
@@ -163,7 +153,7 @@ LegFun <- LegFun
 PointsListQuantiles <- list()
 itMain = 0
 naQuan <- c()
-rm(tempI)
+try(rm(tempI),silent = T)
 for(i in unique(DensMatrixTemplate[,4])){
   cat("\r Preparing Comparison Plots",i)
   tempDensMatrix <-   DensMatrixTemplate[DensMatrixTemplate[,4]== i,]
@@ -196,6 +186,7 @@ for(i in unique(DensMatrixTemplate[,4])){
         names(CurrentL) <- unique(UniMachine)
         tempM <- aggregate(tempI,list(UniMachine),median,na.rm = T)
         temp <- aggregate(tempI,list(UniMachine),function(x){
+           x <<- x
           tempDens <- list(x = 0,y = 0)
           tempi <- class(try(tempDens <- density(x,na.rm = T),silent = T))
           tempDens$Quantile <- quantile(x,prob = c(0.75,0.95,0.5,0.25,0.05),na.rm = T)
@@ -219,6 +210,9 @@ for(i in unique(DensMatrixTemplate[,4])){
           itCompare <<- itCompare+1
           if(is.matrix(temp$x)){
             subDens <- temp$x[x,]
+          }else{
+            subDens <- temp$x[[x]]
+            
           }
           if(exists("subDens")){
             try(subDens$y <- subDens$y /max(subDens$y ))
@@ -244,6 +238,7 @@ for(i in unique(DensMatrixTemplate[,4])){
           }
           return(pointsList)
         })
+        # pointsList <<-pointsList
         apply(pointsList,2,function(x){
           try(points(x[1],x[2],bg = "white",col = "white",pch = 23,cex = 1.85,lwd = 0.5),silent = T)
           return(NULL)
@@ -272,13 +267,16 @@ names(PointsListQuantiles)<- naQuan
 par(mai = rep(0,4),mar = rep(0,4))
 empty.plot()
 
+CurrentL <<- CurrentL
 CL <- sapply(CurrentL,function(x){x[2]})
-
+names(CL) <- names(CurrentL)
+CL <- CL[match(names(CL),as.character(LegFun$Mac))]
+LegFun <<- LegFun
 legend("left"
-       ,legend = paste(as.character(LegFun$Mac)	,CL,sep = "\n")
+       ,legend = paste(as.character(LegFun$Mac),CL,sep = "\n")
        ,col = as.character(LegFun$col)
        ,lwd = LegFun$lwd,
-       ,border = "transparent",box.col = "transparent",bg = "#FFFFFF80",xpd = NA
+       ,border = "transparent",box.col = "transparent",bg = "#FFFFFF80",xpd = NA,y.intersp = 2
 )
 legend("topright",legend = Sys.Date(),bty = "n")
 
@@ -293,6 +291,10 @@ cat("\rPreparing Timelines")
 try(PairsFun(inputframe = tempListOne,DensMatrixTemplate = DensMatrixTemplate,pdfname = paste(finalMQQC ,"TimeLines", paste("Correlations",PDFname,sep = "_"),sep = "/"),pdfshow = F),silent = T)
 return(PointsListQuantiles)
 }
-# try(ECquan <- CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.jpg", TargetVec = StandardIDs[1],PDF = F, Machines = c("Gladys","Tiffy","Statler","Waldorf"),StandardIDs = StandardIDs,pdfShow = T),silent = F)
+# try(RestQuan <- CompareComplexStdFromTable(collectList[Normal,],RESettings,F,finalMQQC, PDFname = "NormalSampleComparison.pdf",main = "MQQC Normal Samples Parameter Comparison", TargetVec = "",PDF = T, Machines = Machines,pdfShow = T),silent = F)
+
+# try(trash  <-CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = T,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines),silent = F)
+
+# try(ECquan <- CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.jpg", TargetVec = StandardIDs[1],PDF = F, Machines = unique(strsplitslot(unique(tempListOne$Name),1,"_",fixed = T)),StandardIDs = StandardIDs,pdfShow = T),silent = F)
 
 # try(ECquan <- CompareComplexStdFromTable(tempListOne = collectList[ECstd,],pdfShow = T,RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
