@@ -1,4 +1,4 @@
-plottingTimeLineFunction <- function(AllData,finalMQQC,TargetVec = "ECstd",PDF = F,lwdfac = 1, RESettings = RESettings, TLname = "",pdfShow = F){
+plottingTimeLineFunction <- function(AllData,folder,finalMQQC,TargetVec = "ECstd",PDF = F,lwdfac = 1, RESettings = RESettings, TLname = "",pdfShow = F){
   
   # Loading Distribution Cutoffs
   ECquan <- list.files(paste(folder,"_RmqqcFile_Quantiles",sep = "/"),pattern = TargetVec,full.names =  T)
@@ -196,10 +196,10 @@ for(a in Vec.Test){
 	if(length(x) == length(y) & length(y) > 0 & any(!is.na(Count))){
 		
 	if(BordPlot){
-		rangeVal <- range(c(Count,CountUp,CountLo),na.rm = T)
+		rangeVal <- range(quantile(c(Count,CountUp,CountLo),probs = c(0.01,0.99),na.rm = T),na.rm = T)
 		
 	}else{
-		rangeVal <- range(c(Count[!is.infinite(Count)]),na.rm = T)
+		rangeVal <- range(quantile(c(Count[!is.infinite(Count)]),probs=c(0.01,0.99,na.rm = T)),na.rm = T)
 
 	}
 	#if(rangeVal[1] > 0){rangeVal[1] <- 0}
@@ -210,8 +210,10 @@ if(!is.na(BestV) & a != grep("precision",(Vec.Test),value =T )){
 }
 
 xYear <- x > (max(x,na.rm = T)-31536000)	
+xYear <- 1:length(x)
 x <<- x[xYear]
 y <<- y[xYear]
+
 
 if(!any(c(all(is.na(x)),all(is.na(y))))){
 
@@ -241,15 +243,20 @@ it.a <- it.a+1 # Counter for Names
 
 	#lines(x,CountUp,type = "l",lty = "dashed",lwd = 1,col = "red")
 	#lines(x,CountLo,type = "l",lty = "dashed",lwd = 1,col = "red")
+	  
+	  # x <<- x
 	  coup <- CountUp[xYear]
 	  colo <- CountLo[xYear]
-	  sel <- is.na(coup)|is.na(colo)|is.na(x)
+	  # if(length(coup)>0){
+	  #   stop()
+	  # }
+	  sel <- (is.na(coup)|is.na(colo)|is.na(x))|(is.infinite(coup)|is.infinite(colo)|is.infinite(x))
 	  sel <- !sel
     polygon(c(x[sel], rev(x[sel])), c(coup[sel], rev(colo[sel])),
      col = "grey80", border = NA)
      }
-  
-       lines(x,y,lwd =2*lwdfac,col = "grey30")
+  # y <<- y
+  lines(x,y,lwd =2*lwdfac,col = "grey30")
 	time <- as.numeric(as.character(tempI$System.Time.s))[!deleteTimeVec]
   label <- substr(TimeI[! deleteTimeVec,1],1,10)
   if(as.numeric(Sys.time())-max(time) > 86400){
@@ -282,6 +289,8 @@ it.a <- it.a+1 # Counter for Names
 options(warn = unlist(os))
 
 }
+# try(plottingTimeLineFunction(AllData = collectList[grep("^Animal",collectList$Name),],folder=folder,finalMQQC = finalMQQC, TargetVec = "HSstd",PDF = T, RESettings = RESettings, TLname= "-All"),silent = F)	
+
 # try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high",pdfShow = F),silent = F)
 
 # try(plottingTimeLineFunction(AllData = collectList,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high"),silent = T)

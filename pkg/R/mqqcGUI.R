@@ -305,6 +305,13 @@ dirFrame <- tk2labelframe(tt2,text = "Standard Fasta")
 	tkgrid(tk2label,comboBox,pady = 2,sticky = "NSWE")
 	tk2tip(tk2label,"Number of threads MSFragger is allowed to use.")
 	
+	tb1.msflower <- tclVar(as.character(output$msflower))# tclVar("._.*_.*_PLACEHOLDER")
+	msflower 		<- tkentry(TKMisc,textvariable = tb1.msflower,width = 1,background = "white")
+	tb1.msfupper <- tclVar(as.character(output$msfupper))# tclVar("._.*_.*_PLACEHOLDER")
+	msfupper 		<- tkentry(TKMisc,textvariable = tb1.msfupper ,width = 1,background = "white")
+	tkgrid(tk2label(TKMisc,text="MSF Da up:"),msfupper,padx = 3,pady=1,sticky = "WE")
+	tkgrid(tk2label(TKMisc,text="MSF Da :"),msflower,padx = 3,pady=1,sticky = "WE")
+	
 	#tkgrid(TKMisc,sticky = "SWNE",padx = 2)
 	######
 	# Length of Reported List per machine
@@ -485,6 +492,8 @@ tkgrid(ttf1,ttf2,pady = 1,padx = 1,sticky = "NSWE")
 #========
 print("hu")
 
+	
+
 tb2.Par.GE <- tclVar(as.character(output$REpar))# tclVar("._.*_.*_PLACEHOLDER")
 tb2.Machine.GE <- tclVar(as.character(output$REmac))#tclVar("._.*_.*_PLACEHOLDER")
 tb2.Mail.GE <- tclVar(as.character(output$REmail))#tclVar("._.*_.*_PLACEHOLDER") #.*_.*_HZ
@@ -498,6 +507,7 @@ tempTime 		<- tkentry(RegExp,textvariable = tb2.Time.GE,width = width,background
 tempMail 		<- tkentry(RegExp,textvariable = tb2.Mail.GE,width = width,background = "white")
 tempPar 			<- tkentry(RegExp,textvariable = tb2.Par.GE,width = width,background = "white")
 tempMisc 		<- tkentry(RegExp,textvariable = tb2.Misc.GE,width = width,background = "white")
+
 
 tkgrid(tk2label(RegExp,text = "Machine *"), tempMachine,pady = 2,sticky = "W",padx = 2)
 tkgrid(tk2label(RegExp,text = "Date *"), tempTime,pady = 2,sticky = "W",padx = 2)
@@ -610,6 +620,7 @@ tkgrid(trkLab5,TRK5, sticky = "W",padx = 2,pady = 2)
 tkgrid(StdID ,ttTRK ,sticky = "WNSE",padx = 5,pady=5)
 
 
+
 #========================================================
 
 #tkwm.resizable(tt2, "FALSE","FALSE")
@@ -691,7 +702,9 @@ output <- list(
 		BSAID = tclvalue(StdIDlowID),
 		TabOrd = tclvalue(tb1.val.pep.TableOrder),
 		MQfilter = tclvalue(tb1.val.pep.MQFilter),
-		ListLength = tclvalue(tb1.val.pep.LL)
+		ListLength = tclvalue(tb1.val.pep.LL),
+		msfupper =tclvalue(tb1.msfupper),
+		msflower = tclvalue(tb1.msflower)
 		)
 if(!.GlobalEnv$MQQCRestored ){
 save(output,file=paste(path.package("mqqc"),"data/Param.Rdata",sep = "/"))

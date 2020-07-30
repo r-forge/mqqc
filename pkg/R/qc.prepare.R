@@ -673,6 +673,9 @@ uniPepCount 	<- length(unique(seq))
 summary.Data$uniPepCount <- uniPepCount
 # protein ------
 summary.Data$Protein <- PL
+# TMT check
+TMTFUN <- TMT_LABELEFF(Data.i)
+summary.Data$TMT <- TMTFUN$vec
 
 #DependentPeps-----------
 summary.Data$DependentPeptides <- NULL
@@ -771,7 +774,7 @@ if(all(1)){
 
 
 save(UniRef,file = "UniRef.rda")
-return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein,parID = parID,SpecStat = MostProperSpecies,UniRef = UniRef))
+return(list(th = thresholds,sc = score,sd = summary.Data,diq = Data.i.quant,IdentifiedProteins = speciesUsed$Protein,parID = parID,SpecStat = MostProperSpecies,UniRef = UniRef,TMTplot=TMTFUN$forplotting))
 }
 # tryError1 <- class(try(qc.prepare.data <- qc.prepare(Data = temp.DataEvidence,msmsScans = msmsScans,msSC = msScans, SpeciesTable = SpeciesTable,placeholder = placeholder,templateFasta = RESettings$REpar,path = .path,filename = i, BSAID = BSAID,RESettings = RESettings,Peptides = Peptides, AllPeptides =tempAllPeptides,MSMS = tempMSMS,rfn = i)))
 

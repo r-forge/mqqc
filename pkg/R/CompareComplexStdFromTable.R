@@ -9,7 +9,7 @@ test <- sub(RESettings$REmac,"", as.character(tempListOne$Name))
 
 UniMachine  <- grepRE(as.character(tempListOne$Name),RESettings$REmac)
 if(length(Machines) > 0){
-	test <<- test
+	# test <<- test
 	MachineVec <- grep(paste(Machines,collapse = "|"), UniMachine)
 	if(length(MachineVec) > 0){
 		tempListOne <- tempListOne[MachineVec,]
@@ -28,7 +28,7 @@ scaleFactor <- 1.7
 jpeg(pdfName,width = 140*15/scaleFactor,height = 120*15/scaleFactor, quality = 90,pointsize = 10/(scaleFactor))	
 }
 
-M <<- matrix(c(1,1,1,2,3,4,5,6,7,8,9,10),4,3,byrow = T)
+M <- matrix(c(1,1,1,2,3,4,5,6,7,8,9,10),4,3,byrow = T)
 M <- cbind(M,rep(max(M)+1,dim(M)[1]))
 layout(M,height = c(0.1,1,1),width = c(1,1,1,0.4))
 par(mai = rep(0,4),lwd = 2)
@@ -50,7 +50,7 @@ par(mai = c(0.7,0.7,0.2,0.1),lwd = 3,cex =3)
 
 # Score Dependecne
 #PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","score.50.","MS Intensity","MQ Score")
-tempListOne <<- tempListOne
+# tempListOne <<- tempListOne
 if(TargetVec == StandardIDs[2]&TargetVec!= ""){
   try(PlotTwoFun(tempListOne = tempListOne,"MSID.min","Coverage","Isotopic Patterns [1/min]","Coverage [%]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
   try(PlotTwoFun(tempListOne = tempListOne,"Intensity.50.","Coverage","MS Median Intensity","Coverage [%]", logPlot = "",leg = F,shiftPlot = T,UniMachine = UniMachine, Machines = Machines,lwdjpg = lwdjpg,PDF =PDF),silent = T)
@@ -178,7 +178,7 @@ for(i in unique(DensMatrixTemplate[,4])){
         
         CurrentL <- lapply(unique(UniMachine),function(x){
           sel <- x == UniMachine
-          tempM <<- tempListOne[sel,]
+          tempM <- tempListOne[sel,]
           na <- tempListOne$Name[sel][tempM$System.Time.s == max(tempM$System.Time.s,na.rm = T)]
           Current <- tempI[sel][tempM$System.Time.s == max(tempM$System.Time.s,na.rm = T)]
           return(c(Current,na))
@@ -186,7 +186,7 @@ for(i in unique(DensMatrixTemplate[,4])){
         names(CurrentL) <- unique(UniMachine)
         tempM <- aggregate(tempI,list(UniMachine),median,na.rm = T)
         temp <- aggregate(tempI,list(UniMachine),function(x){
-           x <<- x
+           # x <<- x
           tempDens <- list(x = 0,y = 0)
           tempi <- class(try(tempDens <- density(x,na.rm = T),silent = T))
           tempDens$Quantile <- quantile(x,prob = c(0.75,0.95,0.5,0.25,0.05),na.rm = T)
@@ -217,7 +217,7 @@ for(i in unique(DensMatrixTemplate[,4])){
           if(exists("subDens")){
             try(subDens$y <- subDens$y /max(subDens$y ))
             trye <- class(try(points(subDens,col = LegFun$col[itCompare],lty = 1,type = "l",lwd = LegFun$lwd),silent = T))
-            Current <<- CurrentL[[itCompare]]
+            Current <- CurrentL[[itCompare]]
             
             CurrentDiff <- abs(subDens$x-as.numeric(Current[1]))
             Currenty <- subDens$y[CurrentDiff == min(CurrentDiff,na.rm = T)]
@@ -267,11 +267,11 @@ names(PointsListQuantiles)<- naQuan
 par(mai = rep(0,4),mar = rep(0,4))
 empty.plot()
 
-CurrentL <<- CurrentL
+# CurrentL <<- CurrentL
 CL <- sapply(CurrentL,function(x){x[2]})
 names(CL) <- names(CurrentL)
 CL <- CL[match(names(CL),as.character(LegFun$Mac))]
-LegFun <<- LegFun
+# LegFun <<- LegFun
 legend("left"
        ,legend = paste(as.character(LegFun$Mac),CL,sep = "\n")
        ,col = as.character(LegFun$col)
@@ -291,6 +291,8 @@ cat("\rPreparing Timelines")
 try(PairsFun(inputframe = tempListOne,DensMatrixTemplate = DensMatrixTemplate,pdfname = paste(finalMQQC ,"TimeLines", paste("Correlations",PDFname,sep = "_"),sep = "/"),pdfshow = F),silent = T)
 return(PointsListQuantiles)
 }
+# try(trash  <-CompareComplexStdFromTable(collectList[ECstd,],RESettings,F,finalMQQC, PDFname = "ComplexStandardComparison.jpg", TargetVec = StandardIDs[1],PDF = F, Machines = Machines),silent = T)
+
 # try(RestQuan <- CompareComplexStdFromTable(collectList[Normal,],RESettings,F,finalMQQC, PDFname = "NormalSampleComparison.pdf",main = "MQQC Normal Samples Parameter Comparison", TargetVec = "",PDF = T, Machines = Machines,pdfShow = T),silent = F)
 
 # try(trash  <-CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,pdfShow = T,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines),silent = F)

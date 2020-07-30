@@ -97,3 +97,4 @@ function(inputframe,DensMatrixTemplate = NULL,pdfshow = F,pdfname = "pairsfun.pd
 # PairsFun(SPD,filterMQQC = F,makepdf = F)
 
 # PairsFun(hnm,filterMQQC = F,makepdf = F,mainvec = "Change")
+# PairsFun(lfqplot)

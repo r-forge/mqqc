@@ -83,7 +83,7 @@ $(function() {
 <div id=\"header\" style=\"background-color:#426787\">
 <h1 style=\"margin-bottom:0;color:#ffffff\">MQQC - MaxQuant Quality Control ",packageVersion("mqqc"),"</h1></div>
 
-<div id=\"menu\" style=\"height:100px;width:40%;float:left;\"> Last update: ",Sys.time(), "<br>Active Threads: <a href = \"./MqqcRunningFileInfo.html\" target ='_blank'  >",mqqcRunningMQ,"
+<div id=\"menu\" style=\"height:12vh;width:40%;float:left;\"> Last update: ",Sys.time(), "<br>Active Threads: <a href = \"./MqqcRunningFileInfo.html\" target ='_blank'  >",mqqcRunningMQ,"
 
   <form NAME=\"spaceform\" STYLE=\"margin: 0px; padding: 0px;\"><input type=button value=\"Refresh\" onClick=\"history.go(0)\"></form>
 
@@ -451,6 +451,9 @@ write(disclaimer,file =paste(dirname(path),"disclaimer.html",sep = "/"))
 
 # system(paste("open",path))
 }
+
+
+
 #try(  FUNFINAL(StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines))
 #finalMQQC = htmloutPath
 #StandardIDs <- c("","")
@@ -463,4 +466,5 @@ write(disclaimer,file =paste(dirname(path),"disclaimer.html",sep = "/"))
 
 
 # try(htmlMod(pathHtml = paste(finalMQQC,"index.html",sep = "/"),Machines = Machines,Counts = HotLink,BGcolor =as.character(HotLinkCol)))
-#writeToHtml()
+# writeToHtml(Table=data.frame(humpe=2,Shcanio="woeifjoweifj"),Table2=data.frame(humpe=2,Shcanio="woeifjoweifj"),insertText = insertText <- paste(readLines("insertText.txt"),collapse = "\n"))
+# system("open index.html")

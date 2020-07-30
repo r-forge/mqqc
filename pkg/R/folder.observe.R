@@ -119,7 +119,16 @@ if(automatedStart){
 	  
   		Param <- mqqcGUI(mqpath = MQ,MSFpath = MSF)
 	}
-
+ 	# check settings:
+ 	Param$msflower <- as.numeric(Param$msflower)
+ 	Param$msfupper <- as.numeric(Param$msfupper)
+ 	if(is.na(Param$msflower)){
+ 	  Param$msflower <- -50
+ 	}
+ 	if(is.na(Param$msfupper)){
+ 	  Param$msfupper <- 250
+ 	}
+ 	
       print("Settings received")
 	
   	
@@ -371,12 +380,19 @@ while(loop){
     	    andromeda <- paste(dirname(dirname(x)),"andromeda",sep = "/")
     	    mqpar <- readLines(paste(dirname(dirname(dirname(x))),"mqpar.xml",sep = "/"))
     	    fasta <- grep("fasta</string>",mqpar,value = T)
+    	    MSFparams <- NULL
     	    DB  <- strsplit(fasta,"..string.")[[1]][2]
     	    if(!MSFRAGACTIVE){
     	      MSFRAGACTIVE <- T
     	      #write("msfragger_started",paste(dirname(x),"msfragger_started",sep = "/"))
+    	      MSFparamsFinal <- NULL
+    	      if(length(MSFparams)!=0){
+    	        if(file.exists(MSFparams)){
+    	          MSFparamsFinal <- MSFparams
+    	        }
+    	      }
     	      
-    	      write(rscript_msf(),msfpath<-paste(dirname(x),"msfragger_rscript.R",sep= "/"))
+    	      write(rscript_msf(setuppermass = Param$msfupper,setlowermass = Param$msflower,ParamsPath=MSFparamsFinal),msfpath<-paste(dirname(x),"msfragger_rscript.R",sep= "/"))
     	      Rscript_system<- "rscript"
     	      system(paste(Rscript_system,msfpath,MSFRAGGERpath,DB,andromeda,MSFcores,dirname(x)),wait=F)
 

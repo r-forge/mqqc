@@ -124,6 +124,7 @@ mq.fun <-
           if(skipUnknown){
             try(write.csv("",paste(dirname(filePath),"DeleteTag",sep = "/")))
             cat("\nError, Could not read fasta, run is aborted.\n")
+            write(c("Could not read Fasta",as.character(speciesUsed$Fasta)),file="error.txt")
             RunFile <- F
             SendMailFun(Message = paste("Hi\nyour file",basename(filePath),"was detected by MQQC.\nThere was a problem with the fasta-path which is attached to the parameter-ID.\nYour MQ-QC run was therefore aborted.\nSincerely\nYour MQQC") ,title = paste("MQQC warning:",basename(filePath)),filename = basename(filePath),RESettings = templateFasta)
           }else{

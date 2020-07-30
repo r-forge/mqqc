@@ -14,13 +14,6 @@ dir.create(paste(finalMQQC ,"TimeLines",sep = "/"),showWarnings = F)
 
 if(length(list.files(finalMQQC,pattern = "example.css",recursive = T))== 0){
 unzip(list.files(paste(path.package("mqqc"),"data/",sep = "/"),full.name = T,pattern = "html.zip"),exdir = finalMQQC)	
-# from <- 	list.files(path.package("mqqc"),recursive = T,full.name = T,pattern = "example.css")
-# to		 <- 	paste(finalMQQC,"example.css",sep = "/")
-# try(file.copy(from,to))
-# from <- 	list.files(path.package("mqqc"),recursive = T,full.name = T,pattern = "tabber.js")
-# to		 <- 	paste(finalMQQC,"tabber.js",sep = "/")
-# try(file.copy(from,to))
-
 }
 
 HotLink = rep("-",length(Machines))
@@ -130,7 +123,7 @@ if(length(collectList) > 0){
       
     quanDir <- paste(folder,"_RmqqcFile_Quantiles",sep = "/")
     dir.create(quanDir,showWarnings = F)
-    LoadSettings(tempListOne = collectList[ECstd,],collectList= collectList,ECstd=ECstd,RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs)
+    # LoadSettings(tempListOne = collectList[ECstd,],collectList= collectList,ECstd=ECstd,RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs)
   	try(ECquan <- CompareComplexStdFromTable(tempListOne = collectList[ECstd,],RESettings = RESettings,finalMQQC = finalMQQC, PDFname = "ComplexStandardComparison.pdf", TargetVec = StandardIDs[1],PDF = T, Machines = Machines,StandardIDs = StandardIDs),silent = T)
   	
     
@@ -140,10 +133,10 @@ if(length(collectList) > 0){
       try(save(Quan,file = paste(quanDir,paste(StandardIDs[1],"quan.rda",sep = "_"),sep = "/"),precheck = F),silent = T)
     }
     
-    LoadSettings(AllData = collectList,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high")
-    try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high",pdfShow = F),silent = F)
+    # LoadSettings(AllData = collectList,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high")
+    try(plottingTimeLineFunction(AllData = collectList[ECstd,],folder=folder,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-high",pdfShow = F),silent = F)
   	try(trash  <-CompareComplexStdFromTable(collectList[ECstd,],RESettings,F,finalMQQC, PDFname = "ComplexStandardComparison.jpg", TargetVec = StandardIDs[1],PDF = F, Machines = Machines),silent = T)
-  	try(plottingTimeLineFunction(AllData = collectList[ECstd,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-high"),silent = T)
+  	try(plottingTimeLineFunction(AllData = collectList[ECstd,],folder=folder,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-high"),silent = T)
     }
     if(AnalysisType == "both"|AnalysisType =="low"){
       try({CompareMachines(collectList[BSA,],paste(finalMQQC,"TimeLines","MachineComparisonLowComplexStd.pdf",sep = "/"))})
@@ -157,16 +150,16 @@ if(length(collectList) > 0){
       try(save(Quan,file = paste(quanDir,paste(StandardIDs[2],"quan.rda",sep = "_"),sep = "/")),silent = T)
     }
       
-    try(plottingTimeLineFunction(AllData = collectList[BSA,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-Low"),silent = T)
-  	try(plottingTimeLineFunction(AllData = collectList[BSA,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-Low"),silent = T)
+    try(plottingTimeLineFunction(AllData = collectList[BSA,],folder=folder,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings,TLname= "-Low"),silent = T)
+  	try(plottingTimeLineFunction(AllData = collectList[BSA,],folder=folder,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings,TLname= "-Low"),silent = T)
   	try(Trash <- CompareComplexStdFromTable(collectList[BSA,],RESettings,F,finalMQQC, PDFname = "LowComplexStandardComparison.jpg", TargetVec = "BSA",PDF = F, Machines = Machines),silent = T)
     }
     
     if(length(Normal) > 0){
     	try(RestQuan <- CompareComplexStdFromTable(collectList[Normal,],RESettings,F,finalMQQC, PDFname = "NormalSampleComparison.pdf",main = "MQQC Normal Samples Parameter Comparison", TargetVec = "",PDF = T, Machines = Machines),silent = T)
     	try(Trash <- CompareComplexStdFromTable(collectList[Normal,],RESettings,F,finalMQQC, PDFname = "NormalSampleComparison.jpg",main = "MQQC Normal Samples Parameter Comparison", TargetVec = "",PDF = F, Machines = Machines),silent = T)
-      try(plottingTimeLineFunction(AllData = collectList[Normal,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings, TLname= "-All"),silent = T)	
-    	try(plottingTimeLineFunction(AllData = collectList[Normal,],finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings, TLname= "-All"),silent = T)
+      try(plottingTimeLineFunction(AllData = collectList[Normal,],folder=folder,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = T, RESettings = RESettings, TLname= "-All"),silent = T)	
+    	try(plottingTimeLineFunction(AllData = collectList[Normal,],folder=folder,finalMQQC = finalMQQC, TargetVec = StandardIDs[1],PDF = F, RESettings = RESettings, TLname= "-All"),silent = T)
       
       if(exists("RestQuan")){
         Quan <- NA
@@ -522,7 +515,7 @@ cat("\rfinished FUNFINAL function")
 # folder <- Param$folder
 # RESettings <- Param[grep("^RE",names(Param))]
 #   StandardIDs = c("","");placeholder = "PLACEHOLDER"
-#   LoadSettings(withinlastyear = T,maxReport = 10,sucFolder="_RmqqcFile_Processed",StandardIDs = c("ECstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_",ordertype = "system")
+#   LoadSettings(withinlastyear = T,maxReport = 10,sucFolder="_RmqqcFile_Processed",StandardIDs = c("HSstd","BSA"),finalMQQC=Param$htmloutPath,folder =Param$folder, RESettings = RESettings,Machines = Param$Machines,dayThresh = 5, RESettingsSep = "_",ordertype = "system")
 #     LoadSettings(RESettingsSep = "_", placeholder = "PLACEHOLDER" )
 # funlastLoop = 2
 # finalMQQC <- Param$htmloutPath

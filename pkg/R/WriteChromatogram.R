@@ -1,6 +1,11 @@
 WriteChromatogram <- 
-function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","tomato3"),fun = max,log10 = F,filename= "./chromatogram.pdf",BSAID = NULL,jitfac = 1,contcol = c("orange","pink3"),showpdf = F,ContPrec = 1,AllPeptides= NULL, Peptides= NULL, PG = NULL, DataEvidence= NULL, msScans= NULL, msmsScans= NULL){
-
+function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","tomato3"),fun = max,log10 = F,filename= "./chromatogram.pdf",BSAID = NULL,jitfac = 1,contcol = c("orange","pink3"),showpdf = F,ContPrec = 1,AllPeptides= NULL, Peptides= NULL, PG = NULL, DataEvidence= NULL, 
+         msScans= NULL, msmsScans= NULL,breaksvalues = 1000,TMT=NULL){
+  BreaksAverage <- function(x){
+    apply(cbind(lower = as.numeric( sub("\\((.+),.*", "\\1", x) ),
+                upper = as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", x) )),1,mean) 
+  }
+  
   cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7","tomato3")
   ForConPlotAgg = NULL
   M = NULL
@@ -19,7 +24,7 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
     colvec[2] <- "black"
     colvec[1]  <- "darkgrey"
   }
-  sumfun <- 2
+  sumfun <- 1
   msSC <<- msSC
   x$Retention.time <-   as.numeric(as.character(x$Retention.time))
   x$Intensity <-   as.numeric(as.character(x$Intensity))
@@ -36,15 +41,18 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
     xSep <- x[x$Sequence == " ",]
     
   }
-  xTimeT <- aggregate(xSepS$Intensity,list(round(xSepS$Retention.time,sumfun)),fun)
-  xTimeS <- aggregate(xSep$Intensity,list(round(xSep$Retention.time,sumfun)),fun)
+  breaksfun <- BreaksAverage(cut(xSepS$Retention.time,breaks = breaksvalues))
+  
+  xTimeT <- aggregate(xSepS$Intensity,list(breaksfun),fun)
+  breaksfun <- BreaksAverage(cut(xSep$Retention.time,breaks = breaksvalues))
+  xTimeS <- aggregate(xSep$Intensity,list(breaksfun),fun)
   
   s1 <- as.numeric(as.character(xTimeS[,2]))
   s2 <- as.numeric(as.character(xTimeT[,2]))
   PieInfo <- c(sum(s1,na.rm = T),sum(s2,na.rm = T))
   names(PieInfo) <- c("Unassigned","Identified")
   filename <<- filename
-  pdf(pdfname <- paste(dirname(filename),"/","chromatogram_",basename(filename),".pdf",sep = ""),width = 15,height= 6)
+  pdf(pdfname <- paste(dirname(filename),"/","chromatogram_",basename(filename),".pdf",sep = ""),width = 12,height= 6)
   par(mai = c(1,1,0.5,0.3))
   #spfit <- spline(xTimeS[,1],log10(xTimeS[,2]))
   #points(spfit,type = "l")
@@ -52,11 +60,13 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
   DPsel <- x$DP.PEP < 0.01
   DPsel[is.na(DPsel)] <- F
   xTimeS <- xTimeS
-  
+  # BasePeakIntensity
   if(length(msSC) > 0){
   par(mfrow = c(2,1),mai = c(0,1.2,0.5,0.3))
   layout(matrix(1:2,2,1),height = c(1.2,2))
-  MSC <- aggregate(msSC$Base.peak.intensity,list(round(msSC$Retention.time,sumfun)),fun)
+  
+  breaksfun <- BreaksAverage(cut(msSC$Retention.time,breaks = breaksvalues))
+  MSC <- aggregate(msSC$Base.peak.intensity,list(breaksfun),fun)
   
   plot(MSC$Group.1,MSC$x,type = "n",frame = F,xlab = "time [min]",ylab = "MS1 Basepeak Intensity",axes = F,main = unique(x$Raw.file)[1],las = 1,mgp = c(5,1,0))
   points(MSC$Group.1,MSC$x,type = "h",frame = F,xlab = "time [min]",ylab = "Basepeak Intensity",axes = F,main = unique(x$Raw.file)[1],las = 1,mgp = c(5,1,0))
@@ -76,7 +86,12 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
   
   if(length(DPsel) > 0){
     try(xDP    <- x[DPsel,])
-    try(xTimeD <- aggregate(xDP$Intensity,list(round(xDP$Retention.time,sumfun)),fun))
+    breaksfun <- BreaksAverage(cut(xDP$Retention.time,breaks = breaksvalues))
+    
+    try(xTimeD <- aggregate(xDP$Intensity,list(breaksfun),fun))
+    
+    
+    
     a <- paste("Identified",dim(xSepS)[1])
     b <-paste("Dependent",length(DPsel[DPsel]))
     try(legVec <-  c(a,b))
@@ -291,9 +306,9 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
   colch <-c(colvec[1:length(PieInfo[ grepl("Contaminants",names(PieInfo))])],contcol[1:length(MPIEVecSplitvec)])
   legend("topleft",legend = names(PieInfo),fill = colch,cex = 0.8,border = "transparent",title = "cumulative Intensities:",box.col = "transparent",bg = "transparent")
   
-  par(new = T)
-  par(mai = c(2,0,0.8+0.4*length(BSAID),11.5),lwd = 0.1)
-  try(pie(PieInfo,border = "transparent",radius = 0.4,col=colch,cex = 0.7,lwd = 0.5,main = "",labels = NA))
+  # par(new = T)
+  # par(mai = c(2,0,0.8+0.4*length(BSAID),11.5),lwd = 0.1)
+  # try(pie(PieInfo,border = "transparent",radius = 0.4,col=colch,cex = 0.7,lwd = 0.5,main = "",labels = NA))
   # try(pie(PieInfo,border = "white",radius = 0.4,col=c(colvec[1:length(PieInfo[names(PieInfo) != "contaminants"])],contcol),cex = 0.5,labels = NA,lwd = 0.5))
   par(mai = c(0,0,0.5,0))
   layout(matrix(1:3,1,3),width = c(1.5,2,2))
@@ -342,8 +357,9 @@ function(x,msSC = NULL,msmsSC = NULL,colvec = c("darkgrey","black","steelblue","
     }
   }
 #abline(h=0,col = "grey",lwd = 0)
+
   par(mai = c(1,1,0.5,0.1))
-  try(mqplotFun(paste(path.package("mqqc"),"data",sep = "/"),msapep=AllPeptides,mspep = Peptides,msprot = PG ,msev = DataEvidence,msscans = msScans,msmsscans = msmsScans))
+  try(mqplotFun(paste(path.package("mqqc"),"data",sep = "/"),msapep=AllPeptides,mspep = Peptides,msprot = PG ,msev = DataEvidence,msscans = msScans,msmsscans = msmsScans,TMT=TMT))
   
     dev.off()
 if(showpdf){
@@ -352,63 +368,13 @@ if(showpdf){
 sumall <- sum(as.numeric(unlist(PieInfo)),na.rm = T)
   return(list(all = xTimeS,identified = xTimeT,contaminantsProfile = ForConPlotAgg,contaminants = M,Int = PieInfo,IntPerc=sapply(PieInfo,function(x){as.numeric(x)/sumall*100})))
 }
-
-
-# try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans))
-
-# try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0))
-
-# try(ChrPath <- WriteChromatogram(x = tempAllPeptides,filename = i,jitfac = 0,showpdf = T))
-
-
- # temp <- read.csv("/Users/henno/temp/txtSILACFUN/msScans.txt",sep = "\t")
-# sel <- temp$Identified == "-"
-# plot(temp$Retention.time[sel],temp$Intens.Comp.Factor[sel],type = "h",col = "grey")
-# sel <- temp$Identified == "+"
-# points(temp$Retention.time[sel],temp$Intens.Comp.Factor[sel],type = "h")
 # 
-# SIAP <- read.csv("/Users/henno/temp/txtSILACFUN/allPeptides.txt",sep = "\t")
-# LFAP <- read.csv("/Users/henno/temp/txtLF/allPeptides.txt",sep = "\t")
-# LFID <- apply(subset(LFAP,select = c("Raw.file","MSMS.Scan.Numbers")),1,function(x){
-#   x2 <- unlist(strsplit(x[2],";"))
-#   x2 <- paste(x[1],x2)
-#   return(x2)
-# })
-# SIID <- apply(subset(SIAP,select = c("Raw.file","MSMS.Scan.Numbers")),1,function(x){
-#   x2 <- unlist(strsplit(x[2],";"))
-#   x2 <- paste(x[1],x2)
-#   return(x2)
-# })
-# SIIDUN <- unlist(SIID)
-# FU <- sapply(LFID,function(x){
-#   any(x!=SIIDUN)
-# })
-# 
-# LFAPID <- paste(LFAP$Raw.file,LFAP$MSMS.Scan.Numbers)
-
-# dim(SIAP)
-# dim(LFAP)
-# 
-# 
-# 
-# # temp1 <- read.csv("/Users/henno/temp/txtSILACFUN/allPeptides.txt",sep = "\t")
-# temp2 <- read.csv("/Users/henno/temp/txtSILACFUN/msScans.txt",sep = "\t")
-# # temp3 <- read.csv("/Users/henno/temp/txtSILACFUN/msmsScans.txt",sep = "\t")
-# graphics.off()
-# hu <- WriteChromatogram(x=temp1,msSC = temp2,msmsSC = temp3,showpdf = T)
-# x <- 
-#x <- read.csv("/Users/henno/temp/FixMQQC/txt/allPeptides.txt",stringsAsFactors = F,sep = "\t")
-#x <- read.csv("/Users/henno/temp/test/KOSHHS/allPeptides.txt",stringsAsFactors = F,sep = "\t")
-
-#try(ChrPath <- WriteChromatogram(x,filename = "fwef",BSAID =NULL ,jitfac = 0,showpdf = T))
-
-
-# keep <- WriteChromatogram(x,fun = sum,log10= F,jitfac = 0,showpdf = T)
-# sumall <- sum(as.numeric(unlist(keep$Int)),na.rm = T)
-# 
-# # try to match Contaminants
-# keep$Int
-#funhu <-spline(xTimeS[,1],xTimeS[,2])
-#txtplot(xTimeS[,1],xTimeS[,2],width = 150)
-#hui   <- txtplot(funhu$x[funhu$y > 0],funhu$y[funhu$y > 0],width = 150,xlab = "time [min]",ylab = "Intensity")
-#hui   <- txtplot(x$Retention.time,x$Intensity,width = 150,xlab = "time [min]",ylab = "Intensity")
+# ChrPath <- ""
+# if(length(qc.prepare.data$IdentifiedProteins) > 0& length(AllPeptides) > 0){
+#   if(nchar(as.character(qc.prepare.data$IdentifiedProteins)) > 0){
+#     try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans,TMT=qc.prepare.data$TMTplot))
+#   }
+#   if(ChrPath == ""){
+#     try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =NULL,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans,TMT=qc.prepare.data$TMTplot))
+#   } 
+# }

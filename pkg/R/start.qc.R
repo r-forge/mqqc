@@ -286,11 +286,11 @@ start.qc <-
       ChrPath <- ""
       if(length(qc.prepare.data$IdentifiedProteins) > 0& length(AllPeptides) > 0){
         if(nchar(as.character(qc.prepare.data$IdentifiedProteins)) > 0){
-          try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans))
+          try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =as.character(qc.prepare.data$IdentifiedProteins) ,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans,TMT=qc.prepare.data$TMTplot))
         }
         if(ChrPath == ""){
-          try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =NULL,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans))
-        } 
+          try(ChrPath <- WriteChromatogram(tempAllPeptides,msSC = msScans,msmsSC = msmsScans,filename = i,BSAID =NULL,jitfac = 0,AllPeptides=AllPeptides,Peptides = Peptides,PG = PG ,DataEvidence = DataEvidence,msScans = msScans,msmsScans = msmsScans,TMT=qc.prepare.data$TMTplot))
+        }
       }
       # graphics.off()
       add.vec <- c(rep.v[at],as.numeric(Sys.time()),make.names(Sys.time()))
@@ -375,6 +375,14 @@ start.qc <-
       flatFile <- t(export)
       flatFile <- paste(rownames(flatFile),flatFile[,1],sep = "\t\t")
       flatFileIn <- paste(flatFile,collapse = "\n")
+      # AverageTMT Labeling:
+      LysLabel <-""
+      noLysLabel <- ""
+      try({
+        LysLabel <- round(qc.prepare.data$TMTplot$Lys[qc.prepare.data$TMTplot$Label=="3-both"],1)
+        noLysLabel <- round(qc.prepare.data$TMTplot$`no Lys`[qc.prepare.data$TMTplot$Label=="1-Nterm only"])
+      })
+      
       try(flatFile <- paste("################\n# MQQC Message #\n################\nYour MQQC Analysis of ",data.frame(export)$Name," has finished.\nYou can evaluate your file ",serverinput,"\n\n\n\n#####################\n#  Selected Values  #\n#####################\nNumber of identified peptides: "
                         ,data.frame(export)$msms.count,"\n",
                         "Coverage (median): ",data.frame(export)$Coverage,"\n",
@@ -384,7 +392,11 @@ start.qc <-
                         
                         "MSMS log10 Intensity (median): ",log10(as.numeric(as.character(data.frame(export)$msmsQuantile.50.))), ASCIIplot,"\n",
                         
-                        "Median mass precision [ppm]: ",data.frame(export)$precision.50. ,"\n",
+                        "Median mass precision [ppm]: ",data.frame(export)$precision.50. ,
+                        "\n\n","################\n# TMT Labeling #\n################\n\n",
+                        "Fully Labeled Lysine:",LysLabel,"% \n",
+                        "Fully Labeled wo Lysines:",noLysLabel,"% \n\n",
+                        
       "Mass Difference Peptides:",data.frame(export)$DependentPeptides,"\n",sep = ""))
       
       
